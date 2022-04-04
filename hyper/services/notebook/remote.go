@@ -7,9 +7,9 @@ import (
 	"strings"
 	"time"
 
-	"github.com/gohypergiant/hyperdrive/cli/client/firefly"
-	"github.com/gohypergiant/hyperdrive/cli/client/manifest"
-	"github.com/gohypergiant/hyperdrive/cli/services/config"
+	"github.com/gohypergiant/hyperdrive/hyper/client/firefly"
+	"github.com/gohypergiant/hyperdrive/hyper/client/manifest"
+	"github.com/gohypergiant/hyperdrive/hyper/services/config"
 )
 
 const jobsDir string = "_jobs"

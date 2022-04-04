@@ -13,8 +13,8 @@ import (
 	"github.com/docker/docker/api/types/container"
 	"github.com/docker/docker/api/types/mount"
 	"github.com/docker/go-connections/nat"
-	"github.com/gohypergiant/hyperdrive/cli/client/cli"
-	"github.com/gohypergiant/hyperdrive/cli/client/manifest"
+	"github.com/gohypergiant/hyperdrive/hyper/client/cli"
+	"github.com/gohypergiant/hyperdrive/hyper/client/manifest"
 	"github.com/pkg/browser"
 )
 
