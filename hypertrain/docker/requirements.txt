@@ -1,0 +1,16 @@
+black>=21.5b1
+ipdb
+lightgbm
+numpy
+onnx
+onnxmltools
+openpyxl
+optuna
+pandas>=1.2.4
+pytest
+pytest-cov
+python-daemon
+python-dotenv
+scikit-learn
+skl2onnx>=1.9.3
+xgboost
