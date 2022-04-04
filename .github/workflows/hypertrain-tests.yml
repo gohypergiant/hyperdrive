@@ -2,6 +2,8 @@ name: Hypertrain CI
 
 on:
   push:
+    paths:
+      - 'hypertrain/**'
 
 jobs:
   test:
