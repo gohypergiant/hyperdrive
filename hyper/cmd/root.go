@@ -31,7 +31,7 @@ var manifestPath string
 
 // rootCmd represents the base command when called without any subcommands
 var rootCmd = &cobra.Command{
-	Use:   "mlsdk-cli",
+	Use:   "hyper",
 	Short: "Hypergiant Machine Learning CLI",
 }
 
@@ -46,7 +46,7 @@ func Execute() {
 
 func init() {
 	cobra.OnInitialize(initConfig)
-	rootCmd.PersistentFlags().StringVar(&cfgFile, "config", "", "config file (default is $HOME/.mlsdk-cli)")
+	rootCmd.PersistentFlags().StringVar(&cfgFile, "config", "", "config file (default is $HOME/.hyperdrive)")
 	rootCmd.PersistentFlags().StringVar(&RemoteName, "remote", "", "name of remote in config file")
 	rootCmd.PersistentFlags().StringVar(&manifestPath, "manifestPath", "./study.yaml", "path to the study file (default is ./study.yaml)")
 }
@@ -66,7 +66,7 @@ func initConfig() {
 
 		// Search config in home directory with name ".mlsdk-cli" (without extension).
 		viper.AddConfigPath(home)
-		viper.SetConfigName(".mlsdk-cli")
+		viper.SetConfigName(".hyperdrive")
 		viper.SetConfigType("json")
 	}
 
