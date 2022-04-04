@@ -1,0 +1,20 @@
+study_name: Lasso
+direction: minimize
+metric: sklearn.metrics.mean_squared_error
+model_flavor: sklearn
+n_trials: 10
+data:
+  source: local
+  response_variable: runner_rating
+models:
+  sklearn.linear_model.Lasso:
+    alpha:
+      - 0.5
+      - 1.0
+    max_iter:
+      - 100
+      - 500
+      - 1000 
+    tol:
+      - 0.0001
+      - 0.0005

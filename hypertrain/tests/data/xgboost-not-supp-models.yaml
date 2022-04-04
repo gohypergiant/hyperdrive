@@ -1,0 +1,43 @@
+study_name: xgboost_not_supp_models
+direction: maximize
+metric: sklearn.metrics.accuracy_score
+model_flavor: xgboost
+n_trials: 7
+random_state: 23
+data:
+  source: local
+  response_variable: lifestyle
+models:
+  xgboost.XGBRFClassifier:
+    n_estimators:
+      - 20:
+        max_depth: 3
+      - 30:
+        max_depth: 4
+      - 40:
+        max_depth: np.arange(1, 20)
+    learning_rate: np.linspace(0.1, 0.25, 30)
+  xgboost.dask.DaskXGBRFClassifier:
+    n_estimators:
+      - 10
+      - 20
+      - 30:
+        verbosity: 0
+      - 40
+    max_depth:
+      -
+        distribution: int
+        low: 2
+        high: 5
+        booster: gbtree
+      -
+        distribution: int
+        low: 10
+        high: 15
+        booster:
+          - gblinear:
+            learning_rate: np.linspace(0, 0.1, 20)
+          - dart:
+            learning_rate:
+              low: 0.2
+              high: 0.35

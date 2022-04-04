@@ -1,0 +1,9 @@
+[flake8]
+max-line-length = 88
+ignore = E203, E501, W503
+exclude = docker/deployedmodel/*, notebooks/*, tests/data/*, .ipython
+per-file-ignores =
+  hypertrain/__init__.py:F401,
+  hypertrain/data/__init__.py:F401,
+  hypertrain/datamodel/__init__.py:F401,
+  hypertrain/datamodel/heartbeat/__main__.py:E722,

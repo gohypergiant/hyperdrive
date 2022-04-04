@@ -1,0 +1,26 @@
+study_name: xgboost_classif_w_gblinear
+direction: maximize
+metric: sklearn.metrics.accuracy_score
+model_flavor: xgboost
+n_trials: 7
+random_state: 23
+data:
+  source: local
+  response_variable: lifestyle
+models:
+  xgboost.XGBClassifier:
+    n_estimators:
+      distribution: int
+      low: 30
+      high: 50
+    max_depth:
+      - 2
+      - 3
+      - 4
+      - 5
+    learning_rate:
+      low: 0.01
+      high: 0.25
+    booster:
+      - dart
+      - gblinear

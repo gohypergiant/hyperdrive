@@ -1,0 +1,20 @@
+FROM jupyter/scipy-notebook AS hypertrain-dev
+
+ADD docker/entrypoint.sh /usr/local/bin/
+ADD docker/start-notebook.sh /usr/local/bin/
+ADD docker/start.sh /usr/local/bin/
+ADD docker/start-singleuser.sh /usr/local/bin/
+
+ADD docker/requirements.txt .
+RUN pip install -r requirements.txt
+
+USER root
+RUN chown ${NB_UID}:${NB_GID} -R /usr/local/bin
+
+USER jovyan
+RUN chmod +x /usr/local/bin/start-notebook.sh
+RUN chmod +x /usr/local/bin/start.sh
+RUN chmod +x /usr/local/bin/start-singleuser.sh
+RUN chmod +x /usr/local/bin/entrypoint.sh
+
+CMD ["sh", "-c", "entrypoint.sh"]

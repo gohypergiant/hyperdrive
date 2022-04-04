@@ -1,0 +1,39 @@
+study_name: RandomForestClassifier_nested
+direction: maximize
+metric: sklearn.metrics.accuracy_score
+model_flavor: sklearn
+n_trials: 7
+random_state: 5
+data:
+  source: local
+  response_variable: lifestyle
+  # features:
+  #   source: local
+  # target:
+  #   source: local
+models:
+  sklearn.ensemble.RandomForestClassifier:
+    n_estimators:
+      - 
+        distribution: int-uniform
+        low: 80
+        high: 120
+        criterion:
+          - gini:
+            max_depth: 8
+          - entropy:
+            max_depth: 4
+      - 
+        distribution: int
+        low: 20
+        high: 40
+        criterion: gini
+        max_depth: 6
+    max_features:
+      - auto
+      - sqrt
+      - log2 
+    class_weight:
+      - null
+      - balanced
+      - balanced_subsample

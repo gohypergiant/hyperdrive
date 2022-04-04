@@ -1,0 +1,19 @@
+version: "3"
+
+services:
+  jupyter-hypertrain-dev:
+    build:
+      context: ..
+      target: hypertrain-dev
+      dockerfile: docker/Dockerfile.dev
+    ports:
+      - "10000:8888"
+      - "4040:4040"
+    volumes:
+      - ../../mlsdk-hypertrain/:/home/jovyan/mlsdk-hypertrain
+
+  hypertrain:
+    build:
+      context: ..
+      target: hypertrain
+      dockerfile: docker/Dockerfile
