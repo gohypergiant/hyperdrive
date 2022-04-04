@@ -20,9 +20,9 @@ setuptools.setup(
     description="Hypertrain Package",
     long_description=long_description,
     long_description_content_type="text/markdown",
-    url="https://github.com/gohypergiant/mlsdk-hypertrain",
+    url="https://github.com/gohypergiant/hyperdrive",
     project_urls={
-        "Bug Tracker": "https://github.com/gohypergiant/mlsdk-hypertrain/issues",
+        "Bug Tracker": "https://github.com/gohypergiant/hyperdrive/issues",
     },
     classifiers=[
         "Programming Language :: Python :: 3",
