@@ -18,14 +18,14 @@ jobs:
         python-version: 3.9
 
     - name: Install pypa/build
-      run: >-
+      run: |-
         python -m
         pip install
         build
         --user
 
     - name: Build Hypertrain package
-      run: >-
+      run: |-
       python -m
       build 
       --sdist
