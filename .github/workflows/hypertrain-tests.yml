@@ -6,6 +6,9 @@ on:
 jobs:
   test:
     runs-on: ubuntu-latest
+    defaults:
+      run:
+        working-directory: ./hypertrain
 
     strategy:
       matrix:
@@ -26,6 +29,7 @@ jobs:
         run: python -c "import sys; print(sys.version)"
         # Install the package using the setup.py
       - name: Install package
+
         run: python setup.py install
         # Install pytest (you can use some other testing utility)
       - name: Install pytest
