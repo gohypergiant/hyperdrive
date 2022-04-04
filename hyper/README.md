@@ -1,10 +1,8 @@
-# mlsdk-cli
-
-[![CI](https://github.com/gohypergiant/mlsdk-cli/actions/workflows/golang-ci.yml/badge.svg?branch=stable)](https://github.com/gohypergiant/mlsdk-cli/actions/workflows/golang-ci.yml)
+# Hyperdrive CLI
 
 ## Remote
 
-To use with a remote Firefly target, add a `.mlsdk-cli` file to your `$HOME` directory with contents that look like this: 
+To use with a remote Firefly target, add a `.hyperdrive` file to your `$HOME` directory with contents that look like this: 
 ```json
 {
    "remotes":{
