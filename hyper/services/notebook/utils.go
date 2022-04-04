@@ -5,7 +5,7 @@ import (
 	"os"
 	"strings"
 
-	"github.com/gohypergiant/hyperdrive/cli/client/manifest"
+	"github.com/gohypergiant/hyperdrive/hyper/client/manifest"
 )
 
 func GetNotebookName(manifestPath string) string {

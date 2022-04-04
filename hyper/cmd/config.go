@@ -3,7 +3,7 @@ package cmd
 import (
 	"fmt"
 
-	"github.com/gohypergiant/hyperdrive/cli/services/config"
+	"github.com/gohypergiant/hyperdrive/hyper/services/config"
 	"github.com/spf13/cobra"
 )
 

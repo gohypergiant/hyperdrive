@@ -15,7 +15,7 @@ limitations under the License.
 */
 package main
 
-import "github.com/gohypergiant/hyperdrive/cli/cmd"
+import "github.com/gohypergiant/hyperdrive/hyper/cmd"
 
 func main() {
 	cmd.Execute()

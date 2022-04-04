@@ -19,7 +19,7 @@ package cmd
 import (
 	"fmt"
 
-	"github.com/gohypergiant/hyperdrive/cli/services/notebook"
+	"github.com/gohypergiant/hyperdrive/hyper/services/notebook"
 
 	"github.com/spf13/cobra"
 )

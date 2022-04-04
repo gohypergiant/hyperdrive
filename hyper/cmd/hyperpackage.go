@@ -3,8 +3,8 @@ package cmd
 import (
 	"fmt"
 
-	"github.com/gohypergiant/hyperdrive/cli/client/manifest"
-	"github.com/gohypergiant/hyperdrive/cli/services/hyperpackage"
+	"github.com/gohypergiant/hyperdrive/hyper/client/manifest"
+	"github.com/gohypergiant/hyperdrive/hyper/services/hyperpackage"
 	"github.com/spf13/cobra"
 )
 

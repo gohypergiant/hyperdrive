@@ -13,7 +13,7 @@ import (
 	"strings"
 	"time"
 
-	"github.com/gohypergiant/hyperdrive/cli/services/config"
+	"github.com/gohypergiant/hyperdrive/hyper/services/config"
 )
 
 type ServerInfo struct {

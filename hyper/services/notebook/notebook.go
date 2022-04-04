@@ -1,6 +1,6 @@
 package notebook
 
-import "github.com/gohypergiant/hyperdrive/cli/services/config"
+import "github.com/gohypergiant/hyperdrive/hyper/services/config"
 
 type INotebookService interface {
 	Start(image string, pullImage bool, jupyterBrowser bool)
