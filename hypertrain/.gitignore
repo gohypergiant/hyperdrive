@@ -146,8 +146,6 @@ notebooks
 selenium
 health-byte-test
 .keras
-hg-platform-dev-health-byte-qa-bucket
-hg-platform-dev-joshua-redhat
 .bash_history
 tests/hypermock
 .config
