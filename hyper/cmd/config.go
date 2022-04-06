@@ -29,8 +29,17 @@ var configCmd = &cobra.Command{
 	Short: "config",
 }
 
+
+var initCmd = &cobra.Command{
+	Use:   "init",
+	Short: "Initialize Config",
+	Run: func(cmd *cobra.Command, args []string) {
+		fmt.Println("here")
+	},
+}
 func init() {
 	rootCmd.AddCommand(configCmd)
+	configCmd.AddCommand(initCmd)
 	configCmd.AddCommand(remotesCmd)
 
 	//remote subcommands
