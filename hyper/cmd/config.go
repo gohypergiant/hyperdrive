@@ -58,6 +58,7 @@ func getUrl() string {
 	prompt := promptui.Prompt{
 		Label: "Enter the remote URL [default: Use Hypergiant hosted Hyperdrive]",
 	}
+	//TODO: Set default value to hosted backend
 
 	result, err := prompt.Run()
 	if err != nil {
@@ -119,7 +120,8 @@ var initCmd = &cobra.Command{
 		url := getUrl()
 		username := getUsername()
 		token := getToken()
-		fmt.Printf("%s %s %s %s", remoteName, url, username, token)
+		config.UpdateRemote(remoteName, config.RemoteConfiguration{Url: url, Username: username, HubToken: token})
+		fmt.Printf("Added %s remote at %s", remoteName, url)
 	},
 }
 
