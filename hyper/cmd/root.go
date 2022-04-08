@@ -18,6 +18,7 @@ package cmd
 import (
 	"fmt"
 	"os"
+	"path"
 
 	"github.com/spf13/cobra"
 
@@ -63,11 +64,12 @@ func initConfig() {
 			fmt.Println(err)
 			os.Exit(1)
 		}
-
-		// Search config in home directory with name ".mlsdk-cli" (without extension).
+		configName := ".hyperdrive"
+		// Search config in home directory with name ".hyperdrive" (without extension).
 		viper.AddConfigPath(home)
-		viper.SetConfigName(".hyperdrive")
+		viper.SetConfigName(configName)
 		viper.SetConfigType("json")
+		viper.SetConfigFile(path.Join(home, configName))
 	}
 
 	viper.AutomaticEnv() // read in environment variables that match

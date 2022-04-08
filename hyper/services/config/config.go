@@ -39,3 +39,18 @@ func GetRemote(name string) RemoteConfiguration {
 	remotes := GetRemotes()
 	return remotes[name]
 }
+func UpdateRemote(name string, configuration RemoteConfiguration) {
+	var config Configuration
+	err := viper.Unmarshal(&config)
+	if err != nil {
+		fmt.Println(err)
+		os.Exit(1)
+	}
+	if config.Remotes == nil {
+		config.Remotes = make(map[string]RemoteConfiguration)
+	}
+	config.Remotes[name] = configuration
+	viper.Set("remotes", config.Remotes)
+	viper.WriteConfig()
+
+}
