@@ -32,6 +32,11 @@ var configCmd = &cobra.Command{
 	Short: "config",
 }
 
+var remoteName string
+var url string
+var username string
+var token string
+
 func getUsername() string {
 
 	validate := func(input string) error {
@@ -116,16 +121,28 @@ var initCmd = &cobra.Command{
 	Use:   "init",
 	Short: "Initialize Config",
 	Run: func(cmd *cobra.Command, args []string) {
-		remoteName := getRemoteName()
-		url := getUrl()
-		username := getUsername()
-		token := getToken()
+		if remoteName == "" {
+			remoteName = getRemoteName()
+		}
+		if url == "" {
+			url = getUrl()
+		}
+		if username == "" {
+			username = getUsername()
+		}
+		if token == "" {
+			token = getToken()
+		}
 		config.UpdateRemote(remoteName, config.RemoteConfiguration{Url: url, Username: username, HubToken: token})
 		fmt.Printf("Added %s remote at %s", remoteName, url)
 	},
 }
 
 func init() {
+	initCmd.Flags().StringVar(&remoteName, "remoteName", "", "Name of the remote for the config")
+	initCmd.Flags().StringVar(&url, "url", "", "URL to the remote")
+	initCmd.Flags().StringVar(&username, "username", "", "Username for the remote")
+	initCmd.Flags().StringVar(&token, "token", "", "token for the remote")
 	rootCmd.AddCommand(configCmd)
 	configCmd.AddCommand(initCmd)
 	configCmd.AddCommand(remotesCmd)
