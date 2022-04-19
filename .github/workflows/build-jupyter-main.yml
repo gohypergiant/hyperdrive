@@ -1,0 +1,30 @@
+name: "Docker Build - Firefly CPU"
+
+on:
+  push:
+    branches:
+      - "stable"
+    paths:
+      - "Dockerfile"
+  pull_request:
+    branches:
+      - "stable"
+  schedule:
+    # Weekly, at 04:00 on Monday UTC time
+    - cron: "0 4 * * 1"
+  workflow_dispatch:
+jobs:
+  cpu-pytorch:
+    uses: ./.github/workflows/build-jupyter-workflow.yml
+    with:
+      image: cpu-pytorch
+      dockerfile: docker/Dockerfile.main
+    secrets:
+      GHCR_TOKEN: ${{ secrets.GHCR_TOKEN }}
+  cpu-local:
+    uses: ./.github/workflows/build-jupyter-workflow.yml
+    with:
+      image: cpu-local
+      dockerfile: docker/Dockerfile
+    secrets:
+      GHCR_TOKEN: ${{ secrets.GHCR_TOKEN }}

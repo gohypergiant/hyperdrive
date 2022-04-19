@@ -1,0 +1,16 @@
+################################################################################
+################################ BASE IMAGES ###################################
+################################################################################
+
+############################## CPU BASE IMAGE ##################################
+FROM dkr.tools.hg-prototypes.com/dockerhub-proxy/jupyter/scipy-notebook AS cpu-base
+
+ENV PYTORCH_VERSION=1.10.2
+
+RUN mamba remove nomkl --yes
+RUN mamba install --yes \
+  pyyaml mkl mkl-include setuptools cmake cffi typing && \
+  conda clean --all -f -y && \
+  fix-permissions $CONDA_DIR && \
+  fix-permissions /home/$NB_USER
+RUN pip install --no-cache-dir torch==${PYTORCH_VERSION} torchvision torchaudio torchviz
