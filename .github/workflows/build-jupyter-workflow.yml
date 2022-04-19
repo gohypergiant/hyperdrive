@@ -24,8 +24,7 @@ on:
 
 jobs:
   build:
-    runs-on:
-          platforms: linux/amd64,linux/arm64
+    runs-on: ubuntu-latest
     steps:
       -
         name: Checkout
