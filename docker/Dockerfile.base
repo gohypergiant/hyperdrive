@@ -7,10 +7,4 @@ FROM dkr.tools.hg-prototypes.com/dockerhub-proxy/jupyter/scipy-notebook AS cpu-b
 
 ENV PYTORCH_VERSION=1.10.2
 
-RUN conda remove nomkl --yes
-RUN conda install --yes \
-  pyyaml mkl mkl-include setuptools cmake cffi typing && \
-  conda clean --all -f -y && \
-  fix-permissions $CONDA_DIR && \
-  fix-permissions /home/$NB_USER
 RUN pip install --no-cache-dir torch==${PYTORCH_VERSION} torchvision torchaudio torchviz
