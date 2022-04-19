@@ -1,0 +1,39 @@
+################################################################################
+################################# BASE IMPORTS #################################
+################################################################################
+ARG REGISTRY=ghcr.io/gohypergiant
+
+################################################################################
+############################## CPU FIREFLY IMAGES ##############################
+################################################################################
+FROM ${REGISTRY}/hyperdrive:cpu-base AS cpu-firefly
+
+ADD docker/entrypoint-torch.sh /usr/local/bin/
+ADD docker/entrypoint-local.sh /usr/local/bin/
+ADD ./hypertrain /home/jovyan/hypertrain
+
+USER root
+RUN chown ${NB_UID}:${NB_GID} -R /home/jovyan/hypertrain
+RUN chown ${NB_UID}:${NB_GID} -R /usr/local/bin
+
+USER jovyan
+WORKDIR /home/jovyan/hypertrain
+RUN python -m setup install
+WORKDIR /home/jovyan
+RUN rm -rf hypertrain
+
+USER jovyan
+RUN chmod +x /usr/local/bin/entrypoint-torch.sh
+RUN chmod +x /usr/local/bin/entrypoint-local.sh
+
+
+############################# CPU FIREFLY LOCAL ##############################
+FROM cpu-firefly AS cpu-local
+
+CMD ["sh","-c", "entrypoint-local.sh"]
+
+############################# CPU FIREFLY TORCH ##############################
+
+FROM cpu-firefly AS cpu-pytorch
+
+CMD ["sh","-c", "entrypoint-torch.sh"]
