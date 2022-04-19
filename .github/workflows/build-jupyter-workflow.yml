@@ -3,8 +3,6 @@ name: "Build, Tag and Push Notebook Servers to GHCR"
 on:
   workflow_call:
     secrets:
-      GH_PAT:
-        required: true
       GHCR_TOKEN:
         required: true
     inputs:
@@ -31,7 +29,7 @@ jobs:
       -
         name: Checkout
         uses: actions/checkout@v3
- 
+
       - name: Create Dockerfile.gpu
         if: ${{ inputs.image  == 'gpu-base' }}
         run: ./docker/gpu/create-gpu-dockerfile.sh && ls -la docker/gpu
@@ -44,7 +42,7 @@ jobs:
 #           token: ${{ secrets.GH_PAT }}
 #           path: research-EfficientAutoML
 #           ref: development
-      
+
       -
         name: Set up QEMU
         uses: docker/setup-qemu-action@v1
