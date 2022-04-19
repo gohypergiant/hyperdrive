@@ -24,7 +24,8 @@ on:
 
 jobs:
   build:
-    runs-on: ubuntu-latest
+    runs-on:
+          platforms: linux/amd64,linux/arm64
     steps:
       -
         name: Checkout
@@ -113,6 +114,7 @@ jobs:
           DOCKER_BUILDKIT: 1
         with:
           context: .
+          platforms: linux/amd64,linux/arm64
           file: ${{ inputs.dockerfile }}
           target: ${{ inputs.image }}
           cache-from: type=local,src=/tmp/.buildx-cache

@@ -6,7 +6,7 @@ ARG REGISTRY=ghcr.io/gohypergiant
 ################################################################################
 ############################## CPU FIREFLY IMAGES ##############################
 ################################################################################
-FROM ${REGISTRY}/hyperdrive:cpu-base AS cpu-firefly
+FROM ${REGISTRY}/hypergiant-jupyter:cpu-base AS cpu-firefly
 
 ADD docker/entrypoint-torch.sh /usr/local/bin/
 ADD docker/entrypoint-local.sh /usr/local/bin/
