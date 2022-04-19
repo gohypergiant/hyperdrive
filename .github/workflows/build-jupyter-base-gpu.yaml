@@ -1,0 +1,15 @@
+name: "Docker Build - Base GPU Image"
+
+on:
+  schedule:
+    # Weekly, at 03:00 on Monday UTC time
+    - cron: "0 3 * * 1"
+  workflow_dispatch:
+
+jobs:
+  gpu-base:
+    uses: ./.github/workflows/build-jupyter-workflow.yml
+    with:
+      image: gpu-base
+    secrets:
+      GHCR_TOKEN: ${{ secrets.GHCR_TOKEN }}
