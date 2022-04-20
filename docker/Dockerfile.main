@@ -12,6 +12,7 @@ ADD docker/entrypoint-torch.sh /usr/local/bin/
 ADD docker/entrypoint-local.sh /usr/local/bin/
 ADD ./hypertrain /home/jovyan/hypertrain
 ADD ./executor /home/jovyan/executor
+ADD ./executor /tmp/repo
 
 USER root
 RUN chown ${NB_UID}:${NB_GID} -R /home/jovyan/hypertrain
