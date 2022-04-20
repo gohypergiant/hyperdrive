@@ -15,6 +15,7 @@ ADD ./executor /home/jovyan/executor
 
 USER root
 RUN chown ${NB_UID}:${NB_GID} -R /home/jovyan/hypertrain
+RUN chown ${NB_UID}:${NB_GID} -R /home/jovyan/executor
 RUN chown ${NB_UID}:${NB_GID} -R /usr/local/bin
 
 USER jovyan
