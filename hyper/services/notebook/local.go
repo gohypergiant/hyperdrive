@@ -30,6 +30,7 @@ var (
 
 type LocalNotebookService struct {
 	ManifestPath string
+	S3Credentials S3Credentials
 }
 
 func (s LocalNotebookService) GetGitRoot() string {
@@ -53,6 +54,11 @@ func (s LocalNotebookService) Start(flavor string, pullImage bool, jupyterBrowse
 	imageOptions := GetNotebookImageOptions("local")
 	clientImages, _ := dockerClient.ListImages()
 	inImageCache := false
+	env := []string{"JUPYTER_TOKEN=firefly",
+		fmt.Sprintf("AWS_ACCESS_KEY_ID=%s", s.S3Credentials.AccessKey),
+		fmt.Sprintf("AWS_SECRET_ACCESS_KEY=%s", s.S3Credentials.AccessSecret),
+		fmt.Sprintf("AWS_DEFAULT_REGION=%s", s.S3Credentials.Region),
+	}
 	for _, clientImage := range clientImages {
 		for _, tag := range clientImage.RepoTags {
 			if tag == imageOptions.Image {
@@ -72,7 +78,7 @@ func (s LocalNotebookService) Start(flavor string, pullImage bool, jupyterBrowse
 			Hostname: name,
 			Image:    imageOptions.Image,
 			Tty:      true,
-			Env:      []string{"JUPYTER_TOKEN=firefly"},
+			Env:      env,
 		}
 
 		hostConfig := &container.HostConfig{
@@ -148,7 +154,7 @@ func (s LocalNotebookService) List() {
 					"Mount:", volMount.Source[9:], "\n",
 					"Image:", image, "\n",
 					"Container Id:", runningContainer.ID[:10], "\n",
-					"Url:", fmt.Sprintf("http://127.0.0.1:%d/lab?token=firefly", publicPort), "\n",
+					"Url:", fmt.Sprintf("http://127.0.0.1:%d/lab?token=firefly", publicPort),
 				)
 			}
 		}
@@ -248,7 +254,7 @@ func (s LocalNotebookService) WaitForTrainingToComplete(timeout int) {
 				fmt.Println("Training completed")
 				return
 			}
-			fmt.Print(fmt.Sprintf("\nTraining status: %s.\nWaiting.", status))
+			fmt.Printf("\nTraining status: %s.\nWaiting.", status)
 		} else {
 			fmt.Print(".")
 		}
@@ -319,7 +325,7 @@ func (s LocalNotebookService) DownloadHyperpack() {
 
 	hyperpackPath := s.GetRemoteHyperpackPath()
 	savePath := s.GetHyperpackSavePath()
-	fmt.Println(fmt.Sprintf("Saving to %s", savePath))
+	fmt.Printf("Saving to %s \n", savePath)
 
 	s.CopyFile(hyperpackPath, savePath)
 

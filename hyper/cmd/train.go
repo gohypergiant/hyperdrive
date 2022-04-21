@@ -34,7 +34,7 @@ var trainCmd = &cobra.Command{
 	Short: "Train a model",
 	Run: func(cmd *cobra.Command, args []string) {
 		fmt.Println("🚂choo choo🚂")
-		notebookService := notebook.NotebookService(RemoteName, manifestPath)
+		notebookService := notebook.NotebookService(RemoteName, manifestPath, s3AccessKey, s3AccessSecret, s3Region)
 		notebookService.UploadTrainingJobData()
 		fmt.Println("Training data uploaded, to look for a completed hyperpackage, use the fetch subcommand.")
 	},
@@ -44,7 +44,7 @@ var fetchCmd = &cobra.Command{
 	Short: "fetch resulting hyperpackage from training session",
 	Run: func(cmd *cobra.Command, args []string) {
 		fmt.Println("🥎🐕 Fetching")
-		notebookService := notebook.NotebookService(RemoteName, manifestPath)
+		notebookService := notebook.NotebookService(RemoteName, manifestPath, s3AccessKey, s3AccessSecret, s3Region)
 		notebookService.WaitForTrainingToComplete(fetchTimeout)
 		notebookService.DownloadHyperpack()
 	},
@@ -53,5 +53,9 @@ var fetchCmd = &cobra.Command{
 func init() {
 	fetchCmd.Flags().IntVarP(&fetchTimeout, "fetchTimeout", "t", 3600, "Timeout in seconds to wait for training to complete (default 3600)")
 	trainCmd.AddCommand(fetchCmd)
+	trainCmd.Flags().StringVar(&image, "image", "pytorch", "Image to be used [huggingface-pytorch|huggingface-tensorflow|pytorch|spark|tensorflow|xgboost]")
+	trainCmd.Flags().StringVar(&s3AccessKey, "s3AccessKey", "", "S3 Access Key to use")
+	trainCmd.Flags().StringVar(&s3AccessSecret, "s3AccessSecret", "", "S3 Secret to use")
+	trainCmd.Flags().StringVar(&s3Region, "s3Region", "", "S3 Region")
 	rootCmd.AddCommand(trainCmd)
 }
