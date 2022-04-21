@@ -10,4 +10,4 @@ image:
 	docker build --target cpu-local -t cpu-local -f docker/Dockerfile.main .
 
 up:
-	docker run --rm -p 8888:8888 --name hyperdrive-cpu-local cpu-local
+	docker run -it --rm -p 8888:8888 --name hyperdrive-cpu-local cpu-local
