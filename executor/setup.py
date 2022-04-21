@@ -20,10 +20,8 @@ setuptools.setup(
     description="Scheduler Package",
     long_description=long_description,
     long_description_content_type="text/markdown",
-    url="https://github.com/gohypergiant/mlsdk-scheduler",
-    project_urls={
-        "Bug Tracker": "https://github.com/gohypergiant/mlsdk-scheduler/issues",
-    },
+    url="https://github.com/gohypergiant/hyperdrive",
+    project_urls={"Bug Tracker": "https://github.com/gohypergiant/hyperdrive/issues",},
     classifiers=[
         "Programming Language :: Python :: 3",
         "License :: OSI Approved :: MIT License",
@@ -34,7 +32,7 @@ setuptools.setup(
         "croniter",
         "databases",
         "jupyterlab",
-        "pandas",
+        "pandas>=1.2.4",
         "papermill",
         "typer",
     ],

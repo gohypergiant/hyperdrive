@@ -21,9 +21,7 @@ setuptools.setup(
     long_description=long_description,
     long_description_content_type="text/markdown",
     url="https://github.com/gohypergiant/hyperdrive",
-    project_urls={
-        "Bug Tracker": "https://github.com/gohypergiant/hyperdrive/issues",
-    },
+    project_urls={"Bug Tracker": "https://github.com/gohypergiant/hyperdrive/issues",},
     classifiers=[
         "Programming Language :: Python :: 3",
         "License :: OSI Approved :: MIT License",
@@ -50,5 +48,5 @@ setuptools.setup(
         "xgboost": ["onnxmltools", "xgboost"],
     },
     packages=setuptools.find_packages(".", exclude=["*tests*"]),
-    python_requires=">=3.6",
+    python_requires=">=3.9",
 )
