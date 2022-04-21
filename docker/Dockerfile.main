@@ -11,9 +11,12 @@ FROM ${REGISTRY}/hypergiant-jupyter:cpu-base AS cpu-firefly
 ADD docker/entrypoint-torch.sh /usr/local/bin/
 ADD docker/entrypoint-local.sh /usr/local/bin/
 ADD ./hypertrain /home/jovyan/hypertrain
+ADD ./executor /home/jovyan/executor
+ADD ./executor /tmp/repo
 
 USER root
 RUN chown ${NB_UID}:${NB_GID} -R /home/jovyan/hypertrain
+RUN chown ${NB_UID}:${NB_GID} -R /home/jovyan/executor
 RUN chown ${NB_UID}:${NB_GID} -R /usr/local/bin
 
 USER jovyan
@@ -21,6 +24,12 @@ WORKDIR /home/jovyan/hypertrain
 RUN python -m setup install
 WORKDIR /home/jovyan
 RUN rm -rf hypertrain
+
+USER jovyan
+WORKDIR /home/jovyan/executor
+RUN python -m setup install
+WORKDIR /home/jovyan
+RUN rm -rf executor
 
 USER jovyan
 RUN chmod +x /usr/local/bin/entrypoint-torch.sh
