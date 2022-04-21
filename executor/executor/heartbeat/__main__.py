@@ -1,3 +1,0 @@
-from . import HDHeartbeat
-
-HDHeartbeat()
