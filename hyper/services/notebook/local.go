@@ -42,7 +42,7 @@ func (s LocalNotebookService) GetGitRoot() string {
 	return strings.TrimSpace(string(gitRoot))
 }
 
-func (s LocalNotebookService) Start(flavor string, pullImage bool, jupyterBrowser bool) {
+func (s LocalNotebookService) Start(flavor string, pullImage bool, jupyterBrowser bool, s3AccessKey string, s3AccessSecret string, s3Region string) {
 
 	dockerClient := cli.NewDockerClient()
 	cwdPath, _ := os.Getwd()
@@ -53,6 +53,11 @@ func (s LocalNotebookService) Start(flavor string, pullImage bool, jupyterBrowse
 	imageOptions := GetNotebookImageOptions("local")
 	clientImages, _ := dockerClient.ListImages()
 	inImageCache := false
+	env := []string{"JUPYTER_TOKEN=firefly",
+		fmt.Sprintf("AWS_ACCESS_KEY_ID=%s", s3AccessKey),
+		fmt.Sprintf("AWS_SECRET_ACCESS_KEY=%s", s3AccessSecret),
+		fmt.Sprintf("AWS_DEFAULT_REGION=%s", s3Region),
+	}
 	for _, clientImage := range clientImages {
 		for _, tag := range clientImage.RepoTags {
 			if tag == imageOptions.Image {
@@ -72,7 +77,7 @@ func (s LocalNotebookService) Start(flavor string, pullImage bool, jupyterBrowse
 			Hostname: name,
 			Image:    imageOptions.Image,
 			Tty:      true,
-			Env:      []string{"JUPYTER_TOKEN=firefly"},
+			Env:      env,
 		}
 
 		hostConfig := &container.HostConfig{
@@ -148,7 +153,7 @@ func (s LocalNotebookService) List() {
 					"Mount:", volMount.Source[9:], "\n",
 					"Image:", image, "\n",
 					"Container Id:", runningContainer.ID[:10], "\n",
-					"Url:", fmt.Sprintf("http://127.0.0.1:%d/lab?token=firefly", publicPort), "\n",
+					"Url:", fmt.Sprintf("http://127.0.0.1:%d/lab?token=firefly", publicPort),
 				)
 			}
 		}
@@ -248,7 +253,7 @@ func (s LocalNotebookService) WaitForTrainingToComplete(timeout int) {
 				fmt.Println("Training completed")
 				return
 			}
-			fmt.Print(fmt.Sprintf("\nTraining status: %s.\nWaiting.", status))
+			fmt.Printf("\nTraining status: %s.\nWaiting.", status)
 		} else {
 			fmt.Print(".")
 		}
@@ -319,7 +324,7 @@ func (s LocalNotebookService) DownloadHyperpack() {
 
 	hyperpackPath := s.GetRemoteHyperpackPath()
 	savePath := s.GetHyperpackSavePath()
-	fmt.Println(fmt.Sprintf("Saving to %s", savePath))
+	fmt.Printf("Saving to %s \n", savePath)
 
 	s.CopyFile(hyperpackPath, savePath)
 
