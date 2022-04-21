@@ -28,9 +28,9 @@ var (
 	pullImage      bool
 	repoTag        string
 	publicPort     uint16
-	s3AccessKey        string
-	s3AccessSecret        string
-	s3Region        string
+	s3AccessKey    string
+	s3AccessSecret string
+	s3Region       string
 )
 
 // jupyterCmd represents the jupyter command
@@ -38,7 +38,7 @@ var jupyterCmd = &cobra.Command{
 	Use:   "jupyter",
 	Short: "Run a local jupyter server",
 	Run: func(cmd *cobra.Command, args []string) {
-		notebook.NotebookService(RemoteName, manifestPath).Start(image, pullImage, jupyterBrowser,s3AccessKey,s3AccessSecret,s3Region)
+		notebook.NotebookService(RemoteName, manifestPath, s3AccessKey, s3AccessSecret, s3Region).Start(image, pullImage, jupyterBrowser)
 	},
 }
 
@@ -46,7 +46,7 @@ var jupyterListCmd = &cobra.Command{
 	Use:   "list",
 	Short: "List running local jupyter servers",
 	Run: func(cmd *cobra.Command, args []string) {
-		notebook.NotebookService(RemoteName, manifestPath).List()
+		notebook.NotebookService(RemoteName, manifestPath, s3AccessKey, s3AccessSecret, s3Region).List()
 	},
 }
 
@@ -54,7 +54,7 @@ var jupyterStopCmd = &cobra.Command{
 	Use:   "stop",
 	Short: "Stop and remove a currently running local jupyter server",
 	Run: func(cmd *cobra.Command, args []string) {
-		notebook.NotebookService(RemoteName, manifestPath).Stop(mountPoint)
+		notebook.NotebookService(RemoteName, manifestPath, s3AccessKey, s3AccessSecret, s3Region).Stop(mountPoint)
 	},
 }
 

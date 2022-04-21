@@ -30,6 +30,7 @@ var (
 
 type LocalNotebookService struct {
 	ManifestPath string
+	S3Credentials S3Credentials
 }
 
 func (s LocalNotebookService) GetGitRoot() string {
@@ -42,7 +43,7 @@ func (s LocalNotebookService) GetGitRoot() string {
 	return strings.TrimSpace(string(gitRoot))
 }
 
-func (s LocalNotebookService) Start(flavor string, pullImage bool, jupyterBrowser bool, s3AccessKey string, s3AccessSecret string, s3Region string) {
+func (s LocalNotebookService) Start(flavor string, pullImage bool, jupyterBrowser bool) {
 
 	dockerClient := cli.NewDockerClient()
 	cwdPath, _ := os.Getwd()
@@ -54,9 +55,9 @@ func (s LocalNotebookService) Start(flavor string, pullImage bool, jupyterBrowse
 	clientImages, _ := dockerClient.ListImages()
 	inImageCache := false
 	env := []string{"JUPYTER_TOKEN=firefly",
-		fmt.Sprintf("AWS_ACCESS_KEY_ID=%s", s3AccessKey),
-		fmt.Sprintf("AWS_SECRET_ACCESS_KEY=%s", s3AccessSecret),
-		fmt.Sprintf("AWS_DEFAULT_REGION=%s", s3Region),
+		fmt.Sprintf("AWS_ACCESS_KEY_ID=%s", s.S3Credentials.AccessKey),
+		fmt.Sprintf("AWS_SECRET_ACCESS_KEY=%s", s.S3Credentials.AccessSecret),
+		fmt.Sprintf("AWS_DEFAULT_REGION=%s", s.S3Credentials.Region),
 	}
 	for _, clientImage := range clientImages {
 		for _, tag := range clientImage.RepoTags {
