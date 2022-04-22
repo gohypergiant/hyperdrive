@@ -4,7 +4,7 @@ from pandas import read_json as pd_read_json
 from pandas import read_excel as pd_read_excel
 from pandas import ExcelFile
 from pyarrow.lib import ArrowInvalid
-from dataclient.exceptions import DatasetError, DataRepoError, DataClientError
+from ..exceptions import DatasetError, DataRepoError, DataManagerError
 
 
 class DatasetController:
@@ -164,7 +164,7 @@ class DatasetController:
 
                 return tensor(df.values)
             except ImportError:
-                raise DataClientError("Loading PyTorch tensors requires PyTorch.")
+                raise DataManagerError("Loading PyTorch tensors requires PyTorch.")
 
     def write_dataset(
         self,
