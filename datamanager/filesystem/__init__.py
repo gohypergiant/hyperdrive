@@ -8,7 +8,7 @@ import pyarrow.parquet as parquet
 import numpy as np
 from pandas import DataFrame, Series
 from ..exceptions import FileSystemError
-from ..utilities import infer_target_format
+from hypertrain.utilities import infer_target_format
 
 
 class FileSystem:
