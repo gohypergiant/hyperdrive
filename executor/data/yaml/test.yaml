@@ -1,0 +1,10 @@
+test: True
+study_name: test_health_tracker
+training:
+  data:
+    join_id: _id
+    features:
+      source: data/ht_agg.json
+    target:
+      response_variable: lifestyle
+      source: data/user_data.csv

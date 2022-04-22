@@ -1,0 +1,9 @@
+.cache
+.ipy*
+.jupyter
+.local
+.DS_Store
+.bash_history
+.executor
+_jobs
+.vscode/
