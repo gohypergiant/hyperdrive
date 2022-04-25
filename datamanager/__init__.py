@@ -17,6 +17,7 @@ class DataManager(
 ):
     storage_provider: str = "local"
     volume_name: str = "/tmp"
+    volume_account: str = None
     volume_region: str = None
     access_key: str = field(repr=False, default=None)
     secret_access_key: str = field(repr=False, default=None)
@@ -37,6 +38,7 @@ class DataManager(
 
         self.filesystem = FileSystem(
             storage_provider=self.storage_provider,
+            volume_name=self.volume_name,
             volume_account=self.volume_account,
             volume_region=self.volume_region,
             access_key=self.access_key,
