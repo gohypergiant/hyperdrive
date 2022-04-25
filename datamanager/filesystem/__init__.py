@@ -244,7 +244,7 @@ class FileSystem:
         ------
         FileSystemError
             Raises error for the following error codes:
-                "core 15" : Wrong credientials configured.
+                "code 15" : Wrong credientials configured.
                 "code 100" : Path doesn't exist in bucket or wrong region was
                 configured.
         """
