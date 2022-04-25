@@ -1,5 +1,6 @@
 import logging
 import random
+import importlib
 from uuid import uuid4
 
 import numpy as np
@@ -396,11 +397,9 @@ Best Trial Hyperparameters: {self.optuna_study.best_trial.params}
         sklearn_string_length = len("sklearn.")
         idx1 = clf_name.rfind(".")
         module_name = clf_name[sklearn_string_length:idx1]
+        sklearn_module_name = "sklearn" + "." + module_name
         function_name = clf_name[idx1 + 1 :]
-        import ipdb
-
-        ipdb.set_trace()
-        module = getattr(__import__("sklearn"), module_name)
+        module = importlib.import_module(sklearn_module_name)
 
         if is_model:
             return getattr(module, function_name)(**hyperparams_for_current_model)
