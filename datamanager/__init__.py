@@ -33,7 +33,7 @@ class DataManager(
                 raise DataManagerError(
                     "No valid credential profile configured for storage provider: "
                     f"{self.storage_provider} and volume_account_profile: "
-                    f"{self.volume_account_profile}"
+                    f"{self.volume_account}"
                 )
 
         self.filesystem = FileSystem(
