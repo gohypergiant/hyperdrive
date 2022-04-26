@@ -28,16 +28,15 @@ class DataManager(
             self.access_key = os.environ.get("AWS_ACCESS_KEY_ID")
             self.secret_access_key = os.environ.get("AWS_SECRET_ACCESS_KEY")
 
-            if self.access_key is None or self.secret_access_key is None:
+            if self.access_key in [None, ''] or self.secret_access_key in [None, '']:
                 raise DataManagerError(
                     "No valid credential profile configured for storage provider: "
-                    f"{self.storage_provider} and volume_account_profile: "
-                    f"{self.volume_account_profile}"
+                    f"{self.storage_provider}"
                 )
 
         self.filesystem = FileSystem(
             storage_provider=self.storage_provider,
-            volume_account=self.volume_account,
+            volume_name=self.volume_name,
             volume_region=self.volume_region,
             access_key=self.access_key,
             secret_access_key=self.secret_access_key,

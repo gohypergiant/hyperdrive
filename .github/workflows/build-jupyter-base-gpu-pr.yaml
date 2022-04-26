@@ -1,0 +1,17 @@
+name: "PR Build - Base GPU Image"
+
+# We only want to run when both the paths change _and_ this is a PR
+on:
+  push:
+    paths:
+      - docker/gpu/**
+      - .github/config/workflows/build-jupyter-workflow.yaml
+      - .github/config/workflows/build-jupyter-base-gpu-pr.yaml
+jobs:
+  gpu-base:
+    if: github.event_name == 'pull_request'
+    uses: ./.github/workflows/build-jupyter-workflow.yml
+    with:
+      image: gpu-base
+    secrets:
+      GHCR_TOKEN: ${{ secrets.GHCR_TOKEN }}

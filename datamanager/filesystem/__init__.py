@@ -8,7 +8,7 @@ import pyarrow.parquet as parquet
 import numpy as np
 from pandas import DataFrame, Series
 from ..exceptions import FileSystemError
-from ..utilities import infer_target_format
+from hypertrain.utilities import infer_target_format
 
 
 class FileSystem:
@@ -70,7 +70,6 @@ class FileSystem:
         self,
         storage_provider,
         volume_name,
-        volume_account=None,
         volume_region=None,
         access_key=None,
         secret_access_key=None,
@@ -83,7 +82,6 @@ class FileSystem:
         self.access_key = access_key
         self.secret_access_key = secret_access_key
         self.region = volume_region
-        self.account = volume_account
         self.session_token = session_token
         self.expiration = expiration
         if self.expiration is not None:
@@ -244,7 +242,7 @@ class FileSystem:
         ------
         FileSystemError
             Raises error for the following error codes:
-                "core 15" : Wrong credientials configured.
+                "code 15" : Wrong credientials configured.
                 "code 100" : Path doesn't exist in bucket or wrong region was
                 configured.
         """
