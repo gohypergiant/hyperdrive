@@ -428,7 +428,7 @@ Best Trial Hyperparameters: {self.optuna_study.best_trial.params}
         xgboost_string_length = len("xgboost.")
 
         if clf_name.count(".") == 1:
-            module = __import__("xgboost")
+            module = importlib.import_module("xgboost")
             function_name = clf_name[xgboost_string_length:]
         else:
             idx1 = clf_name.rfind(".")
