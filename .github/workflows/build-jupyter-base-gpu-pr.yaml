@@ -4,7 +4,7 @@ name: "PR Build - Base GPU Image"
 on:
   push:
     paths:
-      - docker/gpu/***
+      - docker/gpu/**
       - .github/config/workflows/build-jupyter-workflow.yaml
       - .github/config/workflows/build-jupyter-base-gpu-pr.yaml
 jobs:
