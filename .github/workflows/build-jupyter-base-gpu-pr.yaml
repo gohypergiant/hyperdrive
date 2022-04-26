@@ -1,0 +1,17 @@
+name: "PR Build - Base GPU Image"
+
+on:
+  pull_request:
+    branches:
+      - main
+  push:
+    branches:
+      - main
+
+jobs:
+  gpu-base:
+    uses: ./.github/workflows/build-jupyter-workflow.yml
+    with:
+      image: gpu-base
+    secrets:
+      GHCR_TOKEN: ${{ secrets.GHCR_TOKEN }}
