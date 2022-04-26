@@ -70,7 +70,6 @@ class FileSystem:
         self,
         storage_provider,
         volume_name,
-        volume_account=None,
         volume_region=None,
         access_key=None,
         secret_access_key=None,
@@ -83,7 +82,6 @@ class FileSystem:
         self.access_key = access_key
         self.secret_access_key = secret_access_key
         self.region = volume_region
-        self.account = volume_account
         self.session_token = session_token
         self.expiration = expiration
         if self.expiration is not None:
