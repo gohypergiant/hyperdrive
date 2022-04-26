@@ -433,8 +433,9 @@ Best Trial Hyperparameters: {self.optuna_study.best_trial.params}
         else:
             idx1 = clf_name.rfind(".")
             module_name = clf_name[xgboost_string_length:idx1]
+            xgboost_module_name = "xgboost" + "." + module_name
             function_name = clf_name[idx1 + 1 :]
-            module = getattr(__import__("xgboost"), module_name)
+            module = importlib.import_module(xgboost_module_name)
 
         if is_model:
             return getattr(module, function_name)(**hyperparams_for_current_model)
