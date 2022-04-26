@@ -1,10 +1,15 @@
-name: "Weekly Build - Base GPU Image"
+name: "Docker Build - Base GPU Image"
 
 on:
+  push:
+    branches:
+      - "stable"
+  pull_request:
+    branches:
+      - "stable"
   schedule:
-    # Weekly, at 03:00 on Monday UTC time
-    - cron: "0 3 * * 1"
-
+    # Weekly, at 04:00 on Monday UTC time
+    - cron: "0 4 * * 1"
   workflow_dispatch:
 
 jobs:
