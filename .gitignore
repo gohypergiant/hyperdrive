@@ -7,3 +7,4 @@
 .executor
 _jobs
 .vscode/
+__pycache__/
