@@ -1,9 +1,10 @@
-name: "Docker Build - Base GPU Image"
+name: "Weekly Build - Base GPU Image"
 
 on:
   schedule:
     # Weekly, at 03:00 on Monday UTC time
     - cron: "0 3 * * 1"
+
   workflow_dispatch:
 
 jobs:
