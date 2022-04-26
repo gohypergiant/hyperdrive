@@ -1,9 +1,7 @@
-from glob import glob
-from pathlib import Path
-from hddataclient import DataRepo
-import os
 import papermill
 import yaml
+from glob import glob
+from pathlib import Path
 
 
 class WalkerMethods:
@@ -87,13 +85,3 @@ class WalkerMethods:
         }
 
         return study_definition
-
-    def _prepare_data(self, job_name, study_definition):
-        datarepo = DataRepo(
-            description="Study as Data Repo",
-            volume_name=f"/home/jovyan/_jobs/{job_name}/",
-        )
-        features_df = datarepo.load_dataset(study_definition["features_source"])
-        target_df = datarepo.load_dataset(study_definition["target_source"])
-        join_id = study_definition["join_id"]
-        return features_df.merge(target_df, left_on=join_id, right_on=join_id)
