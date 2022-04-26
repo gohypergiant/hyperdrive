@@ -397,7 +397,7 @@ Best Trial Hyperparameters: {self.optuna_study.best_trial.params}
         sklearn_string_length = len("sklearn.")
         idx1 = clf_name.rfind(".")
         module_name = clf_name[sklearn_string_length:idx1]
-        sklearn_module_name = "sklearn" + "." + module_name
+        sklearn_module_name = "sklearn." + module_name
         function_name = clf_name[idx1 + 1 :]
         module = importlib.import_module(sklearn_module_name)
 
@@ -433,7 +433,7 @@ Best Trial Hyperparameters: {self.optuna_study.best_trial.params}
         else:
             idx1 = clf_name.rfind(".")
             module_name = clf_name[xgboost_string_length:idx1]
-            xgboost_module_name = "xgboost" + "." + module_name
+            xgboost_module_name = "xgboost." + module_name
             function_name = clf_name[idx1 + 1 :]
             module = importlib.import_module(xgboost_module_name)
 
