@@ -35,33 +35,9 @@ ARG LIBNVINFER=7.2.2-1
 ARG LIBNVINFER_MAJOR_VERSION=7
 ARG DEBIAN_FRONTEND=noninteractive
 
-# Needed for string substitution
-SHELL ["/bin/bash", "-c"]
-# Pick up some TF dependencies
-RUN bash -c "apt-get update && apt-get install -y --no-install-recommends \
-        build-essential \
-        curl \
-        libfreetype6-dev \
-        libhdf5-serial-dev \
-        libzmq3-dev \
-        pkg-config \
-        software-properties-common \
-        unzip"
-
-
-RUN bash -c "apt-get install -y --no-install-recommends \
-        cuda-command-line-tools-${CUDA/./-} \
-        libcublas-${CUDA/./-} \
-        cuda-nvrtc-${CUDA/./-} \
-        libcufft-${CUDA/./-}"
-
-RUN bash -c "apt-get install -y --no-install-recommends \
-        libcurand-${CUDA/./-} \
-        libcusolver-${CUDA/./-}"
-
-RUN bash -c "apt-get install -y --no-install-recommends \
-        libcusparse-${CUDA/./-} \
-        libcudnn8-${CUDNN}+cuda${CUDA}"
+COPY ./docker/install-cuda.sh .
+RUN ls -lah
+RUN ./install-cuda.sh
 
 # Install TensorRT if not building for PowerPC
 # NOTE: libnvinfer uses cuda11.1 versions
