@@ -45,19 +45,23 @@ RUN bash -c "apt-get update && apt-get install -y --no-install-recommends \
         libhdf5-serial-dev \
         libzmq3-dev \
         pkg-config \
+        software-properties-common \
         unzip"
 
 
-#RUN bash -c "apt-get install -y --no-install-recommends \
-#        software-properties-common \
-#        cuda-command-line-tools-${CUDA/./-} \
-#        libcublas-${CUDA/./-} \
-#        cuda-nvrtc-${CUDA/./-} \
-#        libcufft-${CUDA/./-} \
-#        libcurand-${CUDA/./-} \
-#        libcusolver-${CUDA/./-} \
-#        libcusparse-${CUDA/./-} \
-#        libcudnn8-${CUDNN}+cuda${CUDA}"
+RUN bash -c "apt-get install -y --no-install-recommends \
+        cuda-command-line-tools-${CUDA/./-} \
+        libcublas-${CUDA/./-} \
+        cuda-nvrtc-${CUDA/./-} \
+        libcufft-${CUDA/./-}"
+
+RUN bash -c "apt-get install -y --no-install-recommends \
+        libcurand-${CUDA/./-} \
+        libcusolver-${CUDA/./-}"
+
+RUN bash -c "apt-get install -y --no-install-recommends \
+        libcusparse-${CUDA/./-} \
+        libcudnn8-${CUDNN}+cuda${CUDA}"
 
 # Install TensorRT if not building for PowerPC
 # NOTE: libnvinfer uses cuda11.1 versions
