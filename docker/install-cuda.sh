@@ -10,11 +10,11 @@ apt-get install -y --no-install-recommends \
         pkg-config \
         software-properties-common \
         unzip \
-        cuda-command-line-tools-${CUDA/./-} \
-        libcublas-${CUDA/./-} \
-        cuda-nvrtc-${CUDA/./-} \
-        libcufft-${CUDA/./-} \
-        libcurand-${CUDA/./-} \
-        libcusolver-${CUDA/./-} \
-        libcusparse-${CUDA/./-}
+#        cuda-command-line-tools-${CUDA/./-} \
+#        libcublas-${CUDA/./-} \
+#        cuda-nvrtc-${CUDA/./-} \
+#        libcufft-${CUDA/./-} \
+#        libcurand-${CUDA/./-} \
+#        libcusolver-${CUDA/./-} \
+#        libcusparse-${CUDA/./-}
 #        libcudnn8-${CUDNN}+cuda${CUDA}
