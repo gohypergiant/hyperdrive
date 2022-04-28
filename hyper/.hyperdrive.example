@@ -1,0 +1,18 @@
+{
+  "configSchemaVersion":"pre-alpha",
+  "remotes": {
+    "firefly": {
+      "dev": {
+        "Url": "http://localhost:8000",
+        "HubToken": "foo",
+        "Username": "foo"
+      }
+    },
+    "ec2": {
+      "personal-aws": {
+        "AccessKey": "foo",
+        "Secret": "foo"
+      }
+    }
+  }
+}
