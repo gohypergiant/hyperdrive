@@ -21,6 +21,7 @@ type Manifest struct {
 	} `yaml:"training"`
 }
 
+
 func GetManifest(manifestPath string) Manifest {
 	var m Manifest
 	yamlFile, err := ioutil.ReadFile(manifestPath)
