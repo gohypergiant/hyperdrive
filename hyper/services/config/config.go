@@ -6,9 +6,16 @@ import (
 
 	"github.com/spf13/viper"
 )
+type RemoteType string
+const (
+	EC2 RemoteType = "ec2"
+	Firefly RemoteType = "firefly"
+)
 
-type RemoteConfiguration interface {
-	RemoteType string `mapstructure:"remote_type"`
+type RemoteConfiguration struct {
+	Type RemoteType `mapstructure:"remote_type"`
+	FireflyConfiguration FireflyRemoteConfiguration `mapstructure:"firefly"`
+	Ec2Configuration FireflyRemoteConfiguration `mapstructure:"ec2"`
 }
 type FireflyRemoteConfiguration struct {
 	Url      string `mapstructure:"url"`
@@ -17,14 +24,12 @@ type FireflyRemoteConfiguration struct {
 }
 type Ec2RemoteConfiguration struct {
 	AccessKey string `mapstructure:"access_key"`
-	Username string `mapstructure:"secret"`
+	Secret string `mapstructure:"secret"`
+	Region string `mapstructure:"region"`
 }
 type Configuration struct {
-	SchemaVersion string `mapstructure:"configSchemaVersion"`
-	Remotes struct {
-		Firefly map[string]FireflyRemoteConfiguration `mapstructure:"firefly"`
-		Ec2     map[string]Ec2RemoteConfiguration     `mapstructure:"ec2"`
-	} `mapstructure:"remotes"`
+	SchemaVersion string `mapstructure:"schema_version"`
+	Remotes map[string]RemoteConfiguration `mapstructure:"remotes"`
 }
 
 func GetConfig() Configuration {
@@ -37,8 +42,8 @@ func GetConfig() Configuration {
 	return config
 }
 
-func GetRemotes() map[string]FireflyRemoteConfiguration {
-	var remotesMap map[string]FireflyRemoteConfiguration
+func GetRemotes() map[string]RemoteConfiguration {
+	var remotesMap map[string]RemoteConfiguration
 	err := viper.UnmarshalKey("remotes", &remotesMap)
 	if err != nil {
 		fmt.Println(err)
@@ -46,11 +51,11 @@ func GetRemotes() map[string]FireflyRemoteConfiguration {
 	}
 	return remotesMap
 }
-func GetRemote(name string) FireflyRemoteConfiguration {
+func GetRemote(name string) RemoteConfiguration {
 	remotes := GetRemotes()
 	return remotes[name]
 }
-func UpdateRemote(name string, configuration FireflyRemoteConfiguration) {
+func UpdateRemote(name string, configuration RemoteConfiguration) {
 	var config Configuration
 	err := viper.Unmarshal(&config)
 	if err != nil {
@@ -58,7 +63,7 @@ func UpdateRemote(name string, configuration FireflyRemoteConfiguration) {
 		os.Exit(1)
 	}
 	if config.Remotes == nil {
-		config.Remotes = make(map[string]FireflyRemoteConfiguration)
+		config.Remotes = make(map[string]RemoteConfiguration)
 	}
 	config.Remotes[name] = configuration
 	viper.Set("remotes", config.Remotes)
