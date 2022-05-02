@@ -21,7 +21,7 @@ var remotesListCmd = &cobra.Command{
 		remotesMap := config.GetRemotes()
 		for name, config := range remotesMap {
 			fmt.Println("remote: ", name)
-			fmt.Println("    url: ", config.Url)
+			fmt.Println("    url: ", config.FireflyConfiguration.Url)
 		}
 	},
 }
@@ -133,7 +133,10 @@ var initCmd = &cobra.Command{
 		if token == "" {
 			token = getToken()
 		}
-		config.UpdateRemote(remoteName, config.RemoteConfiguration{Url: url, Username: username, HubToken: token})
+		config.UpdateRemote(remoteName, config.RemoteConfiguration{
+			Type:                 config.Firefly,
+			FireflyConfiguration: config.FireflyRemoteConfiguration{Url: url, Username: username, HubToken: token},
+		})
 		fmt.Printf("Added %s remote at %s", remoteName, url)
 	},
 }
