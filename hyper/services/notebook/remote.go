@@ -24,20 +24,32 @@ func (s RemoteNotebookService) Start(flavor string, pullImage bool, jupyterBrows
 	imageOptions := GetNotebookImageOptions(flavor)
 	name := GetNotebookName(s.ManifestPath)
 	fmt.Println("Starting remote notebook instance")
-	firefly.StartServer(s.RemoteConfiguration, name, imageOptions.Profile)
+	if s.RemoteConfiguration.Type == config.Firefly {
+		firefly.StartServer(s.RemoteConfiguration.FireflyConfiguration, name, imageOptions.Profile)
+	} else {
+		fmt.Println("Not Implemented")
+	}
 }
 func (s RemoteNotebookService) List() {
 
-	resp := firefly.ListServers(s.RemoteConfiguration)
+	if s.RemoteConfiguration.Type == config.Firefly {
+		resp := firefly.ListServers(s.RemoteConfiguration.FireflyConfiguration)
 
-	for name, info := range resp.Servers {
-		fmt.Println(fmt.Sprintf("%s:", name))
-		fmt.Println("URL: ", info.URL)
+		for name, info := range resp.Servers {
+			fmt.Println(fmt.Sprintf("%s:", name))
+			fmt.Println("URL: ", info.URL)
+		}
+	} else {
+		fmt.Println("Not Implemented")
 	}
 }
 func (s RemoteNotebookService) Stop(identifier string) {
 	name := GetNotebookName(s.ManifestPath)
-	firefly.StopServer(s.RemoteConfiguration, name)
+	if s.RemoteConfiguration.Type == config.Firefly {
+		firefly.StopServer(s.RemoteConfiguration.FireflyConfiguration, name)
+	} else {
+		fmt.Println("Not Implemented")
+	}
 }
 func (s RemoteNotebookService) UploadTrainingJobData() {
 
@@ -51,12 +63,12 @@ func (s RemoteNotebookService) UploadTrainingJobData() {
 	fmt.Println("Uploading features data")
 	//upload data
 	featuresDataFilePath := strings.TrimLeft(manifestConfig.Training.Data.Features.Source, "./")
-	firefly.UploadData(s.RemoteConfiguration, notebookName, featuresDataFilePath, fmt.Sprintf("%s/%s", studyRoot, featuresDataFilePath))
+	firefly.UploadData(s.RemoteConfiguration.FireflyConfiguration, notebookName, featuresDataFilePath, fmt.Sprintf("%s/%s", studyRoot, featuresDataFilePath))
 	fmt.Println("Uploading target data")
 	targetDataFilePath := strings.TrimLeft(manifestConfig.Training.Data.Target.Source, "./")
-	firefly.UploadData(s.RemoteConfiguration, notebookName, targetDataFilePath, fmt.Sprintf("%s/%s", studyRoot, targetDataFilePath))
+	firefly.UploadData(s.RemoteConfiguration.FireflyConfiguration, notebookName, targetDataFilePath, fmt.Sprintf("%s/%s", studyRoot, targetDataFilePath))
 	fmt.Println("Uploading Study Manifest")
-	firefly.UploadData(s.RemoteConfiguration, notebookName, s.ManifestPath, fmt.Sprintf("%s/_study.yaml", studyRoot))
+	firefly.UploadData(s.RemoteConfiguration.FireflyConfiguration, notebookName, s.ManifestPath, fmt.Sprintf("%s/_study.yaml", studyRoot))
 
 	fmt.Println("Upload complete")
 }
@@ -75,7 +87,7 @@ func (s RemoteNotebookService) WaitForTrainingToComplete(timeout int) {
 	fmt.Println()
 	for i := 0; i <= timeout; i++ {
 		if i%3 == 0 || i == timeout {
-			status := firefly.GetTrainingStatus(s.RemoteConfiguration, notebookName, studyRoot)
+			status := firefly.GetTrainingStatus(s.RemoteConfiguration.FireflyConfiguration, notebookName, studyRoot)
 			if status == firefly.TrainingComplete {
 				fmt.Println()
 				fmt.Println("Training completed")
@@ -108,7 +120,7 @@ func (s RemoteNotebookService) DownloadHyperpack() {
 	notebookName := GetNotebookName(s.ManifestPath)
 	savePath := s.GetHyperpackSavePath()
 	fmt.Println("Downloading hyperpack from remote")
-	base64File := firefly.DownloadFile(s.RemoteConfiguration, notebookName, hyperpackPath)
+	base64File := firefly.DownloadFile(s.RemoteConfiguration.FireflyConfiguration, notebookName, hyperpackPath)
 	decodedFile, err := base64.StdEncoding.DecodeString(base64File)
 
 	fmt.Println(fmt.Sprintf("Saving to %s", savePath))
