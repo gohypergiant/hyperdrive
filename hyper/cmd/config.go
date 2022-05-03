@@ -33,10 +33,10 @@ var configCmd = &cobra.Command{
 }
 
 var remoteName string
-var url string
-var username string
-var token string
-var remoteType config.RemoteType
+var fireflyUrl string
+var fireflyUsername string
+var fireflyToken string
+var remoteTypeInput string
 
 func getUsername() string {
 
@@ -117,56 +117,76 @@ func getToken() string {
 	return result
 
 }
-func getFireflyConfig() RemoteConfiguration {
+func getFireflyConfig() config.RemoteConfiguration {
 
-		if url == "" {
-			url = getUrl()
-		}
-		if username == "" {
-			username = getUsername()
-		}
-		if token == "" {
-			token = getToken()
-		}
-		return config.RemoteConfiguration{
-			Type:                 config.Firefly,
-			FireflyConfiguration: config.FireflyRemoteConfiguration{Url: url, Username: username, HubToken: token},
-		}
+	if fireflyUrl == "" {
+		fireflyUrl = getUrl()
+	}
+	if fireflyUsername == "" {
+		fireflyUsername = getUsername()
+	}
+	if fireflyToken == "" {
+		fireflyToken = getToken()
+	}
+	return config.RemoteConfiguration{
+		Type:                 config.Firefly,
+		FireflyConfiguration: config.FireflyRemoteConfiguration{Url: fireflyUrl, Username: fireflyUsername, HubToken: fireflyToken},
+	}
 
 }
 func getConfigType() config.RemoteType {
-	return config.Firefly
+	if remoteTypeInput == "" {
+		prompt := promptui.Select{
+			Label: "Choose a remote type",
+			Items: config.ValidRemoteTypes,
+		}
+		_, remoteTypeInput, err := prompt.Run()
+		if err != nil {
+			fmt.Println(err)
+			os.Exit(1)
+		}
+		return config.RemoteType(remoteTypeInput)
+	}
+	if remoteTypeInput == string(config.Firefly) {
+		return config.Firefly
+	}
+	if remoteTypeInput == string(config.EC2) {
+		return config.EC2
+	}
+
+	fmt.Println("Invalid or unsupported remote type")
+	os.Exit(1)
+	return (config.RemoteType(remoteTypeInput))
 }
 
 var initCmd = &cobra.Command{
 	Use:   "init",
 	Short: "Initialize Config",
 	Run: func(cmd *cobra.Command, args []string) {
-		var remoteConfig config.RemoteConfiguration 
+		var remoteConfig config.RemoteConfiguration
 		if remoteName == "" {
 			remoteName = getRemoteName()
 		}
-		if remoteType == "" {
-			remoteName = getConfigType()
-		}
+		remoteType := getConfigType()
 		switch remoteType {
 		case config.Firefly:
+			fallthrough
 		default:
 			remoteConfig = getFireflyConfig()
-			break;
+			fmt.Printf("Adding %s remote at %s", remoteName, fireflyUrl)
+			break
 		}
 
 		config.UpdateRemote(remoteName, remoteConfig)
-		fmt.Printf("Added %s remote at %s", remoteName, url)
 	},
 }
 
 func init() {
 	initCmd.Flags().StringVar(&remoteName, "remoteName", "", "Name of the remote for the config")
-	initCmd.Flags().StringVar(&remoteType, "remoteType")
-	initCmd.Flags().StringVar(&url, "url", "", "URL to the remote")
-	initCmd.Flags().StringVar(&username, "username", "", "Username for the remote")
-	initCmd.Flags().StringVar(&token, "token", "", "token for the remote")
+	initCmd.Flags().StringVarP(&remoteTypeInput, "remoteType", "r", "", "Remote type [firefly|ec2]")
+	initCmd.Flags().StringVar(&fireflyUrl, "fireflyUrl", "", "URL to the firefly remote")
+	initCmd.Flags().StringVar(&fireflyUsername, "fireflyUsername", "", "Username for the firefly remote")
+	initCmd.Flags().StringVar(&fireflyToken, "fireflyToken", "", "token for the firefly remote")
 	rootCmd.AddCommand(configCmd)
 	configCmd.AddCommand(initCmd)
 	configCmd.AddCommand(remotesCmd)

@@ -11,25 +11,29 @@ const (
 	EC2 RemoteType = "ec2"
 	Firefly RemoteType = "firefly"
 )
+var ValidRemoteTypes = []RemoteType {
+	Firefly, 
+	EC2,
+}
 
 type RemoteConfiguration struct {
-	Type RemoteType `mapstructure:"remote_type"`
-	FireflyConfiguration FireflyRemoteConfiguration `mapstructure:"firefly"`
-	Ec2Configuration FireflyRemoteConfiguration `mapstructure:"ec2"`
+	Type RemoteType `mapstructure:"remote_type" json:"remote_type"`
+	FireflyConfiguration FireflyRemoteConfiguration `mapstructure:"firefly" json:"firefly"`
+	Ec2Configuration Ec2RemoteConfiguration `mapstructure:"ec2" json:"ec2"`
 }
 type FireflyRemoteConfiguration struct {
-	Url      string `mapstructure:"url"`
-	HubToken string `mapstructure:"hub_token"`
-	Username string `mapstructure:"username"`
+	Url      string `mapstructure:"url" json:"url"`
+	HubToken string `mapstructure:"hub_token" json:"hub_token"`
+	Username string `mapstructure:"username" json:"username"`
 }
 type Ec2RemoteConfiguration struct {
-	AccessKey string `mapstructure:"access_key"`
-	Secret string `mapstructure:"secret"`
-	Region string `mapstructure:"region"`
+	AccessKey string `mapstructure:"access_key" json:"access_key"`
+	Secret string `mapstructure:"secret" json:"secret"`
+	Region string `mapstructure:"region" json:"region"`
 }
 type Configuration struct {
-	SchemaVersion string `mapstructure:"schema_version"`
-	Remotes map[string]RemoteConfiguration `mapstructure:"remotes"`
+	SchemaVersion string `mapstructure:"schema_version" json:"schema_version"`
+	Remotes map[string]RemoteConfiguration `mapstructure:"remotes" json:"remotes"`
 }
 
 func GetConfig() Configuration {
