@@ -1,21 +1,21 @@
 {
-  "schema_version":"pre-alpha",
+  "schema_version": "pre-alpha",
   "remotes": {
-      "dev": {
-        "remote_type": "firefly",
-        "firefly":{
+    "dev": {
+      "remote_type": "firefly",
+      "firefly": {
         "url": "http://localhost:8000",
         "hub_token": "foo",
         "username": "foo"
-        }
-      },
-      "personal-aws": {
-        "remote_type": "ec2",
-        "ec2": {
+      }
+    },
+    "personal-aws": {
+      "remote_type": "ec2",
+      "ec2": {
         "access_key": "foo",
         "secret": "foo",
         "region": "us-east-2"
-        }
       }
+    }
   }
 }
