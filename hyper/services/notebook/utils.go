@@ -29,13 +29,13 @@ func GetNotebookImageOptions(flavor string) ImageOptions {
 	switch flavor {
 	case "huggingface-pytorch":
 		return ImageOptions{
-			Image:   "ghcr.io/gohypergiant/hypergiant-jupyter:cpu-huggingface-pytorch",
+			Image:   "ghcr.io/gohypergiant/hyperdrive-jupyter:cpu-huggingface-pytorchstable",
 			RepoTag: "hypergiant-jupyter-cpu-huggingface-pytorch",
 			Profile: "hugging-face-pytorch-cpu",
 		}
 	case "huggingface-tensorflow":
 		return ImageOptions{
-			Image:   "ghcr.io/gohypergiant/hypergiant-jupyter:cpu-huggingface-tensorflow",
+			Image:   "ghcr.io/gohypergiant/hyperdrive-jupyter:cpu-huggingface-tensorflowstable",
 			RepoTag: "hypergiant-jupyter-cpu-huggingface-tensorflow",
 			Profile: "hugging-face-tensorflow-cpu",
 		}
@@ -47,19 +47,19 @@ func GetNotebookImageOptions(flavor string) ImageOptions {
 		}
 	case "spark":
 		return ImageOptions{
-			Image:   "ghcr.io/gohypergiant/hypergiant-jupyter:cpu-spark",
+			Image:   "ghcr.io/gohypergiant/hyperdrive-jupyter:cpu-sparkstable",
 			RepoTag: "hypergiant-jupyter-cpu-spark",
 			Profile: "spark-cpu",
 		}
 	case "tensorflow":
 		return ImageOptions{
-			Image:   "ghcr.io/gohypergiant/hypergiant-jupyter:cpu-tensorflow",
+			Image:   "ghcr.io/gohypergiant/hyperdrive-jupyter:cpu-tensorflowstable",
 			RepoTag: "hypergiant-jupyter-cpu-tensorflow",
 			Profile: "tensorflow-cpu",
 		}
 	case "xgboost":
 		return ImageOptions{
-			Image:   "ghcr.io/gohypergiant/hypergiant-jupyter:cpu-xgboost",
+			Image:   "ghcr.io/gohypergiant/hyperdrive-jupyter:cpu-xgbooststable",
 			RepoTag: "hypergiant-jupyter-cpu-xgboost",
 			Profile: "xgboost-cpu",
 		}
