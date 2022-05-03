@@ -29,7 +29,7 @@ var (
 )
 
 type LocalNotebookService struct {
-	ManifestPath string
+	ManifestPath  string
 	S3Credentials S3Credentials
 }
 
@@ -50,6 +50,7 @@ func (s LocalNotebookService) Start(flavor string, pullImage bool, jupyterBrowse
 	name := GetNotebookName("local")
 	hostIP := "127.0.0.1"
 	execute := false
+	projectName := manifest.GetProjectName(s.ManifestPath)
 
 	imageOptions := GetNotebookImageOptions("local")
 	clientImages, _ := dockerClient.ListImages()
@@ -58,6 +59,7 @@ func (s LocalNotebookService) Start(flavor string, pullImage bool, jupyterBrowse
 		fmt.Sprintf("AWS_ACCESS_KEY_ID=%s", s.S3Credentials.AccessKey),
 		fmt.Sprintf("AWS_SECRET_ACCESS_KEY=%s", s.S3Credentials.AccessSecret),
 		fmt.Sprintf("AWS_DEFAULT_REGION=%s", s.S3Credentials.Region),
+		fmt.Sprintf("HYPER_PROJECT_NAME=%s", projectName),
 	}
 	for _, clientImage := range clientImages {
 		for _, tag := range clientImage.RepoTags {
