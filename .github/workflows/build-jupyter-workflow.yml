@@ -82,7 +82,7 @@ jobs:
         id: meta
         uses: crazy-max/ghaction-docker-meta@v2
         with:
-          images: ghcr.io/${{ github.repository_owner }}/hypergiant-jupyter
+          images: ghcr.io/${{ github.repository_owner }}/hyperdrive-jupyter
           labels: |
             maintainer=@gohypergiant
             org.opencontainers.image.title=Hyperdrive Notebooks Base Image
