@@ -36,6 +36,7 @@ var remoteName string
 var url string
 var username string
 var token string
+var remoteType config.RemoteType
 
 func getUsername() string {
 
@@ -116,14 +117,8 @@ func getToken() string {
 	return result
 
 }
+func getFireflyConfig() RemoteConfiguration {
 
-var initCmd = &cobra.Command{
-	Use:   "init",
-	Short: "Initialize Config",
-	Run: func(cmd *cobra.Command, args []string) {
-		if remoteName == "" {
-			remoteName = getRemoteName()
-		}
 		if url == "" {
 			url = getUrl()
 		}
@@ -133,16 +128,42 @@ var initCmd = &cobra.Command{
 		if token == "" {
 			token = getToken()
 		}
-		config.UpdateRemote(remoteName, config.RemoteConfiguration{
+		return config.RemoteConfiguration{
 			Type:                 config.Firefly,
 			FireflyConfiguration: config.FireflyRemoteConfiguration{Url: url, Username: username, HubToken: token},
-		})
+		}
+
+}
+func getConfigType() config.RemoteType {
+	return config.Firefly
+}
+
+var initCmd = &cobra.Command{
+	Use:   "init",
+	Short: "Initialize Config",
+	Run: func(cmd *cobra.Command, args []string) {
+		var remoteConfig config.RemoteConfiguration 
+		if remoteName == "" {
+			remoteName = getRemoteName()
+		}
+		if remoteType == "" {
+			remoteName = getConfigType()
+		}
+		switch remoteType {
+		case config.Firefly:
+		default:
+			remoteConfig = getFireflyConfig()
+			break;
+		}
+
+		config.UpdateRemote(remoteName, remoteConfig)
 		fmt.Printf("Added %s remote at %s", remoteName, url)
 	},
 }
 
 func init() {
 	initCmd.Flags().StringVar(&remoteName, "remoteName", "", "Name of the remote for the config")
+	initCmd.Flags().StringVar(&remoteType, "remoteType")
 	initCmd.Flags().StringVar(&url, "url", "", "URL to the remote")
 	initCmd.Flags().StringVar(&username, "username", "", "Username for the remote")
 	initCmd.Flags().StringVar(&token, "token", "", "token for the remote")
