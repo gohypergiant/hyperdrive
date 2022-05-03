@@ -41,7 +41,7 @@ func GetNotebookImageOptions(flavor string) ImageOptions {
 		}
 	case "pytorch":
 		return ImageOptions{
-			Image:   "ghcr.io/gohypergiant/hypergiant-jupyter:cpu-pytorch",
+			Image:   "ghcr.io/gohypergiant/hyperdrive-jupyter:cpu-pytorchstable",
 			RepoTag: "hypergiant-jupyter-cpu-pytorch",
 			Profile: "pytorch-cpu",
 		}
@@ -71,7 +71,7 @@ func GetNotebookImageOptions(flavor string) ImageOptions {
 		}
 	default:
 		return ImageOptions{
-			Image:   "ghcr.io/gohypergiant/hypergiant-jupyter:cpu-local",
+			Image:   "ghcr.io/gohypergiant/hyperdrive-jupyter:cpu-localstable",
 			RepoTag: "hypergiant-jupyter-cpu-local",
 			Profile: "minimal",
 		}
