@@ -40,6 +40,10 @@ var rootCmd = &cobra.Command{
 // Execute adds all child commands to the root command and sets flags appropriately.
 // This is called by main.main(). It only needs to happen once to the rootCmd.
 func Execute() {
+	_, err_comm := exec.Command("docker", "ps").Output()
+	if err_comm != nil {
+		fmt.Println("START DOCKER, YO!")
+	}
 	if err := rootCmd.Execute(); err != nil {
 		fmt.Println(err)
 		os.Exit(1)
