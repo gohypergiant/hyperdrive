@@ -42,7 +42,7 @@ var rootCmd = &cobra.Command{
 func Execute() {
 	_, err_comm := exec.Command("docker", "ps").Output()
 	if err_comm != nil {
-		fmt.Println("START DOCKER, YO!")
+		fmt.Println("Docker is not running. Please install or start Docker.")
 		os.Exit(1)
 	}
 	if err := rootCmd.Execute(); err != nil {
