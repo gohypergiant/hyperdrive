@@ -43,6 +43,7 @@ func Execute() {
 	_, err_comm := exec.Command("docker", "ps").Output()
 	if err_comm != nil {
 		fmt.Println("START DOCKER, YO!")
+		os.Exit(1)
 	}
 	if err := rootCmd.Execute(); err != nil {
 		fmt.Println(err)
