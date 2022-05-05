@@ -12,9 +12,10 @@
     "personal-aws": {
       "remote_type": "ec2",
       "ec2": {
-        "access_key": "foo",
-        "secret": "foo",
-        "region": "us-east-2"
+        "profile": "hyperdrive",
+        "access_key": "",
+        "secret": "",
+        "region": ""
       }
     }
   }

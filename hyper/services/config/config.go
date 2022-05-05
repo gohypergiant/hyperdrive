@@ -6,20 +6,23 @@ import (
 
 	"github.com/spf13/viper"
 )
+
 type RemoteType string
+
 const (
-	EC2 RemoteType = "ec2"
+	EC2     RemoteType = "ec2"
 	Firefly RemoteType = "firefly"
 )
-var ValidRemoteTypes = []RemoteType {
-	Firefly, 
+
+var ValidRemoteTypes = []RemoteType{
+	Firefly,
 	EC2,
 }
 
 type RemoteConfiguration struct {
-	Type RemoteType `mapstructure:"remote_type" json:"remote_type"`
+	Type                 RemoteType                 `mapstructure:"remote_type" json:"remote_type"`
 	FireflyConfiguration FireflyRemoteConfiguration `mapstructure:"firefly" json:"firefly"`
-	EC2Configuration EC2RemoteConfiguration `mapstructure:"ec2" json:"ec2"`
+	EC2Configuration     EC2RemoteConfiguration     `mapstructure:"ec2" json:"ec2"`
 }
 type FireflyRemoteConfiguration struct {
 	Url      string `mapstructure:"url" json:"url"`
@@ -27,13 +30,14 @@ type FireflyRemoteConfiguration struct {
 	Username string `mapstructure:"username" json:"username"`
 }
 type EC2RemoteConfiguration struct {
+	Profile   string `mapstructure:"profile" json:"profile"`
 	AccessKey string `mapstructure:"access_key" json:"access_key"`
-	Secret string `mapstructure:"secret" json:"secret"`
-	Region string `mapstructure:"region" json:"region"`
+	Secret    string `mapstructure:"secret" json:"secret"`
+	Region    string `mapstructure:"region" json:"region"`
 }
 type Configuration struct {
-	SchemaVersion string `mapstructure:"schema_version" json:"schema_version"`
-	Remotes map[string]RemoteConfiguration `mapstructure:"remotes" json:"remotes"`
+	SchemaVersion string                         `mapstructure:"schema_version" json:"schema_version"`
+	Remotes       map[string]RemoteConfiguration `mapstructure:"remotes" json:"remotes"`
 }
 
 func GetConfig() Configuration {
