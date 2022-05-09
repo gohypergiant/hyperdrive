@@ -51,17 +51,28 @@ threat_detection
 
 1. Create a local jupyter server by running this command in a terminal/bash session:
 ```bash
-hyper jupyter
+hyper jupyter --browser
 ```
 
-1. When Step 6 is finished, you will see a message telling you which port Jupyter Lab is running on. Make note of the port number. The message will look something like this (with the exception of the port number):
+1. Train the Model
 ```bash
-Jupyter Lab Now Running via Docker Container 5433bddb4d on port 50491
+hyper train
 ```
 
-1. Open a web browser (e.g., Chrome, Firefox, MS Edge)
-
-1. In the address bar, navigate to the Jupyter Lab session by typing in the following into the address bar. We will be using the port number from Step 7:
+1. Retrieve the hyperpack
+```bash
+cp ../_jobs/threat_detection/threat_detection.hyperpack.zip .
 ```
-localhost:[PORT_NUMBER_FROM_STEP_7]
+
+1. Run the prediction server
+```bash
+hyper hyperpackage run
+```
+
+1. Submit a prediction
+```
+curl -X 'POST' \
+  http://127.0.0.1:PORT_OF_YOUR_SERVER_HERE/predict \
+  -H 'accept: application/json' \
+   -d '[ 22.6734323 , 133.87953978,  71.25881828,  24.74618134]'
 ```
