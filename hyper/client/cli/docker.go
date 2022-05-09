@@ -16,7 +16,6 @@ limitations under the License.
 package cli
 
 import (
-	"bufio"
 	"context"
 	"fmt"
 	"os"
@@ -173,7 +172,7 @@ ADD {{.StudyPath}} study.hyperpackage.zip
 RUN unzip ./study.hyperpackage.zip -d /hyperpackage
 
 FROM ghcr.io/gohypergiant/gohypergiant/mlsdk-fast-app:stable
-COPY --from=builder /hyperpackage /hyperpackage 
+COPY --from=builder /hyperpackage /hyperpackage
 `
 
 	file, err := os.OpenFile(savePath, os.O_WRONLY|os.O_CREATE|os.O_TRUNC, 0600)
@@ -217,9 +216,10 @@ func (dockerClient *DockerClient) BuildImage(dockerfilePath string, tags []strin
 		fmt.Println(err)
 		os.Exit(1)
 	}
-	scanner := bufio.NewScanner(res.Body)
-	for scanner.Scan() {
-		fmt.Println(scanner.Text())
+	termFd, isTerm := term.GetFdInfo(os.Stderr)
+	err = jsonmessage.DisplayJSONMessagesStream(res.Body, os.Stderr, termFd, isTerm, nil)
+	if err != nil {
+		fmt.Println(err)
+		os.Exit(1)
 	}
-
 }
