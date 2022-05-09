@@ -7,6 +7,7 @@ import (
 	"strings"
 	"time"
 
+	"github.com/gohypergiant/hyperdrive/hyper/client/aws"
 	"github.com/gohypergiant/hyperdrive/hyper/client/firefly"
 	"github.com/gohypergiant/hyperdrive/hyper/client/manifest"
 	"github.com/gohypergiant/hyperdrive/hyper/services/config"
@@ -39,6 +40,8 @@ func (s RemoteNotebookService) List() {
 			fmt.Println(fmt.Sprintf("%s:", name))
 			fmt.Println("URL: ", info.URL)
 		}
+	}else if s.RemoteConfiguration.Type == config.EC2 {
+		aws.ListServers(s.RemoteConfiguration.EC2Configuration);
 	} else {
 		fmt.Println("Not Implemented")
 	}
