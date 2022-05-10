@@ -12,6 +12,8 @@ func GetNotebookName(manifestPath string) string {
 	if manifestPath == "local" {
 		cwdPath, _ := os.Getwd()
 		cwdName := strings.Replace(cwdPath, "/", "-", -1)
+		cwdName = strings.Replace(cwdName, "\\", "-", -1)
+		cwdName = strings.Replace(cwdName, ":", "-", -1)
 		return fmt.Sprintf("firefly-jupyter-%s", cwdName)
 	}
 	return manifest.GetName(manifestPath)

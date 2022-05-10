@@ -26,7 +26,6 @@ type Manifest struct {
 	} `yaml:"training"`
 }
 
-
 func GetManifest(manifestPath string) Manifest {
 	var m Manifest
 	yamlFile, err := ioutil.ReadFile(manifestPath)
@@ -41,6 +40,8 @@ func GetManifest(manifestPath string) Manifest {
 	if m.ProjectName == "" {
 		cwdPath, _ := os.Getwd()
 		cwdName := strings.Replace(cwdPath, "/", "-", -1)
+		cwdName = strings.Replace(cwdName, "\\", "-", -1)
+		cwdName = strings.Replace(cwdName, ":", "-", -1)
 		m.ProjectName = fmt.Sprintf("firefly-jupyter-%s", cwdName)
 
 		str := string(yamlFile)
