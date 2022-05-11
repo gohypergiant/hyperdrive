@@ -168,9 +168,10 @@ func (s LocalNotebookService) Stop(mountPoint string) {
 
 	runningContainers, _ := dockerClient.ListContainers(false)
 	containerId := ""
+	name := GetNotebookName("local")
 
 	for _, runningContainer := range runningContainers {
-		if runningContainer.Mounts[0].Source[9:] == mountPoint {
+		if strings.ToLower(runningContainer.Names[0][1:]) == strings.ToLower(name) {
 			containerId = runningContainer.ID
 			break
 		}

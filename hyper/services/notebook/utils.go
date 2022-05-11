@@ -16,7 +16,7 @@ func GetNotebookName(manifestPath string) string {
 		cwdName = strings.Replace(cwdName, ":", "-", -1)
 		return fmt.Sprintf("firefly-jupyter-%s", cwdName)
 	}
-	return manifest.GetName(manifestPath)
+	return strings.ToLower(manifest.GetName(manifestPath))
 }
 
 type ImageOptions struct {
