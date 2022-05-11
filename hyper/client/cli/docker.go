@@ -23,6 +23,7 @@ import (
 
 	"github.com/docker/docker/api/types"
 	"github.com/docker/docker/api/types/container"
+	"github.com/docker/docker/api/types/filters"
 	"github.com/docker/docker/client"
 	"github.com/docker/docker/pkg/archive"
 	"github.com/docker/docker/pkg/jsonmessage"
@@ -106,6 +107,7 @@ func (dockerClient *DockerClient) ExecuteContainer(containerID string, attach bo
 func (dockerClient *DockerClient) ListContainers(containerName string) ([]types.Container, error) {
 	containerListOptions := types.ContainerListOptions{}
 	if containerName != "" {
+		containerListOptions.Filters = filters.NewArgs()
 		containerListOptions.Filters.Add("name", containerName)
 	}
 	containers, err := dockerClient.cli.ContainerList(dockerClient.ctx, containerListOptions)
@@ -117,7 +119,7 @@ func (dockerClient *DockerClient) ListContainers(containerName string) ([]types.
 	return containers, err
 }
 func (dockerClient *DockerClient) ListAllRunningContainers() ([]types.Container, error) {
-return dockerClient.ListContainers("");
+	return dockerClient.ListContainers("")
 }
 
 func (dockerClient *DockerClient) ListImages() ([]types.ImageSummary, error) {
