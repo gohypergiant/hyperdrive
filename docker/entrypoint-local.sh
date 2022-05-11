@@ -18,9 +18,6 @@ cp -R /tmp/repo/data/yaml/test.yaml /home/jovyan/_jobs/executor-test/_study.yaml
 touch /home/jovyan/_jobs/low-code-demo/COMPLETED
 touch /home/jovyan/_jobs/auto-ml-demo/COMPLETED
 
-# Launch Executor Daemon
-ipython -m executor
-
 start-notebook.sh \
   --NotebookApp.token='' \
   --NotebookApp.password='' \
