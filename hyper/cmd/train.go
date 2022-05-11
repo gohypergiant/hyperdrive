@@ -18,7 +18,7 @@ package cmd
 
 import (
 	"fmt"
-
+	"os/exec"
 	"github.com/gohypergiant/hyperdrive/hyper/services/notebook"
 
 	"github.com/spf13/cobra"
@@ -36,6 +36,9 @@ var trainCmd = &cobra.Command{
 		fmt.Println("🚂choo choo🚂")
 		notebookService := notebook.NotebookService(RemoteName, manifestPath, s3AccessKey, s3AccessSecret, s3Region)
 		notebookService.UploadTrainingJobData()
+		if RemoteName == "" {
+			fmt.Println("TEST: should be local here")
+		}
 		fmt.Println("Training data uploaded, to look for a completed hyperpackage, use the fetch subcommand.")
 	},
 }
