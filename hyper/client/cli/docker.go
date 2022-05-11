@@ -19,12 +19,10 @@ import (
 	"context"
 	"fmt"
 	"os"
-	"strings"
 	"text/template"
 
 	"github.com/docker/docker/api/types"
 	"github.com/docker/docker/api/types/container"
-	"github.com/docker/docker/api/types/filters"
 	"github.com/docker/docker/client"
 	"github.com/docker/docker/pkg/archive"
 	"github.com/docker/docker/pkg/jsonmessage"
@@ -105,14 +103,10 @@ func (dockerClient *DockerClient) ExecuteContainer(containerID string, attach bo
 	}
 }
 
-func (dockerClient *DockerClient) ListContainers(currentDirOnly bool) ([]types.Container, error) {
+func (dockerClient *DockerClient) ListContainers(containerName string) ([]types.Container, error) {
 	containerListOptions := types.ContainerListOptions{}
-	if currentDirOnly {
-		cwdPath, _ := os.Getwd()
-		cwdName := strings.Replace(cwdPath, "/", "-", -1)
-		currentDirContainerName := fmt.Sprintf("firefly-jupyter-%s", cwdName)
-		containerListOptions.Filters = filters.NewArgs()
-		containerListOptions.Filters.Add("name", currentDirContainerName)
+	if containerName != "" {
+		containerListOptions.Filters.Add("name", containerName)
 	}
 	containers, err := dockerClient.cli.ContainerList(dockerClient.ctx, containerListOptions)
 
@@ -121,6 +115,9 @@ func (dockerClient *DockerClient) ListContainers(currentDirOnly bool) ([]types.C
 	}
 
 	return containers, err
+}
+func (dockerClient *DockerClient) ListAllRunningContainers() ([]types.Container, error) {
+return dockerClient.ListContainers("");
 }
 
 func (dockerClient *DockerClient) ListImages() ([]types.ImageSummary, error) {

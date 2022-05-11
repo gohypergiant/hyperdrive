@@ -1,8 +1,6 @@
 package notebook
 
 import (
-	"fmt"
-	"os"
 	"strings"
 
 	"github.com/gohypergiant/hyperdrive/hyper/client/manifest"

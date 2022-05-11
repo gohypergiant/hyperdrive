@@ -73,7 +73,7 @@ func (s LocalNotebookService) Start(flavor string, pullImage bool, jupyterBrowse
 		pullImage = true
 	}
 
-	runningContainers, _ := dockerClient.ListContainers(true)
+	runningContainers, _ := dockerClient.ListContainers(name)
 
 	if len(runningContainers) == 0 {
 		contConfig := &container.Config{
@@ -115,7 +115,7 @@ func (s LocalNotebookService) Start(flavor string, pullImage bool, jupyterBrowse
 		dockerClient.ExecuteContainer(id, false)
 	}
 
-	nowRunningContainers, _ := dockerClient.ListContainers(true)
+	nowRunningContainers, _ := dockerClient.ListContainers(name)
 
 	for _, runningContainer := range nowRunningContainers {
 		publicPort = runningContainer.Ports[0].PublicPort
@@ -142,7 +142,7 @@ func (s LocalNotebookService) List() {
 
 	dockerClient := cli.NewDockerClient()
 
-	runningContainers, _ := dockerClient.ListContainers(false)
+	runningContainers, _ := dockerClient.ListAllRunningContainers()
 
 	for _, runningContainer := range runningContainers {
 		for _, name := range runningContainer.Names {
@@ -166,7 +166,7 @@ func (s LocalNotebookService) List() {
 func (s LocalNotebookService) Stop(mountPoint string) {
 	dockerClient := cli.NewDockerClient()
 
-	runningContainers, _ := dockerClient.ListContainers(false)
+	runningContainers, _ := dockerClient.ListAllRunningContainers()
 	containerId := ""
 	name := GetNotebookName(s.ManifestPath)
 
@@ -293,7 +293,7 @@ func (s LocalNotebookService) FileExists(filepath string) bool {
 func (s LocalNotebookService) GetServerPath(rootPath string) string {
 	dockerClient := cli.NewDockerClient()
 
-	runningContainers, _ := dockerClient.ListContainers(false)
+	runningContainers, _ := dockerClient.ListAllRunningContainers()
 	containerMount := ""
 
 	for _, runningContainer := range runningContainers {
