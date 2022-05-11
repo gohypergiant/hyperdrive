@@ -18,6 +18,7 @@ package cmd
 
 import (
 	"fmt"
+	"os"
 	"os/exec"
 	"github.com/gohypergiant/hyperdrive/hyper/services/notebook"
 
