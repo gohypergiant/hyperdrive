@@ -38,6 +38,12 @@ var trainCmd = &cobra.Command{
 		notebookService.UploadTrainingJobData()
 		if RemoteName == "" {
 			fmt.Println("TEST: should be local here")
+			pmill, errPaper := exec.Command("papermill", "--version").Output()
+			if errPaper != nil {
+				fmt.Println("Papermill Error.")
+				os.Exit(1)
+			}
+			fmt.Println(pmill)
 		}
 		fmt.Println("Training data uploaded, to look for a completed hyperpackage, use the fetch subcommand.")
 	},
