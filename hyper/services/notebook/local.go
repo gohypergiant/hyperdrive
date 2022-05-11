@@ -47,7 +47,7 @@ func (s LocalNotebookService) Start(flavor string, pullImage bool, jupyterBrowse
 
 	dockerClient := cli.NewDockerClient()
 	cwdPath, _ := os.Getwd()
-	name := GetNotebookName("local")
+	name := GetNotebookName(s.ManifestPath)
 	hostIP := "127.0.0.1"
 	execute := false
 	projectName := manifest.GetProjectName(s.ManifestPath)
@@ -168,7 +168,7 @@ func (s LocalNotebookService) Stop(mountPoint string) {
 
 	runningContainers, _ := dockerClient.ListContainers(false)
 	containerId := ""
-	name := GetNotebookName("local")
+	name := GetNotebookName(s.ManifestPath)
 
 	for _, runningContainer := range runningContainers {
 		if strings.ToLower(runningContainer.Names[0][1:]) == strings.ToLower(name) {
