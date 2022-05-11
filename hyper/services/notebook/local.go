@@ -52,7 +52,7 @@ func (s LocalNotebookService) Start(flavor string, pullImage bool, jupyterBrowse
 	execute := false
 	projectName := manifest.GetProjectName(s.ManifestPath)
 
-	imageOptions := GetNotebookImageOptions("local")
+	imageOptions := GetNotebookImageOptions("dev")
 	clientImages, _ := dockerClient.ListImages()
 	inImageCache := false
 	env := []string{"JUPYTER_TOKEN=firefly",
