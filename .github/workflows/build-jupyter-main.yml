@@ -14,17 +14,13 @@ on:
     - cron: "0 4 * * 1"
   workflow_dispatch:
 jobs:
-  cpu-pytorch:
-    uses: ./.github/workflows/build-jupyter-workflow.yml
-    with:
-      image: cpu-pytorch
-      dockerfile: docker/Dockerfile.main
-    secrets:
-      GHCR_TOKEN: ${{ secrets.GHCR_TOKEN }}
-  cpu-local:
-    uses: ./.github/workflows/build-jupyter-workflow.yml
-    with:
-      image: cpu-local
-      dockerfile: docker/Dockerfile.main
-    secrets:
-      GHCR_TOKEN: ${{ secrets.GHCR_TOKEN }}
+  cpu:
+    strategy:
+      matrix:
+        image: [cpu-pytorch, cpu-local, cpu-test]
+      uses: ./.github/workflows/build-jupyter-workflow.yml
+      with:
+        image: ${{ matrix.image }}
+        dockerfile: docker/Dockerfile.main
+      secrets:
+        GHCR_TOKEN: ${{ secrets.GHCR_TOKEN }}

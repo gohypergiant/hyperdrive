@@ -34,6 +34,7 @@ RUN rm -rf executor
 USER jovyan
 RUN chmod +x /usr/local/bin/entrypoint-torch.sh
 RUN chmod +x /usr/local/bin/entrypoint-local.sh
+RUN chmod +x /usr/local/bin/entrypoint-test.sh
 
 
 ############################# CPU FIREFLY LOCAL ##############################
@@ -46,3 +47,9 @@ CMD ["sh","-c", "entrypoint-local.sh"]
 FROM cpu-firefly AS cpu-pytorch
 
 CMD ["sh","-c", "entrypoint-torch.sh"]
+
+############################# CPU FIREFLY TEST ##############################
+
+FROM cpu-firefly AS cpu-test
+
+CMD ["sh","-c", "entrypoint-test.sh"]
