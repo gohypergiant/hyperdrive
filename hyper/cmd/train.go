@@ -45,13 +45,14 @@ var trainCmd = &cobra.Command{
 			target := studyManifest.Training.Data.Target.Source
 			jobName := studyManifest.StudyName
 			studyYaml := fmt.Sprintf("/home/jovyan/_jobs/%s/_study.yaml", jobName)
+			notebookOutPath := fmt.Sprintf("/home/jovyan/_jobs/%s/outs.ipynb", jobName)
 
-			pmill, errPaper := exec.Command("papermill", "/home/jovyan/.executor/notebooks/executor-low-code.ipynb", "/home/jovyan/_jobs/threat_detection/outs.ipynb", "-p", "features", "data/object_data.json", "-p", "target", "data/label_data.csv", "-p", "job_name", "threat_detection", "-p", "study_yaml", "/home/jovyan/_jobs/threat_detection/_study.yaml").Output()
+			dockerComm, errPaper := exec.Command("docker", "exec", "038ee5d213a4", "papermill", "/home/jovyan/.executor/notebooks/executor-low-code.ipynb", notebookOutPath, "-p", "features", features, "-p", "target", target, "-p", "job_name", jobName, "-p", "study_yaml", studyYaml).Output()
 			if errPaper != nil {
 				fmt.Println("Papermill Error.")
 				os.Exit(1)
 			}
-			fmt.Println(pmill)
+			fmt.Println(dockerComm)
 		}
 		fmt.Println("Training data uploaded, to look for a completed hyperpackage, use the fetch subcommand.")
 	},
