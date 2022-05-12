@@ -39,7 +39,7 @@ var trainCmd = &cobra.Command{
 		notebookService.UploadTrainingJobData()
 		if RemoteName == "" {
 			fmt.Println("TEST: should be local here")
-			pmill, errPaper := exec.Command("papermill", "--version").Output()
+			pmill, errPaper := exec.Command("papermill", "/home/jovyan/.executor/notebooks/executor-low-code.ipynb", "/home/jovyan/_jobs/threat_detection/outs.ipynb", "-p", "features", "data/object_data.json", "-p", "target", "data/label_data.csv", "-p", "job_name", "threat_detection", "-p", "study_yaml", "/home/jovyan/_jobs/threat_detection/_study.yaml").Output()
 			if errPaper != nil {
 				fmt.Println("Papermill Error.")
 				os.Exit(1)
