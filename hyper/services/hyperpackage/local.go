@@ -61,7 +61,7 @@ func (s LocalHyperpackageService) Run(imageTag string) {
 	}
 	dockerClient.ExecuteContainer(id, false)
 
-	nowRunningContainers, _ := dockerClient.ListContainers(false)
+	nowRunningContainers, _ := dockerClient.ListAllRunningContainers()
 
 	for _, runningContainer := range nowRunningContainers {
 		if runningContainer.ID == id {
@@ -79,7 +79,7 @@ func (s LocalHyperpackageService) List() {
 	formattedPrefix := fmt.Sprintf("/%s_", HYPERPACK_CONTAINER_PREFIX)
 	prefixLength := len(formattedPrefix)
 
-	runningContainers, _ := dockerClient.ListContainers(false)
+	runningContainers, _ := dockerClient.ListAllRunningContainers()
 
 	for _, runningContainer := range runningContainers {
 		for _, name := range runningContainer.Names {
@@ -100,7 +100,7 @@ func (s LocalHyperpackageService) List() {
 func (s LocalHyperpackageService) Stop(name string) {
 	dockerClient := cli.NewDockerClient()
 
-	runningContainers, _ := dockerClient.ListContainers(false)
+	runningContainers, _ := dockerClient.ListAllRunningContainers()
 	containerId := ""
 	formattedName := fmt.Sprintf("/%s_%s", HYPERPACK_CONTAINER_PREFIX, name)
 
