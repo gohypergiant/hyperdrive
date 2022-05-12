@@ -1,5 +1,10 @@
 #!/bin/bash
 
+mkdir -p \
+  /home/jovyan/.executor
+
+cp -R /tmp/repo/data/notebooks /home/jovyan/.executor/notebooks
+
 # Launch Executor Daemon
 ipython -m executor
 
