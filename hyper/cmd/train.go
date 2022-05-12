@@ -20,6 +20,7 @@ import (
 	"fmt"
 	"os"
 	"os/exec"
+	"github.com/gohypergiant/hyperdrive/hyper/client/manifest"
 	"github.com/gohypergiant/hyperdrive/hyper/services/notebook"
 
 	"github.com/spf13/cobra"
@@ -38,7 +39,13 @@ var trainCmd = &cobra.Command{
 		notebookService := notebook.NotebookService(RemoteName, manifestPath, s3AccessKey, s3AccessSecret, s3Region)
 		notebookService.UploadTrainingJobData()
 		if RemoteName == "" {
-			fmt.Println("TEST: should be local here")
+			studyManifest := manifest.GetManifest(manifestPath)
+
+			features := studyManifest.Training.Data.Features.Source
+			target := studyManifest.Training.Data.Target.Source
+			jobName := studyManifest.StudyName
+			studyYaml := fmt.Sprintf("/home/jovyan/_jobs/%s/_study.yaml", jobName)
+
 			pmill, errPaper := exec.Command("papermill", "/home/jovyan/.executor/notebooks/executor-low-code.ipynb", "/home/jovyan/_jobs/threat_detection/outs.ipynb", "-p", "features", "data/object_data.json", "-p", "target", "data/label_data.csv", "-p", "job_name", "threat_detection", "-p", "study_yaml", "/home/jovyan/_jobs/threat_detection/_study.yaml").Output()
 			if errPaper != nil {
 				fmt.Println("Papermill Error.")
