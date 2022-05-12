@@ -38,6 +38,7 @@ var trainCmd = &cobra.Command{
 		fmt.Println("🚂choo choo🚂")
 		notebookService := notebook.NotebookService(RemoteName, manifestPath, s3AccessKey, s3AccessSecret, s3Region)
 		notebookService.UploadTrainingJobData()
+		fmt.Println("Training data uploaded.")
 		if RemoteName == "" {
 			studyManifest := manifest.GetManifest(manifestPath)
 
@@ -49,12 +50,11 @@ var trainCmd = &cobra.Command{
 
 			dockerComm, errPaper := exec.Command("docker", "exec", "038ee5d213a4", "papermill", "/home/jovyan/.executor/notebooks/executor-low-code.ipynb", notebookOutPath, "-p", "features", features, "-p", "target", target, "-p", "job_name", jobName, "-p", "study_yaml", studyYaml).Output()
 			if errPaper != nil {
-				fmt.Println("Papermill Error.")
+				fmt.Println("Docker exec or Papermill Error: ", errPaper)
 				os.Exit(1)
 			}
-			fmt.Println(dockerComm)
 		}
-		fmt.Println("Training data uploaded, to look for a completed hyperpackage, use the fetch subcommand.")
+		fmt.Println("To look for a completed hyperpackage, use the fetch subcommand.")
 	},
 }
 var fetchCmd = &cobra.Command{
