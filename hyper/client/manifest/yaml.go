@@ -26,7 +26,6 @@ type Manifest struct {
 	} `yaml:"training"`
 }
 
-
 func GetManifest(manifestPath string) Manifest {
 	var m Manifest
 	yamlFile, err := ioutil.ReadFile(manifestPath)
@@ -39,9 +38,7 @@ func GetManifest(manifestPath string) Manifest {
 	}
 
 	if m.ProjectName == "" {
-		cwdPath, _ := os.Getwd()
-		cwdName := strings.Replace(cwdPath, "/", "-", -1)
-		m.ProjectName = fmt.Sprintf("firefly-jupyter-%s", cwdName)
+		m.ProjectName = fmt.Sprintf("project-%s", generatePathNameString())
 
 		str := string(yamlFile)
 
@@ -53,8 +50,29 @@ func GetManifest(manifestPath string) Manifest {
 		}
 
 	}
+	if m.StudyName == "" {
+		m.StudyName = fmt.Sprintf("study-%s", generatePathNameString())
+
+		str := string(yamlFile)
+
+		updatedYAML := fmt.Sprintf("study_name: %s\n%s", m.StudyName, str)
+		err := ioutil.WriteFile(manifestPath, []byte(updatedYAML), 0)
+
+		if err != nil {
+			log.Printf("yamlFile.Write err   #%v ", err)
+		}
+
+	}
 
 	return m
+}
+func generatePathNameString() string {
+
+	cwdPath, _ := os.Getwd()
+	cwdName := strings.Replace(cwdPath, "/", "-", -1)
+	cwdName = strings.Replace(cwdName, "\\", "-", -1)
+	cwdName = strings.Replace(cwdName, ":", "-", -1)
+	return cwdName
 }
 
 func GetName(manifestPath string) string {
