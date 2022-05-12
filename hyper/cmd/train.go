@@ -38,6 +38,7 @@ var trainCmd = &cobra.Command{
 		fmt.Println("🚂choo choo🚂")
 		notebookService := notebook.NotebookService(RemoteName, manifestPath, s3AccessKey, s3AccessSecret, s3Region)
 		notebookService.UploadTrainingJobData()
+		fmt.Println("Ready to execute training...")
 
 		if RemoteName == "" {
 			fmt.Println("Executing local hypertraining...")
