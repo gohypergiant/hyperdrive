@@ -50,9 +50,12 @@ var trainCmd = &cobra.Command{
 			studyYaml := fmt.Sprintf("/home/jovyan/_jobs/%s/_study.yaml", jobName)
 			notebookOutPath := fmt.Sprintf("/home/jovyan/_jobs/%s/outs.ipynb", jobName)
 
-			_, errPaper := exec.Command("docker", "exec", containerName, "papermill", "/home/jovyan/.executor/notebooks/executor-low-code.ipynb", notebookOutPath, "-p", "features", features, "-p", "target", target, "-p", "job_name", jobName, "-p", "study_yaml", studyYaml).Output()
-			if errPaper != nil {
-				fmt.Println("Docker or Papermill Error: ", errPaper)
+			_, err := exec.Command("docker", "exec", containerName, "papermill",
+				"/home/jovyan/.executor/notebooks/executor-low-code.ipynb", notebookOutPath,
+				"-p", "features", features, "-p", "target", target, "-p", "job_name", jobName,
+				"-p", "study_yaml", studyYaml).Output()
+			if err != nil {
+				fmt.Println("Error with papermill execution in the docker container: ", err)
 				os.Exit(1)
 			}
 		}
