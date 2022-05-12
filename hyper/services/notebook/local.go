@@ -47,7 +47,7 @@ func (s LocalNotebookService) Start(flavor string, pullImage bool, jupyterBrowse
 
 	dockerClient := cli.NewDockerClient()
 	cwdPath, _ := os.Getwd()
-	name := GetNotebookName("local")
+	name := GetNotebookName(s.ManifestPath)
 	hostIP := "127.0.0.1"
 	execute := false
 	projectName := manifest.GetProjectName(s.ManifestPath)
@@ -73,7 +73,7 @@ func (s LocalNotebookService) Start(flavor string, pullImage bool, jupyterBrowse
 		pullImage = true
 	}
 
-	runningContainers, _ := dockerClient.ListContainers(true)
+	runningContainers, _ := dockerClient.ListContainers(name)
 
 	if len(runningContainers) == 0 {
 		contConfig := &container.Config{
@@ -115,7 +115,7 @@ func (s LocalNotebookService) Start(flavor string, pullImage bool, jupyterBrowse
 		dockerClient.ExecuteContainer(id, false)
 	}
 
-	nowRunningContainers, _ := dockerClient.ListContainers(true)
+	nowRunningContainers, _ := dockerClient.ListContainers(name)
 
 	for _, runningContainer := range nowRunningContainers {
 		publicPort = runningContainer.Ports[0].PublicPort
@@ -142,7 +142,7 @@ func (s LocalNotebookService) List() {
 
 	dockerClient := cli.NewDockerClient()
 
-	runningContainers, _ := dockerClient.ListContainers(false)
+	runningContainers, _ := dockerClient.ListAllRunningContainers()
 
 	for _, runningContainer := range runningContainers {
 		for _, name := range runningContainer.Names {
@@ -166,11 +166,12 @@ func (s LocalNotebookService) List() {
 func (s LocalNotebookService) Stop(mountPoint string) {
 	dockerClient := cli.NewDockerClient()
 
-	runningContainers, _ := dockerClient.ListContainers(false)
+	runningContainers, _ := dockerClient.ListAllRunningContainers()
 	containerId := ""
+	name := GetNotebookName(s.ManifestPath)
 
 	for _, runningContainer := range runningContainers {
-		if runningContainer.Mounts[0].Source[9:] == mountPoint {
+		if strings.ToLower(runningContainer.Names[0][1:]) == strings.ToLower(name) {
 			containerId = runningContainer.ID
 			break
 		}
@@ -292,7 +293,7 @@ func (s LocalNotebookService) FileExists(filepath string) bool {
 func (s LocalNotebookService) GetServerPath(rootPath string) string {
 	dockerClient := cli.NewDockerClient()
 
-	runningContainers, _ := dockerClient.ListContainers(false)
+	runningContainers, _ := dockerClient.ListAllRunningContainers()
 	containerMount := ""
 
 	for _, runningContainer := range runningContainers {
