@@ -19,6 +19,7 @@ import (
 	"context"
 	"fmt"
 	"os"
+	"os/exec"
 	"text/template"
 
 	"github.com/docker/docker/api/types"
@@ -77,9 +78,18 @@ func (dockerClient *DockerClient) CreateContainer(
 	return containerCreatedBody.ID, err
 }
 
-func (dockerClient *DockerClient) ExecuteContainer(containerID string, attach bool) {
+func (dockerClient *DockerClient) ExecuteContainer(containerID string, attach bool, requirements bool) {
 	if err := dockerClient.cli.ContainerStart(dockerClient.ctx, containerID, types.ContainerStartOptions{}); err != nil {
 		panic(err)
+	}
+
+	if requirements {
+		containerDestPath := fmt.Sprintf("%s:/home/jovyan", containerID)
+		_, err := exec.Command("docker", "cp", "requirements.txt", containerDestPath).Output()
+		if err != nil {
+			fmt.Println("Error with copying 'requirements.txt' file to container: ", err)
+			os.Exit(1)
+		}
 	}
 
 	if attach {

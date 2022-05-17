@@ -45,7 +45,6 @@ func (s LocalNotebookService) GetGitRoot() string {
 }
 
 func (s LocalNotebookService) Start(flavor string, pullImage bool, jupyterBrowser bool, requirements bool) {
-	fmt.Println("reqs flag: ", requirements)
 	dockerClient := cli.NewDockerClient()
 	cwdPath, _ := os.Getwd()
 	name := GetNotebookName(s.ManifestPath)
@@ -113,7 +112,7 @@ func (s LocalNotebookService) Start(flavor string, pullImage bool, jupyterBrowse
 	}
 
 	if execute {
-		dockerClient.ExecuteContainer(id, false)
+		dockerClient.ExecuteContainer(id, false, requirements)
 	}
 
 	nowRunningContainers, _ := dockerClient.ListContainers(name)
