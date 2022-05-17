@@ -25,6 +25,7 @@ var (
 	mountPoint     string
 	pullImage      bool
 	repoTag        string
+	reqsFileName   string
 	publicPort     uint16
 )
 
@@ -43,7 +44,7 @@ func (s LocalNotebookService) GetGitRoot() string {
 	return strings.TrimSpace(string(gitRoot))
 }
 
-func (s LocalNotebookService) Start(flavor string, pullImage bool, jupyterBrowser bool) {
+func (s LocalNotebookService) Start(flavor string, pullImage bool, jupyterBrowser bool, reqsFileName string) {
 
 	dockerClient := cli.NewDockerClient()
 	cwdPath, _ := os.Getwd()
@@ -100,7 +101,7 @@ func (s LocalNotebookService) Start(flavor string, pullImage bool, jupyterBrowse
 				},
 			},
 		}
-		createdId, err := dockerClient.CreateContainer(imageOptions.Image, name, contConfig, hostConfig, pullImage)
+		createdId, err := dockerClient.CreateContainer(imageOptions.Image, name, contConfig, hostConfig, pullImage, reqsFileName)
 		id = createdId
 		if err != nil {
 			fmt.Println(err)
