@@ -20,7 +20,7 @@ type RemoteNotebookService struct {
 	ManifestPath        string
 }
 
-func (s RemoteNotebookService) Start(flavor string, pullImage bool, jupyterBrowser bool, reqsFileName string) {
+func (s RemoteNotebookService) Start(flavor string, pullImage bool, jupyterBrowser bool, requirements bool) {
 
 	imageOptions := GetNotebookImageOptions(flavor)
 	name := GetNotebookName(s.ManifestPath)

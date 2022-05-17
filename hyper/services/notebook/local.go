@@ -25,7 +25,7 @@ var (
 	mountPoint     string
 	pullImage      bool
 	repoTag        string
-	reqsFileName   string
+	requirements   bool
 	publicPort     uint16
 )
 
@@ -44,8 +44,8 @@ func (s LocalNotebookService) GetGitRoot() string {
 	return strings.TrimSpace(string(gitRoot))
 }
 
-func (s LocalNotebookService) Start(flavor string, pullImage bool, jupyterBrowser bool, reqsFileName string) {
-
+func (s LocalNotebookService) Start(flavor string, pullImage bool, jupyterBrowser bool, requirements bool) {
+	fmt.Println("reqs flag: ", requirements)
 	dockerClient := cli.NewDockerClient()
 	cwdPath, _ := os.Getwd()
 	name := GetNotebookName(s.ManifestPath)
