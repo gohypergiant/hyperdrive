@@ -101,7 +101,7 @@ func (s LocalNotebookService) Start(flavor string, pullImage bool, jupyterBrowse
 				},
 			},
 		}
-		createdId, err := dockerClient.CreateContainer(imageOptions.Image, name, contConfig, hostConfig, pullImage, reqsFileName)
+		createdId, err := dockerClient.CreateContainer(imageOptions.Image, name, contConfig, hostConfig, pullImage)
 		id = createdId
 		if err != nil {
 			fmt.Println(err)
