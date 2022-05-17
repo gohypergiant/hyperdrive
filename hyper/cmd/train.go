@@ -18,7 +18,9 @@ package cmd
 
 import (
 	"fmt"
-
+	"os"
+	"os/exec"
+	"github.com/gohypergiant/hyperdrive/hyper/client/manifest"
 	"github.com/gohypergiant/hyperdrive/hyper/services/notebook"
 
 	"github.com/spf13/cobra"
@@ -36,7 +38,30 @@ var trainCmd = &cobra.Command{
 		fmt.Println("🚂choo choo🚂")
 		notebookService := notebook.NotebookService(RemoteName, manifestPath, s3AccessKey, s3AccessSecret, s3Region)
 		notebookService.UploadTrainingJobData()
-		fmt.Println("Training data uploaded, to look for a completed hyperpackage, use the fetch subcommand.")
+		fmt.Println("Ready to execute training...")
+
+		if RemoteName == "" {
+			fmt.Println("Executing local hypertraining...")
+
+			studyManifest := manifest.GetManifest(manifestPath)
+
+			features := studyManifest.Training.Data.Features.Source
+			target := studyManifest.Training.Data.Target.Source
+			containerName, jobName := studyManifest.StudyName, studyManifest.StudyName
+			studyYaml := fmt.Sprintf("/home/jovyan/_jobs/%s/_study.yaml", jobName)
+			notebookOutPath := fmt.Sprintf("/home/jovyan/_jobs/%s/outs.ipynb", jobName)
+
+			_, err := exec.Command("docker", "exec", containerName, "papermill",
+				"/home/jovyan/.executor/notebooks/executor-low-code.ipynb", notebookOutPath,
+				"-p", "features", features, "-p", "target", target, "-p", "job_name", jobName,
+				"-p", "study_yaml", studyYaml).Output()
+			if err != nil {
+				fmt.Println("Error with papermill execution in the docker container: ", err)
+				os.Exit(1)
+			}
+		}
+
+		fmt.Println("To look for a completed hyperpackage, use the fetch subcommand.")
 	},
 }
 var fetchCmd = &cobra.Command{
