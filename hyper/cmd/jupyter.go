@@ -27,6 +27,7 @@ var (
 	mountPoint     string
 	pullImage      bool
 	repoTag        string
+	reqsFileName   string
 	publicPort     uint16
 	s3AccessKey    string
 	s3AccessSecret string
@@ -38,7 +39,7 @@ var jupyterCmd = &cobra.Command{
 	Use:   "jupyter",
 	Short: "Run a local jupyter server",
 	Run: func(cmd *cobra.Command, args []string) {
-		notebook.NotebookService(RemoteName, manifestPath, s3AccessKey, s3AccessSecret, s3Region).Start(image, pullImage, jupyterBrowser)
+		notebook.NotebookService(RemoteName, manifestPath, s3AccessKey, s3AccessSecret, s3Region).Start(image, pullImage, jupyterBrowser, reqsFileName)
 	},
 }
 
@@ -66,6 +67,7 @@ func init() {
 	jupyterCmd.Flags().BoolVarP(&jupyterBrowser, "browser", "", false, "Open jupyter in a browser after launching")
 	jupyterCmd.Flags().BoolVarP(&pullImage, "pull", "", false, "Pull latest image before running")
 	jupyterCmd.Flags().StringVar(&image, "image", "pytorch", "Image to be used [huggingface-pytorch|huggingface-tensorflow|pytorch|spark|tensorflow|xgboost]")
+	jupyterCmd.Flags().StringVar(&reqsFileName, "requirements", "requirements.txt", "Install more packages from a requirements file")
 	jupyterCmd.Flags().StringVar(&s3AccessKey, "s3AccessKey", "", "S3 Access Key to use")
 	jupyterCmd.Flags().StringVar(&s3AccessSecret, "s3AccessSecret", "", "S3 Secret to use")
 	jupyterCmd.Flags().StringVar(&s3Region, "s3Region", "", "S3 Region")
