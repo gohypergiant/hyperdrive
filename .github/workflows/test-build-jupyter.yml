@@ -1,0 +1,23 @@
+name: "Test Docker Build "
+
+on:
+  push:
+    branches:
+      - "stable"
+      - "ci/test-image"
+    paths:
+      - "Dockerfile"
+  pull_request:
+    branches:
+      - "stable"
+  schedule:
+    # Weekly, at 04:00 on Monday UTC time
+    - cron: "0 4 * * 1"
+  workflow_dispatch:
+jobs:
+  cpu:
+    uses: ./.github/workflows/build-jupyter-workflow.yml
+    with:
+      image: cpu-test
+      test: true
+      dockerfile: docker/Dockerfile.main
