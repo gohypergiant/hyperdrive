@@ -90,6 +90,12 @@ func (dockerClient *DockerClient) ExecuteContainer(containerID string, attach bo
 			fmt.Println("Error with copying 'requirements.txt' file to container: ", err)
 			os.Exit(1)
 		}
+
+		_, errExec := exec.Command("docker", "exec", containerID, "pip", "install", "-r", "requirements.txt").Output()
+		if errExec != nil {
+			fmt.Println("Error with pip installing 'requirements.txt' file in container: ", errExec)
+			os.Exit(1)
+		}
 	}
 
 	if attach {
