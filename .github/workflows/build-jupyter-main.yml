@@ -18,9 +18,9 @@ jobs:
     strategy:
       matrix:
         image: [cpu-pytorch, cpu-local, cpu-test]
-      uses: ./.github/workflows/build-jupyter-workflow.yml
-      with:
-        image: ${{ matrix.image }}
-        dockerfile: docker/Dockerfile.main
-      secrets:
-        GHCR_TOKEN: ${{ secrets.GHCR_TOKEN }}
+    uses: ./.github/workflows/build-jupyter-workflow.yml
+    with:
+      image: ${{ matrix.image }}
+      dockerfile: docker/Dockerfile.main
+    secrets:
+      GHCR_TOKEN: ${{ secrets.GHCR_TOKEN }}

@@ -15,7 +15,7 @@ on:
     - cron: "0 4 * * 1"
   workflow_dispatch:
 jobs:
-  cpu:
+  cpu-test:
     uses: ./.github/workflows/build-jupyter-workflow.yml
     with:
       image: cpu-test
