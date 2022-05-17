@@ -5,9 +5,6 @@ mkdir -p \
 
 cp -R /tmp/repo/data/notebooks /home/jovyan/.executor/notebooks
 
-# Launch Executor Daemon
-ipython -m executor
-
 start-notebook.sh \
   --NotebookApp.token='' \
   --NotebookApp.password='' \
