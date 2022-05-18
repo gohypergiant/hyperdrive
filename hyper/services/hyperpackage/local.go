@@ -59,7 +59,7 @@ func (s LocalHyperpackageService) Run(imageTag string) {
 		fmt.Println(err)
 		os.Exit(1)
 	}
-	dockerClient.ExecuteContainer(id, false, false)
+	dockerClient.ExecuteContainer(id, false)
 
 	nowRunningContainers, _ := dockerClient.ListAllRunningContainers()
 

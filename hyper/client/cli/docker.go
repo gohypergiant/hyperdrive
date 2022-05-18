@@ -78,7 +78,7 @@ func (dockerClient *DockerClient) CreateContainer(
 	return containerCreatedBody.ID, err
 }
 
-func (dockerClient *DockerClient) ExecuteContainer(containerID string, attach bool, requirements bool) {
+func (dockerClient *DockerClient) ExecuteContainer(containerID string, attach bool) {
 	if err := dockerClient.cli.ContainerStart(dockerClient.ctx, containerID, types.ContainerStartOptions{}); err != nil {
 		panic(err)
 	}
