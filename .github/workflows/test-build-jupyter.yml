@@ -4,7 +4,6 @@ on:
   push:
     branches:
       - "stable"
-      - "ci/test-image"
     paths:
       - "Dockerfile"
   pull_request:
