@@ -21,6 +21,10 @@ on:
         required: false
         type: string
         default: docker/Dockerfile.base
+      test:
+        required: false
+        type: boolean
+        default: false
 
 jobs:
   build:
@@ -129,3 +133,10 @@ jobs:
       #     fail-build: false
       #     severity-cutoff: medium
       #     image: ghcr.io/${{ github.repository_owner }}/hypergiant-jupyter:${{ matrix.image }}
+
+      -
+        name: Test image
+        if: ${{ inputs.test }} == true
+        run: |
+          docker run ${{ inputes.image }}
+         

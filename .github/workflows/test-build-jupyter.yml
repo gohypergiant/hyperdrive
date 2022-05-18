@@ -1,4 +1,4 @@
-name: "Docker Build - Firefly CPU"
+name: "Test Docker Build "
 
 on:
   push:
@@ -14,13 +14,9 @@ on:
     - cron: "0 4 * * 1"
   workflow_dispatch:
 jobs:
-  cpu:
-    strategy:
-      matrix:
-        image: [cpu-pytorch, cpu-local, cpu-test]
+  cpu-test:
     uses: ./.github/workflows/build-jupyter-workflow.yml
     with:
-      image: ${{ matrix.image }}
+      image: cpu-test
+      test: true
       dockerfile: docker/Dockerfile.main
-    secrets:
-      GHCR_TOKEN: ${{ secrets.GHCR_TOKEN }}
