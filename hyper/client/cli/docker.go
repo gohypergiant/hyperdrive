@@ -83,21 +83,6 @@ func (dockerClient *DockerClient) ExecuteContainer(containerID string, attach bo
 		panic(err)
 	}
 
-	if requirements {
-		containerDestPath := fmt.Sprintf("%s:/home/jovyan", containerID)
-		_, err := exec.Command("docker", "cp", "requirements.txt", containerDestPath).Output()
-		if err != nil {
-			fmt.Println("Error with copying 'requirements.txt' file to container: ", err)
-			os.Exit(1)
-		}
-
-		_, errExec := exec.Command("docker", "exec", containerID, "pip", "install", "-r", "requirements.txt").Output()
-		if errExec != nil {
-			fmt.Println("Error with pip installing 'requirements.txt' file in container: ", errExec)
-			os.Exit(1)
-		}
-	}
-
 	if attach {
 		statusCh, errCh := dockerClient.cli.ContainerWait(dockerClient.ctx, containerID, container.WaitConditionNotRunning)
 		select {

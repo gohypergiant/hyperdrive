@@ -115,6 +115,21 @@ func (s LocalNotebookService) Start(flavor string, pullImage bool, jupyterBrowse
 		dockerClient.ExecuteContainer(id, false)
 	}
 
+	if requirements {
+		containerDestPath := fmt.Sprintf("%s:/home/jovyan", id)
+		_, err := exec.Command("docker", "cp", "requirements.txt", containerDestPath).Output()
+		if err != nil {
+			fmt.Println("Error with copying 'requirements.txt' file to container: ", err)
+			os.Exit(1)
+		}
+
+		_, errExec := exec.Command("docker", "exec", id, "pip", "install", "-r", "requirements.txt").Output()
+		if errExec != nil {
+			fmt.Println("Error with pip installing 'requirements.txt' file in container: ", errExec)
+			os.Exit(1)
+		}
+	}
+
 	nowRunningContainers, _ := dockerClient.ListContainers(name)
 
 	for _, runningContainer := range nowRunningContainers {
