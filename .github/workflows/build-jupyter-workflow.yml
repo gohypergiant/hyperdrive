@@ -29,13 +29,16 @@ on:
 jobs:
   build:
     runs-on: ubuntu-latest
+    strategy:
+      matrix:
+        image: ${{fromJson(input.image)}}
     steps:
       -
         name: Checkout
         uses: actions/checkout@v3
 
       - name: Create Dockerfile.gpu
-        if: ${{ inputs.image  == 'gpu-base' }}
+        if: ${{ matrix.image  == 'gpu-base' }}
         run: ./docker/gpu/create-gpu-dockerfile.sh && ls -la docker/gpu
 
 #       -
@@ -94,7 +97,7 @@ jobs:
             org.opencontainers.image.vendor=Hypergiant, LLC.
             org.opencontainers.image.source=${{github.server_url}}/${{github.repository}}
           flavor: |
-            prefix=${{ inputs.image }}
+            prefix=${{ matrix.image }}
           tags: |
             type=edge
             type=ref,event=branch
@@ -119,11 +122,11 @@ jobs:
           context: .
           platforms: linux/amd64,linux/arm64
           file: ${{ inputs.dockerfile }}
-          target: ${{ inputs.image }}
+          target: ${{ matrix.image }}
           cache-from: type=local,src=/tmp/.buildx-cache
           cache-to: type=local,dest=/tmp/.buildx-cache
           push: ${{ github.event_name != 'pull_request' }}
-          tags: ${{ steps.meta.outputs.tags}}, ghcr.io/gohypergiant/jupyter:${{ inputs.image }}
+          tags: ${{ steps.meta.outputs.tags}}, ghcr.io/gohypergiant/jupyter:${{ matrix.image }}
           labels: ${{ steps.meta.outputs.labels }}
 
       # -
@@ -138,5 +141,5 @@ jobs:
         name: Test image
         if: ${{ inputs.test }} == true
         run: |
-          docker run ${{ inputs.image }}
+          docker run ${{ matrix.image }}
          

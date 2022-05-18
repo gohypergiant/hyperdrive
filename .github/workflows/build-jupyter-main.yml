@@ -15,12 +15,9 @@ on:
   workflow_dispatch:
 jobs:
   cpu:
-    strategy:
-      matrix:
-        image: [cpu-pytorch, cpu-local, cpu-test]
     uses: ./.github/workflows/build-jupyter-workflow.yml
     with:
-      image: ${{ matrix.image }}
+      image: "[\"cpu-pytorch\", \"cpu-local\", \"cpu-test\"]"
       dockerfile: docker/Dockerfile.main
     secrets:
       GHCR_TOKEN: ${{ secrets.GHCR_TOKEN }}
