@@ -20,3 +20,5 @@ jobs:
       image: cpu-test
       test: true
       dockerfile: docker/Dockerfile.main
+    secrets:
+      GHCR_TOKEN: ${{ secrets.GHCR_TOKEN }}
