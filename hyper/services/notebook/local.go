@@ -128,6 +128,12 @@ func (s LocalNotebookService) Start(flavor string, pullImage bool, jupyterBrowse
 			fmt.Println("Error with pip installing 'requirements.txt' file in container: ", errExec)
 			os.Exit(1)
 		}
+
+		_, errCommit := exec.Command("docker", "commit", id, "new-image-here").Output()
+		if errCommit != nil {
+			fmt.Println("Error with docker commit: ", errCommit)
+			os.Exit(1)
+		}
 	}
 
 	nowRunningContainers, _ := dockerClient.ListContainers(name)

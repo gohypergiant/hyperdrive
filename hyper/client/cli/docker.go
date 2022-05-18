@@ -19,7 +19,6 @@ import (
 	"context"
 	"fmt"
 	"os"
-	"os/exec"
 	"text/template"
 
 	"github.com/docker/docker/api/types"
