@@ -139,7 +139,7 @@ jobs:
 
       -
         name: Test image
-        if: ${{ inputs.test }} == true
+        if: ${{ inputs.test }}
         run: |
           docker run ghcr.io/gohypergiant/jupyter:${{ matrix.image }}
          
