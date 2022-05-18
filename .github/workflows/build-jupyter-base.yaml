@@ -10,6 +10,6 @@ jobs:
   cpu-base:
     uses: ./.github/workflows/build-jupyter-workflow.yml
     with:
-      image: cpu-base
+      image: \"cpu-base\"
     secrets:
       GHCR_TOKEN: ${{ secrets.GHCR_TOKEN }}
