@@ -138,5 +138,5 @@ jobs:
         name: Test image
         if: ${{ inputs.test }} == true
         run: |
-          docker run ${{ inputes.image }}
+          docker run ${{ inputs.image }}
          
