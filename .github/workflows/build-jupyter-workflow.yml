@@ -31,7 +31,7 @@ jobs:
     runs-on: ubuntu-latest
     strategy:
       matrix:
-        image: ${{fromJson(input.image)}}
+        image: ${{fromJson(inputs.image)}}
     steps:
       -
         name: Checkout
