@@ -16,21 +16,25 @@ limitations under the License.
 package cmd
 
 import (
+	"github.com/gohypergiant/hyperdrive/hyper/client/aws"
+	"github.com/gohypergiant/hyperdrive/hyper/services/config"
 	"github.com/gohypergiant/hyperdrive/hyper/services/notebook"
 	"github.com/spf13/cobra"
 )
 
 var (
-	id             string
-	image          string
-	jupyterBrowser bool
-	mountPoint     string
-	pullImage      bool
-	repoTag        string
-	publicPort     uint16
-	s3AccessKey    string
-	s3AccessSecret string
-	s3Region       string
+	id              string
+	image           string
+	jupyterBrowser  bool
+	mountPoint      string
+	pullImage       bool
+	repoTag         string
+	publicPort      uint16
+	s3AccessKey     string
+	s3AccessSecret  string
+	s3Region        string
+	ec2InstanceType string
+	remoteProfile   string
 )
 
 // jupyterCmd represents the jupyter command
@@ -58,10 +62,20 @@ var jupyterStopCmd = &cobra.Command{
 	},
 }
 
+var jupyterCreateCmd = &cobra.Command{
+	Use:   "create",
+	Short: "Create EC2 instance to run a remote jupyter server",
+	Run: func(cmd *cobra.Command, args []string) {
+		remoteConfiguration := config.GetRemote(remoteProfile)
+		aws.CreateServer(remoteConfiguration.EC2Configuration, ec2InstanceType)
+	},
+}
+
 func init() {
 	rootCmd.AddCommand(jupyterCmd)
 	jupyterCmd.AddCommand(jupyterListCmd)
 	jupyterCmd.AddCommand(jupyterStopCmd)
+	jupyterCmd.AddCommand(jupyterCreateCmd)
 
 	jupyterCmd.Flags().BoolVarP(&jupyterBrowser, "browser", "", false, "Open jupyter in a browser after launching")
 	jupyterCmd.Flags().BoolVarP(&pullImage, "pull", "", false, "Pull latest image before running")
@@ -70,4 +84,6 @@ func init() {
 	jupyterCmd.Flags().StringVar(&s3AccessSecret, "s3AccessSecret", "", "S3 Secret to use")
 	jupyterCmd.Flags().StringVar(&s3Region, "s3Region", "", "S3 Region")
 	jupyterStopCmd.Flags().StringVar(&mountPoint, "mountPoint", "", "Mount Point of Jupyter Server to be stopped")
+	jupyterCreateCmd.Flags().StringVar(&ec2InstanceType, "ec2InstanceType", "", "The type of EC2 instance to be created")
+	jupyterCreateCmd.Flags().StringVar(&remoteProfile, "remoteProfile", "", "Name of the remote profiile to be used to create a EC2 instance")
 }
