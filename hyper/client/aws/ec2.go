@@ -12,13 +12,13 @@ import (
 	"github.com/aws/aws-sdk-go-v2/service/ec2/types"
 	"github.com/docker/distribution/uuid"
 
+	"github.com/gohypergiant/hyperdrive/hyper/client/manifest"
 	HyperConfig "github.com/gohypergiant/hyperdrive/hyper/services/config"
 )
 
 const HYPERDRIVE_TYPE_TAG string = "hyperdrive-type"
 const HYPERDRIVE_NAME_TAG string = "hyperdrive-name"
-const HYPERDRIVE_NAMESPACE_TAG string = "hyperdrive-namespace"
-const HYPERDRIVE_SECURITY_GROUP_NAME string = "Hyper-SecurityGroup"
+const HYPERDRIVE_SECURITY_GROUP_NAME string = "-SecurityGroup"
 
 type EC2DescribeInstancesAPI interface {
 	DescribeInstances(ctx context.Context,
@@ -196,11 +196,11 @@ func getOrCreateVPC(client *ec2.Client) string {
 	return vID
 }
 
-func GetSubnetID(r *ec2.DescribeSubnetsOutput) string {
+func GetSubnetID(r *ec2.DescribeSubnetsOutput, projectName string) string {
 
 	for _, s := range r.Subnets {
 		for _, t := range s.Tags {
-			if *t.Key == HYPERDRIVE_NAME_TAG && *t.Value == HYPERDRIVE_NAMESPACE_TAG {
+			if *t.Key == HYPERDRIVE_NAME_TAG && *t.Value == projectName {
 				return *s.SubnetId
 			}
 		}
@@ -208,7 +208,7 @@ func GetSubnetID(r *ec2.DescribeSubnetsOutput) string {
 	return ""
 }
 
-func getOrCreateSubnet(client *ec2.Client, vID string, region string) string {
+func getOrCreateSubnet(client *ec2.Client, vID string, region string, projectName string) string {
 
 	snDescribeInput := &ec2.DescribeSubnetsInput{
 		Filters: []types.Filter{
@@ -223,11 +223,11 @@ func getOrCreateSubnet(client *ec2.Client, vID string, region string) string {
 		panic("error when fetching subnets: " + err.Error())
 	}
 
-	snID := GetSubnetID(snDescribeResult)
+	snID := GetSubnetID(snDescribeResult, projectName)
 
 	if snID == "" {
 		fmt.Println("No Subnet found for VPC", vID)
-		fmt.Println("Creating subnet for project", HYPERDRIVE_NAMESPACE_TAG)
+		fmt.Println("Creating subnet for project", projectName)
 
 		tagSpecification := []types.TagSpecification{
 			{
@@ -239,7 +239,7 @@ func getOrCreateSubnet(client *ec2.Client, vID string, region string) string {
 					},
 					{
 						Key:   aws.String(HYPERDRIVE_NAME_TAG),
-						Value: aws.String(HYPERDRIVE_NAMESPACE_TAG),
+						Value: aws.String(projectName),
 					},
 					{
 						Key:   aws.String("owner"),
@@ -267,11 +267,11 @@ func getOrCreateSubnet(client *ec2.Client, vID string, region string) string {
 	return snID
 }
 
-func GetSecurityGroupId(r *ec2.DescribeSecurityGroupsOutput) string {
+func GetSecurityGroupId(r *ec2.DescribeSecurityGroupsOutput, projectName string) string {
 
 	for _, s := range r.SecurityGroups {
 		for _, t := range s.Tags {
-			if *t.Key == HYPERDRIVE_NAME_TAG && *t.Value == HYPERDRIVE_NAMESPACE_TAG {
+			if *t.Key == HYPERDRIVE_NAME_TAG && *t.Value == projectName {
 				return *s.GroupId
 			}
 		}
@@ -279,7 +279,7 @@ func GetSecurityGroupId(r *ec2.DescribeSecurityGroupsOutput) string {
 	return ""
 }
 
-func getOrCreateSecurityGroup(client *ec2.Client, vID string) string {
+func getOrCreateSecurityGroup(client *ec2.Client, vID string, projectName string) string {
 	var scID string
 
 	scDescribeInput := &ec2.DescribeSecurityGroupsInput{
@@ -295,11 +295,11 @@ func getOrCreateSecurityGroup(client *ec2.Client, vID string) string {
 		panic("error when fetching Security Groups: " + err.Error())
 	}
 
-	scID = GetSecurityGroupId(scDescribeResult)
+	scID = GetSecurityGroupId(scDescribeResult, projectName)
 
 	if scID == "" {
 		fmt.Println("No Security Group found on VPC", vID)
-		fmt.Println("Creating Security Group for project", HYPERDRIVE_NAMESPACE_TAG)
+		fmt.Println("Creating Security Group for project", projectName)
 
 		tagSpecification := []types.TagSpecification{
 			{
@@ -311,7 +311,7 @@ func getOrCreateSecurityGroup(client *ec2.Client, vID string) string {
 					},
 					{
 						Key:   aws.String(HYPERDRIVE_NAME_TAG),
-						Value: aws.String(HYPERDRIVE_NAMESPACE_TAG),
+						Value: aws.String(projectName),
 					},
 					{
 						Key:   aws.String("owner"),
@@ -322,7 +322,7 @@ func getOrCreateSecurityGroup(client *ec2.Client, vID string) string {
 		}
 
 		scInput := &ec2.CreateSecurityGroupInput{
-			GroupName:         aws.String(HYPERDRIVE_SECURITY_GROUP_NAME),
+			GroupName:         aws.String(projectName + HYPERDRIVE_SECURITY_GROUP_NAME),
 			Description:       aws.String("Security group for EC2 instances provisioned by hyper"),
 			VpcId:             aws.String(vID),
 			TagSpecifications: tagSpecification,
@@ -338,17 +338,22 @@ func getOrCreateSecurityGroup(client *ec2.Client, vID string) string {
 	return scID
 }
 
-func StartServer(remoteCfg HyperConfig.EC2RemoteConfiguration, ec2Type string) {
+func StartServer(manifestPath string, remoteCfg HyperConfig.EC2RemoteConfiguration, ec2Type string) {
 
 	client := GetEC2Client(remoteCfg)
+	projectName := manifest.GetProjectName(manifestPath)
+
+	if projectName == "" {
+		fmt.Println("EmptyProjectName: please specify a project_name on the manifest (", manifestPath, ")")
+	}
 
 	vpcID := getOrCreateVPC(client)
 	fmt.Println("VPC ID:", vpcID)
 
-	subnetID := getOrCreateSubnet(client, vpcID, remoteCfg.Region)
+	subnetID := getOrCreateSubnet(client, vpcID, remoteCfg.Region, projectName)
 	fmt.Println("Subnet ID:", subnetID)
 
-	securityGroupID := getOrCreateSecurityGroup(client, vpcID)
+	securityGroupID := getOrCreateSecurityGroup(client, vpcID, projectName)
 	fmt.Println("Security group ID:", securityGroupID)
 
 	minMaxCount := int32(1)
@@ -363,7 +368,7 @@ func StartServer(remoteCfg HyperConfig.EC2RemoteConfiguration, ec2Type string) {
 				},
 				{
 					Key:   aws.String(HYPERDRIVE_NAME_TAG),
-					Value: aws.String(HYPERDRIVE_NAMESPACE_TAG),
+					Value: aws.String(projectName),
 				},
 			},
 		},

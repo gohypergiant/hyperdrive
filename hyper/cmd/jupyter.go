@@ -67,7 +67,7 @@ var jupyterCreateCmd = &cobra.Command{
 	Short: "Create EC2 instance to run a remote jupyter server",
 	Run: func(cmd *cobra.Command, args []string) {
 		remoteConfiguration := config.GetRemote(remoteProfile)
-		aws.StartServer(remoteConfiguration.EC2Configuration, ec2InstanceType)
+		aws.StartServer(manifestPath, remoteConfiguration.EC2Configuration, ec2InstanceType)
 	},
 }
 
