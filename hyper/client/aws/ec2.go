@@ -353,14 +353,31 @@ func CreateServer(remoteCfg HyperConfig.EC2RemoteConfiguration, ec2Type string) 
 
 	minMaxCount := int32(1)
 
+	tagSpecification := []types.TagSpecification{
+		{
+			ResourceType: types.ResourceTypeVpc,
+			Tags: []types.Tag{
+				{
+					Key:   aws.String(HYPERDRIVE_TYPE_TAG),
+					Value: aws.String("true"),
+				},
+				{
+					Key:   aws.String(HYPERDRIVE_NAME_TAG),
+					Value: aws.String(HYPERDRIVE_NAMESPACE_TAG),
+				},
+			},
+		},
+	}
+
 	ec2Input := &ec2.RunInstancesInput{
-		DryRun:           aws.Bool(true),
-		ImageId:          aws.String("ami-e7527ed7"),
-		InstanceType:     types.InstanceTypeT2Micro,
-		MinCount:         &minMaxCount,
-		MaxCount:         &minMaxCount,
-		SecurityGroupIds: []string{securityGroupID},
-		SubnetId:         &subnetID,
+		DryRun:            aws.Bool(true),
+		ImageId:           aws.String("ami-e7527ed7"),
+		InstanceType:      types.InstanceTypeT2Micro,
+		MinCount:          &minMaxCount,
+		MaxCount:          &minMaxCount,
+		SecurityGroupIds:  []string{securityGroupID},
+		SubnetId:          &subnetID,
+		TagSpecifications: tagSpecification,
 	}
 
 	_, err := MakeInstance(context.TODO(), client, ec2Input)
