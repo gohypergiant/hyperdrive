@@ -431,12 +431,17 @@ func getOrCreateKeyPair(client *ec2.Client, projectName string) string {
 
 func StartServer(manifestPath string, remoteCfg HyperConfig.EC2RemoteConfiguration, ec2Type string) {
 
-	client := GetEC2Client(remoteCfg)
-	projectName := manifest.GetProjectName(manifestPath)
-
-	if projectName == "" {
-		fmt.Println("EmptyProjectName: please specify a project_name on the manifest (", manifestPath, ")")
+	if ec2Type == "" {
+		fmt.Println("EC2InstanceTypeNotFound: please specify a EC2 instance type using the flag --ec2InstanceType")
+		return
 	}
+	projectName := manifest.GetProjectName(manifestPath)
+	if projectName == "" {
+		fmt.Println("ProjectNameNotFound: please specify a project_name on the manifest (", manifestPath, ")")
+		return
+	}
+
+	client := GetEC2Client(remoteCfg)
 
 	vpcID := getOrCreateVPC(client)
 	fmt.Println("VPC ID:", vpcID)
@@ -470,7 +475,7 @@ func StartServer(manifestPath string, remoteCfg HyperConfig.EC2RemoteConfigurati
 	ec2Input := &ec2.RunInstancesInput{
 		DryRun:            aws.Bool(true),
 		ImageId:           aws.String("ami-e7527ed7"),
-		InstanceType:      types.InstanceTypeT2Micro,
+		InstanceType:      ec2Type,
 		MinCount:          &minMaxCount,
 		MaxCount:          &minMaxCount,
 		SecurityGroupIds:  []string{securityGroupID},
