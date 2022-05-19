@@ -60,6 +60,11 @@ type CreateSecurityGroupAPI interface {
 		params *ec2.CreateSecurityGroupInput,
 		optFns ...func(*ec2.Options)) (*ec2.CreateSecurityGroupOutput, error)
 }
+type AddSecurityGroupPermissionsAPI interface {
+	AuthorizeSecurityGroupIngress(ctx context.Context,
+		params *ec2.AuthorizeSecurityGroupIngressInput,
+		optFns ...func(*ec2.Options)) (*ec2.AuthorizeSecurityGroupIngressOutput, error)
+}
 type DescribeKeyPairsAPI interface {
 	DescribeKeyPairs(ctx context.Context,
 		params *ec2.DescribeKeyPairsInput,
@@ -148,6 +153,9 @@ func GetSecurityGroups(c context.Context, api DescribeSecurityGroupsAPI, input *
 }
 func MakeSecurityGroup(c context.Context, api CreateSecurityGroupAPI, input *ec2.CreateSecurityGroupInput) (*ec2.CreateSecurityGroupOutput, error) {
 	return api.CreateSecurityGroup(c, input)
+}
+func MakeSecurityGroupPermissions(c context.Context, api AddSecurityGroupPermissionsAPI, input *ec2.AuthorizeSecurityGroupIngressInput) (*ec2.AuthorizeSecurityGroupIngressOutput, error) {
+	return api.AuthorizeSecurityGroupIngress(c, input)
 }
 func GetKeyPairs(c context.Context, api DescribeKeyPairsAPI, input *ec2.DescribeKeyPairsInput) (*ec2.DescribeKeyPairsOutput, error) {
 	return api.DescribeKeyPairs(c, input)
@@ -344,12 +352,24 @@ func getOrCreateSecurityGroup(client *ec2.Client, vID string, projectName string
 			TagSpecifications: tagSpecification,
 		}
 
-		scResult, err := MakeSecurityGroup(context.TODO(), client, scInput)
+		scMakeResult, err := MakeSecurityGroup(context.TODO(), client, scInput)
 		if err != nil {
 			panic("error when creating the security group: " + err.Error())
 		}
 
-		scID = *scResult.GroupId
+		scID = *scMakeResult.GroupId
+
+		scPermissionsInput := &ec2.AuthorizeSecurityGroupIngressInput{
+			IpProtocol:                 aws.String("tcp"),
+			FromPort:                   aws.Int32(22),
+			ToPort:                     aws.Int32(22),
+			SourceSecurityGroupOwnerId: aws.String(scID),
+		}
+
+		_, err = MakeSecurityGroupPermissions(context.TODO(), client, scPermissionsInput)
+		if err != nil {
+			panic("error when adding permissions to the security group: " + err.Error())
+		}
 	}
 	return scID
 }
