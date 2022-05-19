@@ -60,6 +60,16 @@ type CreateSecurityGroupAPI interface {
 		params *ec2.CreateSecurityGroupInput,
 		optFns ...func(*ec2.Options)) (*ec2.CreateSecurityGroupOutput, error)
 }
+type DescribeKeyPairsAPI interface {
+	DescribeKeyPairs(ctx context.Context,
+		params *ec2.DescribeKeyPairsInput,
+		optFns ...func(*ec2.Options)) (*ec2.DescribeKeyPairsOutput, error)
+}
+type CreateKeyPairAPI interface {
+	CreateKeyPair(ctx context.Context,
+		params *ec2.CreateKeyPairInput,
+		optFns ...func(*ec2.Options)) (*ec2.CreateKeyPairOutput, error)
+}
 
 func GetInstances(c context.Context, api EC2DescribeInstancesAPI, input *ec2.DescribeInstancesInput) (*ec2.DescribeInstancesOutput, error) {
 	return api.DescribeInstances(c, input)
@@ -133,11 +143,17 @@ func GetSubnets(c context.Context, api DescribeSubnetsAPI, input *ec2.DescribeSu
 func MakeSubnet(c context.Context, api CreateSubnetAPI, input *ec2.CreateSubnetInput) (*ec2.CreateSubnetOutput, error) {
 	return api.CreateSubnet(c, input)
 }
+func GetSecurityGroups(c context.Context, api DescribeSecurityGroupsAPI, input *ec2.DescribeSecurityGroupsInput) (*ec2.DescribeSecurityGroupsOutput, error) {
+	return api.DescribeSecurityGroups(c, input)
+}
 func MakeSecurityGroup(c context.Context, api CreateSecurityGroupAPI, input *ec2.CreateSecurityGroupInput) (*ec2.CreateSecurityGroupOutput, error) {
 	return api.CreateSecurityGroup(c, input)
 }
-func GetSecurityGroups(c context.Context, api DescribeSecurityGroupsAPI, input *ec2.DescribeSecurityGroupsInput) (*ec2.DescribeSecurityGroupsOutput, error) {
-	return api.DescribeSecurityGroups(c, input)
+func GetKeyPairs(c context.Context, api DescribeKeyPairsAPI, input *ec2.DescribeKeyPairsInput) (*ec2.DescribeKeyPairsOutput, error) {
+	return api.DescribeKeyPairs(c, input)
+}
+func MakeKeyPair(c context.Context, api CreateKeyPairAPI, input *ec2.CreateKeyPairInput) (*ec2.CreateKeyPairOutput, error) {
+	return api.CreateKeyPair(c, input)
 }
 func GetHyperVpcId(r *ec2.DescribeVpcsOutput) string {
 
@@ -337,6 +353,61 @@ func getOrCreateSecurityGroup(client *ec2.Client, vID string, projectName string
 	}
 	return scID
 }
+func getKeyPairName(r *ec2.DescribeKeyPairsOutput, projectName string) string {
+
+	for _, s := range r.KeyPairs {
+		for _, t := range s.Tags {
+			if *t.Key == HYPERDRIVE_NAME_TAG && *t.Value == projectName {
+				return *s.KeyName
+			}
+		}
+	}
+	return ""
+}
+
+func getOrCreateKeyPair(client *ec2.Client, projectName string) string {
+
+	describeInput := &ec2.DescribeKeyPairsInput{
+		IncludePublicKey: aws.Bool(true),
+	}
+
+	kpDescribeResult, err := GetKeyPairs(context.TODO(), client, describeInput)
+	if err != nil {
+		panic("error when fetching key pairs: " + err.Error())
+	}
+	keyName := getKeyPairName(kpDescribeResult, projectName)
+
+	if keyName == "" {
+		tagSpecification := []types.TagSpecification{
+			{
+				ResourceType: types.ResourceTypeSubnet,
+				Tags: []types.Tag{
+					{
+						Key:   aws.String(HYPERDRIVE_TYPE_TAG),
+						Value: aws.String("true"),
+					},
+					{
+						Key:   aws.String(HYPERDRIVE_NAME_TAG),
+						Value: aws.String(projectName),
+					},
+				},
+			},
+		}
+
+		keyName = projectName + "-hyperdrive"
+		makeInput := &ec2.CreateKeyPairInput{
+			KeyName:           aws.String(keyName),
+			TagSpecifications: tagSpecification,
+		}
+
+		_, err := MakeKeyPair(context.TODO(), client, makeInput)
+		if err != nil {
+			panic("error when creating key pair: " + err.Error())
+		}
+
+	}
+	return keyName
+}
 
 func StartServer(manifestPath string, remoteCfg HyperConfig.EC2RemoteConfiguration, ec2Type string) {
 
@@ -357,6 +428,8 @@ func StartServer(manifestPath string, remoteCfg HyperConfig.EC2RemoteConfigurati
 	fmt.Println("Security group ID:", securityGroupID)
 
 	minMaxCount := int32(1)
+
+	keyName := getOrCreateKeyPair(client, projectName)
 
 	tagSpecification := []types.TagSpecification{
 		{
@@ -382,6 +455,7 @@ func StartServer(manifestPath string, remoteCfg HyperConfig.EC2RemoteConfigurati
 		MaxCount:          &minMaxCount,
 		SecurityGroupIds:  []string{securityGroupID},
 		SubnetId:          &subnetID,
+		KeyName:           aws.String(keyName),
 		TagSpecifications: tagSpecification,
 	}
 
