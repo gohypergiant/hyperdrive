@@ -475,7 +475,7 @@ func StartServer(manifestPath string, remoteCfg HyperConfig.EC2RemoteConfigurati
 	ec2Input := &ec2.RunInstancesInput{
 		DryRun:            aws.Bool(true),
 		ImageId:           aws.String("ami-e7527ed7"),
-		InstanceType:      ec2Type,
+		InstanceType:      types.InstanceType(*aws.String(ec2Type)),
 		MinCount:          &minMaxCount,
 		MaxCount:          &minMaxCount,
 		SecurityGroupIds:  []string{securityGroupID},
