@@ -338,7 +338,7 @@ func getOrCreateSecurityGroup(client *ec2.Client, vID string) string {
 	return scID
 }
 
-func CreateServer(remoteCfg HyperConfig.EC2RemoteConfiguration, ec2Type string) {
+func StartServer(remoteCfg HyperConfig.EC2RemoteConfiguration, ec2Type string) {
 
 	client := GetEC2Client(remoteCfg)
 
