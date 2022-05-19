@@ -29,34 +29,36 @@ type EC2CreateInstanceAPI interface {
 	RunInstances(ctx context.Context,
 		params *ec2.RunInstancesInput,
 		optFns ...func(*ec2.Options)) (*ec2.RunInstancesOutput, error)
-
-	CreateTags(ctx context.Context,
-		params *ec2.CreateTagsInput,
-		optFns ...func(*ec2.Options)) (*ec2.CreateTagsOutput, error)
-
+}
+type DescribeVpcsAPI interface {
 	DescribeVpcs(ctx context.Context,
 		params *ec2.DescribeVpcsInput,
 		optFns ...func(*ec2.Options)) (*ec2.DescribeVpcsOutput, error)
-
+}
+type CreateVpcAPI interface {
 	CreateVpc(ctx context.Context,
 		params *ec2.CreateVpcInput,
 		optFns ...func(*ec2.Options)) (*ec2.CreateVpcOutput, error)
-
-	CreateSecurityGroup(ctx context.Context,
-		params *ec2.CreateSecurityGroupInput,
-		optFns ...func(*ec2.Options)) (*ec2.CreateSecurityGroupOutput, error)
-
-	DescribeSecurityGroups(ctx context.Context,
-		params *ec2.DescribeSecurityGroupsInput,
-		optFns ...func(*ec2.Options)) (*ec2.DescribeSecurityGroupsOutput, error)
-
+}
+type DescribeSubnetsAPI interface {
 	DescribeSubnets(ctx context.Context,
 		params *ec2.DescribeSubnetsInput,
 		optFns ...func(*ec2.Options)) (*ec2.DescribeSubnetsOutput, error)
-
+}
+type CreateSubnetAPI interface {
 	CreateSubnet(ctx context.Context,
 		params *ec2.CreateSubnetInput,
 		optFns ...func(*ec2.Options)) (*ec2.CreateSubnetOutput, error)
+}
+type DescribeSecurityGroupsAPI interface {
+	DescribeSecurityGroups(ctx context.Context,
+		params *ec2.DescribeSecurityGroupsInput,
+		optFns ...func(*ec2.Options)) (*ec2.DescribeSecurityGroupsOutput, error)
+}
+type CreateSecurityGroupAPI interface {
+	CreateSecurityGroup(ctx context.Context,
+		params *ec2.CreateSecurityGroupInput,
+		optFns ...func(*ec2.Options)) (*ec2.CreateSecurityGroupOutput, error)
 }
 
 func GetInstances(c context.Context, api EC2DescribeInstancesAPI, input *ec2.DescribeInstancesInput) (*ec2.DescribeInstancesOutput, error) {
@@ -119,26 +121,23 @@ func GetHyperName(i types.Instance) string {
 func MakeInstance(c context.Context, api EC2CreateInstanceAPI, input *ec2.RunInstancesInput) (*ec2.RunInstancesOutput, error) {
 	return api.RunInstances(c, input)
 }
-func MakeTags(c context.Context, api EC2CreateInstanceAPI, input *ec2.CreateTagsInput) (*ec2.CreateTagsOutput, error) {
-	return api.CreateTags(c, input)
-}
-func GetVpcs(c context.Context, api EC2CreateInstanceAPI, input *ec2.DescribeVpcsInput) (*ec2.DescribeVpcsOutput, error) {
+func GetVpcs(c context.Context, api DescribeVpcsAPI, input *ec2.DescribeVpcsInput) (*ec2.DescribeVpcsOutput, error) {
 	return api.DescribeVpcs(c, input)
 }
-func MakeVpc(c context.Context, api EC2CreateInstanceAPI, input *ec2.CreateVpcInput) (*ec2.CreateVpcOutput, error) {
+func MakeVpc(c context.Context, api CreateVpcAPI, input *ec2.CreateVpcInput) (*ec2.CreateVpcOutput, error) {
 	return api.CreateVpc(c, input)
 }
-func MakeSecurityGroup(c context.Context, api EC2CreateInstanceAPI, input *ec2.CreateSecurityGroupInput) (*ec2.CreateSecurityGroupOutput, error) {
-	return api.CreateSecurityGroup(c, input)
-}
-func GetSecurityGroups(c context.Context, api EC2CreateInstanceAPI, input *ec2.DescribeSecurityGroupsInput) (*ec2.DescribeSecurityGroupsOutput, error) {
-	return api.DescribeSecurityGroups(c, input)
-}
-func GetSubnets(c context.Context, api EC2CreateInstanceAPI, input *ec2.DescribeSubnetsInput) (*ec2.DescribeSubnetsOutput, error) {
+func GetSubnets(c context.Context, api DescribeSubnetsAPI, input *ec2.DescribeSubnetsInput) (*ec2.DescribeSubnetsOutput, error) {
 	return api.DescribeSubnets(c, input)
 }
-func MakeSubnet(c context.Context, api EC2CreateInstanceAPI, input *ec2.CreateSubnetInput) (*ec2.CreateSubnetOutput, error) {
+func MakeSubnet(c context.Context, api CreateSubnetAPI, input *ec2.CreateSubnetInput) (*ec2.CreateSubnetOutput, error) {
 	return api.CreateSubnet(c, input)
+}
+func MakeSecurityGroup(c context.Context, api CreateSecurityGroupAPI, input *ec2.CreateSecurityGroupInput) (*ec2.CreateSecurityGroupOutput, error) {
+	return api.CreateSecurityGroup(c, input)
+}
+func GetSecurityGroups(c context.Context, api DescribeSecurityGroupsAPI, input *ec2.DescribeSecurityGroupsInput) (*ec2.DescribeSecurityGroupsOutput, error) {
+	return api.DescribeSecurityGroups(c, input)
 }
 func GetHyperVpcId(r *ec2.DescribeVpcsOutput) string {
 
