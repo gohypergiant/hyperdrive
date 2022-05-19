@@ -208,7 +208,7 @@ func GetSubnetID(r *ec2.DescribeSubnetsOutput) string {
 	return ""
 }
 
-func getOrCreateSubnet(client *ec2.Client, vID string) string {
+func getOrCreateSubnet(client *ec2.Client, vID string, region string) string {
 
 	snDescribeInput := &ec2.DescribeSubnetsInput{
 		Filters: []types.Filter{
@@ -252,7 +252,7 @@ func getOrCreateSubnet(client *ec2.Client, vID string) string {
 		snInput := &ec2.CreateSubnetInput{
 			CidrBlock:         aws.String("10.0.1.0/24"),
 			VpcId:             aws.String(vID),
-			AvailabilityZone:  aws.String("us-west-2a"),
+			AvailabilityZone:  aws.String(region + "a"),
 			TagSpecifications: tagSpecification,
 		}
 
@@ -345,7 +345,7 @@ func StartServer(remoteCfg HyperConfig.EC2RemoteConfiguration, ec2Type string) {
 	vpcID := getOrCreateVPC(client)
 	fmt.Println("VPC ID:", vpcID)
 
-	subnetID := getOrCreateSubnet(client, vpcID)
+	subnetID := getOrCreateSubnet(client, vpcID, remoteCfg.Region)
 	fmt.Println("Subnet ID:", subnetID)
 
 	securityGroupID := getOrCreateSecurityGroup(client, vpcID)
