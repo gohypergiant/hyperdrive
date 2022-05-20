@@ -50,6 +50,11 @@ type CreateSubnetAPI interface {
 		params *ec2.CreateSubnetInput,
 		optFns ...func(*ec2.Options)) (*ec2.CreateSubnetOutput, error)
 }
+type ModifySubnetAttributeAPI interface {
+	ModifySubnetAttribute(ctx context.Context,
+		params *ec2.ModifySubnetAttributeInput,
+		optFns ...func(*ec2.Options)) (*ec2.ModifySubnetAttributeOutput, error)
+}
 type DescribeSecurityGroupsAPI interface {
 	DescribeSecurityGroups(ctx context.Context,
 		params *ec2.DescribeSecurityGroupsInput,
@@ -147,6 +152,9 @@ func GetSubnets(c context.Context, api DescribeSubnetsAPI, input *ec2.DescribeSu
 }
 func MakeSubnet(c context.Context, api CreateSubnetAPI, input *ec2.CreateSubnetInput) (*ec2.CreateSubnetOutput, error) {
 	return api.CreateSubnet(c, input)
+}
+func ChangeSubnet(c context.Context, api ModifySubnetAttributeAPI, input *ec2.ModifySubnetAttributeInput) (*ec2.ModifySubnetAttributeOutput, error) {
+	return api.ModifySubnetAttribute(c, input)
 }
 func GetSecurityGroups(c context.Context, api DescribeSecurityGroupsAPI, input *ec2.DescribeSecurityGroupsInput) (*ec2.DescribeSecurityGroupsOutput, error) {
 	return api.DescribeSecurityGroups(c, input)
@@ -282,10 +290,23 @@ func getOrCreateSubnet(client *ec2.Client, vID string, region string, projectNam
 
 		snResult, err := MakeSubnet(context.TODO(), client, snInput)
 		if err != nil {
-			panic("error when creating subnets: " + err.Error())
+			panic("error when creating subnet: " + err.Error())
 		}
 
 		snID = *snResult.Subnet.SubnetId
+
+		snChangeInput := &ec2.ModifySubnetAttributeInput{
+			SubnetId: aws.String(snID),
+			MapPublicIpOnLaunch: &types.AttributeBooleanValue{
+				Value: aws.Bool(true),
+			},
+		}
+
+		_, err = ChangeSubnet(context.TODO(), client, snChangeInput)
+		if err != nil {
+			panic("error when modifying subnet attribute: " + err.Error())
+		}
+
 	}
 
 	return snID
@@ -360,10 +381,19 @@ func getOrCreateSecurityGroup(client *ec2.Client, vID string, projectName string
 		scID = *scMakeResult.GroupId
 
 		scPermissionsInput := &ec2.AuthorizeSecurityGroupIngressInput{
-			IpProtocol:                 aws.String("tcp"),
-			FromPort:                   aws.Int32(22),
-			ToPort:                     aws.Int32(22),
-			SourceSecurityGroupOwnerId: aws.String(scID),
+			GroupId: aws.String(scID),
+			IpPermissions: []types.IpPermission{
+				{
+					IpProtocol: aws.String("tcp"),
+					FromPort:   aws.Int32(22),
+					ToPort:     aws.Int32(22),
+					IpRanges: []types.IpRange{
+						{
+							CidrIp: aws.String("0.0.0.0/0"),
+						},
+					},
+				},
+			},
 		}
 
 		_, err = MakeSecurityGroupPermissions(context.TODO(), client, scPermissionsInput)
@@ -384,7 +414,10 @@ func getKeyPairName(r *ec2.DescribeKeyPairsOutput, projectName string) string {
 	}
 	return ""
 }
-
+func WriteKey(fileName string, fileData *string) error {
+	err := os.WriteFile(fileName, []byte(*fileData), 0400)
+	return err
+}
 func getOrCreateKeyPair(client *ec2.Client, projectName string) string {
 
 	describeInput := &ec2.DescribeKeyPairsInput{
@@ -400,7 +433,7 @@ func getOrCreateKeyPair(client *ec2.Client, projectName string) string {
 	if keyName == "" {
 		tagSpecification := []types.TagSpecification{
 			{
-				ResourceType: types.ResourceTypeSubnet,
+				ResourceType: types.ResourceTypeKeyPair,
 				Tags: []types.Tag{
 					{
 						Key:   aws.String(HYPERDRIVE_TYPE_TAG),
@@ -420,9 +453,13 @@ func getOrCreateKeyPair(client *ec2.Client, projectName string) string {
 			TagSpecifications: tagSpecification,
 		}
 
-		_, err := MakeKeyPair(context.TODO(), client, makeInput)
+		makeResult, err := MakeKeyPair(context.TODO(), client, makeInput)
 		if err != nil {
 			panic("error when creating key pair: " + err.Error())
+		}
+		err = WriteKey(os.Getenv("HOME")+"/aws_ec2_key.pem", makeResult.KeyMaterial)
+		if err != nil {
+			fmt.Printf("Couldn't write key pair to file: %v", err)
 		}
 
 	}
@@ -440,7 +477,7 @@ func StartServer(manifestPath string, remoteCfg HyperConfig.EC2RemoteConfigurati
 		fmt.Println("ProjectNameNotFound: please specify a project_name on the manifest (", manifestPath, ")")
 		return
 	}
-
+	fmt.Println("Project name is:", projectName)
 	client := GetEC2Client(remoteCfg)
 
 	vpcID := getOrCreateVPC(client)
@@ -455,10 +492,11 @@ func StartServer(manifestPath string, remoteCfg HyperConfig.EC2RemoteConfigurati
 	minMaxCount := int32(1)
 
 	keyName := getOrCreateKeyPair(client, projectName)
+	fmt.Println("Key name:", keyName)
 
 	tagSpecification := []types.TagSpecification{
 		{
-			ResourceType: types.ResourceTypeVpc,
+			ResourceType: types.ResourceTypeInstance,
 			Tags: []types.Tag{
 				{
 					Key:   aws.String(HYPERDRIVE_TYPE_TAG),
