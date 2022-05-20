@@ -55,6 +55,16 @@ type ModifySubnetAttributeAPI interface {
 		params *ec2.ModifySubnetAttributeInput,
 		optFns ...func(*ec2.Options)) (*ec2.ModifySubnetAttributeOutput, error)
 }
+type CreateInternetGatewayAPI interface {
+	CreateInternetGateway(ctx context.Context,
+		params *ec2.CreateInternetGatewayInput,
+		optFns ...func(*ec2.Options)) (*ec2.CreateInternetGatewayOutput, error)
+}
+type AttachInternetGatewayAPI interface {
+	AttachInternetGateway(ctx context.Context,
+		params *ec2.AttachInternetGatewayInput,
+		optFns ...func(*ec2.Options)) (*ec2.AttachInternetGatewayOutput, error)
+}
 type DescribeSecurityGroupsAPI interface {
 	DescribeSecurityGroups(ctx context.Context,
 		params *ec2.DescribeSecurityGroupsInput,
@@ -156,6 +166,12 @@ func MakeSubnet(c context.Context, api CreateSubnetAPI, input *ec2.CreateSubnetI
 func ChangeSubnet(c context.Context, api ModifySubnetAttributeAPI, input *ec2.ModifySubnetAttributeInput) (*ec2.ModifySubnetAttributeOutput, error) {
 	return api.ModifySubnetAttribute(c, input)
 }
+func MakeInternetGateway(c context.Context, api CreateInternetGatewayAPI, input *ec2.CreateInternetGatewayInput) (*ec2.CreateInternetGatewayOutput, error) {
+	return api.CreateInternetGateway(c, input)
+}
+func AttachInternetGateway(c context.Context, api AttachInternetGatewayAPI, input *ec2.AttachInternetGatewayInput) (*ec2.AttachInternetGatewayOutput, error) {
+	return api.AttachInternetGateway(c, input)
+}
 func GetSecurityGroups(c context.Context, api DescribeSecurityGroupsAPI, input *ec2.DescribeSecurityGroupsInput) (*ec2.DescribeSecurityGroupsOutput, error) {
 	return api.DescribeSecurityGroups(c, input)
 }
@@ -171,11 +187,54 @@ func GetKeyPairs(c context.Context, api DescribeKeyPairsAPI, input *ec2.Describe
 func MakeKeyPair(c context.Context, api CreateKeyPairAPI, input *ec2.CreateKeyPairInput) (*ec2.CreateKeyPairOutput, error) {
 	return api.CreateKeyPair(c, input)
 }
-func GetHyperVpcId(r *ec2.DescribeVpcsOutput) string {
+func CreateInternetGateway(client *ec2.Client, projectName string) string {
+	tagSpecification := []types.TagSpecification{
+		{
+			ResourceType: types.ResourceTypeInternetGateway,
+			Tags: []types.Tag{
+				{
+					Key:   aws.String(HYPERDRIVE_TYPE_TAG),
+					Value: aws.String("true"),
+				},
+				{
+					Key:   aws.String(HYPERDRIVE_NAME_TAG),
+					Value: aws.String(projectName),
+				},
+				{
+					Key:   aws.String("owner"),
+					Value: aws.String("rodolfo-sekijima"),
+				},
+			},
+		},
+	}
+	input := &ec2.CreateInternetGatewayInput{
+		TagSpecifications: tagSpecification,
+	}
+
+	result, err := MakeInternetGateway(context.TODO(), client, input)
+	if err != nil {
+		panic("error when creating Internet Gateway: " + err.Error())
+	}
+
+	return *result.InternetGateway.InternetGatewayId
+}
+func AddInternetGateway(client *ec2.Client, vID string, igID string) {
+
+	input := &ec2.AttachInternetGatewayInput{
+		InternetGatewayId: aws.String(igID),
+		VpcId:             aws.String(vID),
+	}
+
+	_, err := AttachInternetGateway(context.TODO(), client, input)
+	if err != nil {
+		panic("error when attaching the internet gateway to a VPC: " + err.Error())
+	}
+}
+func GetVpcId(r *ec2.DescribeVpcsOutput, projectName string) string {
 
 	for _, v := range r.Vpcs {
 		for _, t := range v.Tags {
-			if *t.Key == HYPERDRIVE_TYPE_TAG {
+			if *t.Key == HYPERDRIVE_NAME_TAG && *t.Value == projectName {
 				return *v.VpcId
 			}
 		}
@@ -184,14 +243,14 @@ func GetHyperVpcId(r *ec2.DescribeVpcsOutput) string {
 	return ""
 }
 
-func getOrCreateVPC(client *ec2.Client) string {
+func getOrCreateVPC(client *ec2.Client, projectName string) string {
 	vpcInput := &ec2.DescribeVpcsInput{}
 	result, err := GetVpcs(context.TODO(), client, vpcInput)
 	if err != nil {
 		panic("error when fetching VPCs, " + err.Error())
 	}
 
-	vID := GetHyperVpcId(result)
+	vID := GetVpcId(result, projectName)
 
 	if vID == "" {
 		fmt.Println("No Hyperdrive VPC found")
@@ -204,6 +263,10 @@ func getOrCreateVPC(client *ec2.Client) string {
 					{
 						Key:   aws.String(HYPERDRIVE_TYPE_TAG),
 						Value: aws.String("true"),
+					},
+					{
+						Key:   aws.String(HYPERDRIVE_NAME_TAG),
+						Value: aws.String(projectName),
 					},
 					{
 						Key:   aws.String("owner"),
@@ -224,6 +287,12 @@ func getOrCreateVPC(client *ec2.Client) string {
 		}
 		vID = *result.Vpc.VpcId
 		fmt.Println("Created VPC with ID:", vID)
+
+		internetGatewayID := CreateInternetGateway(client, projectName)
+		fmt.Println("Create Internet Gateway with ID:", internetGatewayID)
+
+		AddInternetGateway(client, vID, internetGatewayID)
+
 	}
 	return vID
 }
@@ -443,6 +512,10 @@ func getOrCreateKeyPair(client *ec2.Client, projectName string) string {
 						Key:   aws.String(HYPERDRIVE_NAME_TAG),
 						Value: aws.String(projectName),
 					},
+					{
+						Key:   aws.String("owner"),
+						Value: aws.String("rodolfo-sekijima"),
+					},
 				},
 			},
 		}
@@ -505,6 +578,10 @@ func StartServer(manifestPath string, remoteCfg HyperConfig.EC2RemoteConfigurati
 				{
 					Key:   aws.String(HYPERDRIVE_NAME_TAG),
 					Value: aws.String(projectName),
+				},
+				{
+					Key:   aws.String("owner"),
+					Value: aws.String("rodolfo-sekijima"),
 				},
 			},
 		},
