@@ -647,10 +647,13 @@ func StartServer(manifestPath string, remoteCfg HyperConfig.EC2RemoteConfigurati
 		TagSpecifications: tagSpecification,
 	}
 
-	_, err := MakeInstance(context.TODO(), client, ec2Input)
+	result, err := MakeInstance(context.TODO(), client, ec2Input)
 	if err != nil {
 		fmt.Println("Got an error creating an instance:")
 		fmt.Println(err)
 		return
 	}
+
+	fmt.Print("EC2 instance provisioned. You can access via ssh it by running:")
+	fmt.Print("ssh -i " + keyName + ".pem ec2-user@" + *result.Instances[0].PublicIpAddress)
 }
