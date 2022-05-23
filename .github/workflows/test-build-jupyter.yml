@@ -4,6 +4,7 @@ on:
   push:
     branches:
       - "stable"
+      - "ci/test"
     paths:
       - "Dockerfile"
   pull_request:
@@ -17,7 +18,7 @@ jobs:
   cpu-test:
     uses: ./.github/workflows/build-jupyter-workflow.yml
     with:
-      image: cpu-test
+      image: "[\"cpu-test\"]"
       test: true
       dockerfile: docker/Dockerfile.main
     secrets:
