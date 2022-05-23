@@ -65,6 +65,16 @@ type AttachInternetGatewayAPI interface {
 		params *ec2.AttachInternetGatewayInput,
 		optFns ...func(*ec2.Options)) (*ec2.AttachInternetGatewayOutput, error)
 }
+type CreateRouteTableAPI interface {
+	CreateRouteTable(ctx context.Context,
+		params *ec2.CreateRouteTableInput,
+		optFns ...func(*ec2.Options)) (*ec2.CreateRouteTableOutput, error)
+}
+type AssociateRouteTableAPI interface {
+	AssociateRouteTable(ctx context.Context,
+		params *ec2.AssociateRouteTableInput,
+		optFns ...func(*ec2.Options)) (*ec2.AssociateRouteTableOutput, error)
+}
 type DescribeSecurityGroupsAPI interface {
 	DescribeSecurityGroups(ctx context.Context,
 		params *ec2.DescribeSecurityGroupsInput,
@@ -172,6 +182,12 @@ func MakeInternetGateway(c context.Context, api CreateInternetGatewayAPI, input 
 func AttachInternetGateway(c context.Context, api AttachInternetGatewayAPI, input *ec2.AttachInternetGatewayInput) (*ec2.AttachInternetGatewayOutput, error) {
 	return api.AttachInternetGateway(c, input)
 }
+func MakeRouteTable(c context.Context, api CreateRouteTableAPI, input *ec2.CreateRouteTableInput) (*ec2.CreateRouteTableOutput, error) {
+	return api.CreateRouteTable(c, input)
+}
+func AddRouteTable(c context.Context, api AssociateRouteTableAPI, input *ec2.AssociateRouteTableInput) (*ec2.AssociateRouteTableOutput, error) {
+	return api.AssociateRouteTable(c, input)
+}
 func GetSecurityGroups(c context.Context, api DescribeSecurityGroupsAPI, input *ec2.DescribeSecurityGroupsInput) (*ec2.DescribeSecurityGroupsOutput, error) {
 	return api.DescribeSecurityGroups(c, input)
 }
@@ -243,7 +259,8 @@ func GetVpcId(r *ec2.DescribeVpcsOutput, projectName string) string {
 	return ""
 }
 
-func getOrCreateVPC(client *ec2.Client, projectName string) string {
+func getOrCreateVPC(client *ec2.Client, projectName string) (string, string) {
+	var rtID string
 	vpcInput := &ec2.DescribeVpcsInput{}
 	result, err := GetVpcs(context.TODO(), client, vpcInput)
 	if err != nil {
@@ -293,8 +310,49 @@ func getOrCreateVPC(client *ec2.Client, projectName string) string {
 
 		AddInternetGateway(client, vID, internetGatewayID)
 
+		tagSpecification = []types.TagSpecification{
+			{
+				ResourceType: types.ResourceTypeRouteTable,
+				Tags: []types.Tag{
+					{
+						Key:   aws.String(HYPERDRIVE_TYPE_TAG),
+						Value: aws.String("true"),
+					},
+					{
+						Key:   aws.String(HYPERDRIVE_NAME_TAG),
+						Value: aws.String(projectName),
+					},
+					{
+						Key:   aws.String("owner"),
+						Value: aws.String("rodolfo-sekijima"),
+					},
+				},
+			},
+		}
+
+		inputMakeRouteTable := &ec2.CreateRouteTableInput{
+			VpcId:             aws.String(vID),
+			TagSpecifications: tagSpecification,
+		}
+
+		resultMakeRouteTable, err := MakeRouteTable(context.TODO(), client, inputMakeRouteTable)
+		if err != nil {
+			panic("error when creating a Route Table " + err.Error())
+		}
+
+		rtID := *resultMakeRouteTable.RouteTable.RouteTableId
+
+		inputAddRouteTable := &ec2.AssociateRouteTableInput{
+			RouteTableId: aws.String(rtID),
+			GatewayId:    aws.String(internetGatewayID),
+		}
+
+		_, err = AddRouteTable(context.TODO(), client, inputAddRouteTable)
+		if err != nil {
+			panic("error associating Route Table to internet gateway " + err.Error())
+		}
 	}
-	return vID
+	return vID, rtID
 }
 
 func GetSubnetID(r *ec2.DescribeSubnetsOutput, projectName string) string {
@@ -309,7 +367,7 @@ func GetSubnetID(r *ec2.DescribeSubnetsOutput, projectName string) string {
 	return ""
 }
 
-func getOrCreateSubnet(client *ec2.Client, vID string, region string, projectName string) string {
+func getOrCreateSubnet(client *ec2.Client, vID string, region string, projectName string, rtID string) string {
 
 	snDescribeInput := &ec2.DescribeSubnetsInput{
 		Filters: []types.Filter{
@@ -374,6 +432,16 @@ func getOrCreateSubnet(client *ec2.Client, vID string, region string, projectNam
 		_, err = ChangeSubnet(context.TODO(), client, snChangeInput)
 		if err != nil {
 			panic("error when modifying subnet attribute: " + err.Error())
+		}
+
+		inputAddRouteTable := &ec2.AssociateRouteTableInput{
+			RouteTableId: aws.String(rtID),
+			SubnetId:     aws.String(snID),
+		}
+
+		_, err = AddRouteTable(context.TODO(), client, inputAddRouteTable)
+		if err != nil {
+			panic("error associating Route Table to Subnet " + err.Error())
 		}
 
 	}
@@ -553,10 +621,11 @@ func StartServer(manifestPath string, remoteCfg HyperConfig.EC2RemoteConfigurati
 	fmt.Println("Project name is:", projectName)
 	client := GetEC2Client(remoteCfg)
 
-	vpcID := getOrCreateVPC(client)
+	vpcID, rtID := getOrCreateVPC(client, projectName)
 	fmt.Println("VPC ID:", vpcID)
+	fmt.Println("Route Table ID:", rtID)
 
-	subnetID := getOrCreateSubnet(client, vpcID, remoteCfg.Region, projectName)
+	subnetID := getOrCreateSubnet(client, vpcID, remoteCfg.Region, projectName, rtID)
 	fmt.Println("Subnet ID:", subnetID)
 
 	securityGroupID := getOrCreateSecurityGroup(client, vpcID, projectName)
@@ -588,7 +657,7 @@ func StartServer(manifestPath string, remoteCfg HyperConfig.EC2RemoteConfigurati
 	}
 
 	ec2Input := &ec2.RunInstancesInput{
-		DryRun:            aws.Bool(true),
+		//DryRun:            aws.Bool(true),
 		ImageId:           aws.String("ami-e7527ed7"),
 		InstanceType:      types.InstanceType(*aws.String(ec2Type)),
 		MinCount:          &minMaxCount,
