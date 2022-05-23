@@ -237,7 +237,7 @@ func CreateInternetGateway(client *ec2.Client, projectName string) string {
 
 	result, err := MakeInternetGateway(context.TODO(), client, input)
 	if err != nil {
-		panic("error when creating Internet Gateway: " + err.Error())
+		panic("error creating Internet Gateway: " + err.Error())
 	}
 
 	return *result.InternetGateway.InternetGatewayId
@@ -251,7 +251,7 @@ func AddInternetGateway(client *ec2.Client, vID string, igID string) {
 
 	_, err := AttachInternetGateway(context.TODO(), client, input)
 	if err != nil {
-		panic("error when attaching the internet gateway to a VPC: " + err.Error())
+		panic("error attaching the Internet Gateway to VPC: " + err.Error())
 	}
 }
 func GetVpcId(r *ec2.DescribeVpcsOutput, projectName string) string {
@@ -269,8 +269,9 @@ func GetVpcId(r *ec2.DescribeVpcsOutput, projectName string) string {
 
 func getOrCreateVPC(client *ec2.Client, projectName string) (string, string) {
 	var routeTableID string
-	vpcInput := &ec2.DescribeVpcsInput{}
-	result, err := GetVpcs(context.TODO(), client, vpcInput)
+
+	vpcDescribeInput := &ec2.DescribeVpcsInput{}
+	result, err := GetVpcs(context.TODO(), client, vpcDescribeInput)
 	if err != nil {
 		panic("error when fetching VPCs, " + err.Error())
 	}
@@ -278,8 +279,7 @@ func getOrCreateVPC(client *ec2.Client, projectName string) (string, string) {
 	vpcID := GetVpcId(result, projectName)
 
 	if vpcID == "" {
-		fmt.Println("No Hyperdrive VPC found")
-		fmt.Println("Creating Hyperdrive VPC")
+		fmt.Println("Creating VPC")
 
 		tagSpecification := []types.TagSpecification{
 			{
@@ -301,20 +301,19 @@ func getOrCreateVPC(client *ec2.Client, projectName string) (string, string) {
 			},
 		}
 
-		input := &ec2.CreateVpcInput{
+		inputMakeVPC := &ec2.CreateVpcInput{
 			CidrBlock:         aws.String("10.0.0.0/16"),
 			TagSpecifications: tagSpecification,
 		}
 
-		result, err := MakeVpc(context.TODO(), client, input)
+		resultMakeVPC, err := MakeVpc(context.TODO(), client, inputMakeVPC)
 		if err != nil {
-			panic("error when creating a VPC " + err.Error())
+			panic("error creating VPC," + err.Error())
 		}
-		vpcID = *result.Vpc.VpcId
-		fmt.Println("Created VPC with ID:", vpcID)
+		vpcID = *resultMakeVPC.Vpc.VpcId
 
 		internetGatewayID := CreateInternetGateway(client, projectName)
-		fmt.Println("Create Internet Gateway with ID:", internetGatewayID)
+		fmt.Println("Internet Gateway ID:", internetGatewayID)
 
 		AddInternetGateway(client, vpcID, internetGatewayID)
 
@@ -345,7 +344,7 @@ func getOrCreateVPC(client *ec2.Client, projectName string) (string, string) {
 
 		resultMakeRouteTable, err := MakeRouteTable(context.TODO(), client, inputMakeRouteTable)
 		if err != nil {
-			panic("error when creating a Route Table " + err.Error())
+			panic("error creating Route Table," + err.Error())
 		}
 
 		routeTableID = *resultMakeRouteTable.RouteTable.RouteTableId
@@ -358,7 +357,7 @@ func getOrCreateVPC(client *ec2.Client, projectName string) (string, string) {
 
 		_, err = AddRoute(context.TODO(), client, inputAddRoute)
 		if err != nil {
-			panic("error adding Route to Route Table:" + err.Error())
+			panic("error adding Route to Route Table," + err.Error())
 		}
 	}
 	return vpcID, routeTableID
@@ -378,7 +377,7 @@ func GetSubnetID(r *ec2.DescribeSubnetsOutput, projectName string) string {
 
 func getOrCreateSubnet(client *ec2.Client, vID string, region string, projectName string, rtID string) string {
 
-	snDescribeInput := &ec2.DescribeSubnetsInput{
+	subnetDescribeInput := &ec2.DescribeSubnetsInput{
 		Filters: []types.Filter{
 			{
 				Name:   aws.String("vpc-id"),
@@ -386,14 +385,14 @@ func getOrCreateSubnet(client *ec2.Client, vID string, region string, projectNam
 			},
 		},
 	}
-	snDescribeResult, err := GetSubnets(context.TODO(), client, snDescribeInput)
+	subnetDescribeResult, err := GetSubnets(context.TODO(), client, subnetDescribeInput)
 	if err != nil {
-		panic("error when fetching subnets: " + err.Error())
+		panic("error fetching subnets," + err.Error())
 	}
 
-	snID := GetSubnetID(snDescribeResult, projectName)
+	subnetID := GetSubnetID(subnetDescribeResult, projectName)
 
-	if snID == "" {
+	if subnetID == "" {
 		fmt.Println("No Subnet found for VPC", vID)
 		fmt.Println("Creating subnet")
 
@@ -417,45 +416,45 @@ func getOrCreateSubnet(client *ec2.Client, vID string, region string, projectNam
 			},
 		}
 
-		snInput := &ec2.CreateSubnetInput{
+		subnetMakeInput := &ec2.CreateSubnetInput{
 			CidrBlock:         aws.String("10.0.1.0/24"),
 			VpcId:             aws.String(vID),
 			AvailabilityZone:  aws.String(region + "a"),
 			TagSpecifications: tagSpecification,
 		}
 
-		snResult, err := MakeSubnet(context.TODO(), client, snInput)
+		subnetMakeResult, err := MakeSubnet(context.TODO(), client, subnetMakeInput)
 		if err != nil {
-			panic("error when creating subnet: " + err.Error())
+			panic("error creating subnet," + err.Error())
 		}
 
-		snID = *snResult.Subnet.SubnetId
+		subnetID = *subnetMakeResult.Subnet.SubnetId
 
-		snChangeInput := &ec2.ModifySubnetAttributeInput{
-			SubnetId: aws.String(snID),
+		subnetChangeInput := &ec2.ModifySubnetAttributeInput{
+			SubnetId: aws.String(subnetID),
 			MapPublicIpOnLaunch: &types.AttributeBooleanValue{
 				Value: aws.Bool(true),
 			},
 		}
 
-		_, err = ChangeSubnet(context.TODO(), client, snChangeInput)
+		_, err = ChangeSubnet(context.TODO(), client, subnetChangeInput)
 		if err != nil {
-			panic("error when modifying subnet attribute: " + err.Error())
+			panic("error modifying subnet attribute," + err.Error())
 		}
 
 		inputAddRouteTable := &ec2.AssociateRouteTableInput{
 			RouteTableId: aws.String(rtID),
-			SubnetId:     aws.String(snID),
+			SubnetId:     aws.String(subnetID),
 		}
 
 		_, err = AddRouteTable(context.TODO(), client, inputAddRouteTable)
 		if err != nil {
-			panic("error associating Route Table to Subnet " + err.Error())
+			panic("error associating Route Table to Subnet," + err.Error())
 		}
 
 	}
 
-	return snID
+	return subnetID
 }
 
 func GetSecurityGroupId(r *ec2.DescribeSecurityGroupsOutput, projectName string) string {
@@ -471,9 +470,9 @@ func GetSecurityGroupId(r *ec2.DescribeSecurityGroupsOutput, projectName string)
 }
 
 func getOrCreateSecurityGroup(client *ec2.Client, vID string, projectName string) string {
-	var scID string
+	var securityGroupID string
 
-	scDescribeInput := &ec2.DescribeSecurityGroupsInput{
+	securityGroupDescribeInput := &ec2.DescribeSecurityGroupsInput{
 		Filters: []types.Filter{
 			{
 				Name:   aws.String("vpc-id"),
@@ -481,14 +480,14 @@ func getOrCreateSecurityGroup(client *ec2.Client, vID string, projectName string
 			},
 		},
 	}
-	scDescribeResult, err := GetSecurityGroups(context.TODO(), client, scDescribeInput)
+	securityGroupDescribeResult, err := GetSecurityGroups(context.TODO(), client, securityGroupDescribeInput)
 	if err != nil {
-		panic("error when fetching Security Groups: " + err.Error())
+		panic("error fetching Security Groups," + err.Error())
 	}
 
-	scID = GetSecurityGroupId(scDescribeResult, projectName)
+	securityGroupID = GetSecurityGroupId(securityGroupDescribeResult, projectName)
 
-	if scID == "" {
+	if securityGroupID == "" {
 		fmt.Println("No Security Group found on VPC", vID)
 		fmt.Println("Creating Security Group for project", projectName)
 
@@ -519,15 +518,15 @@ func getOrCreateSecurityGroup(client *ec2.Client, vID string, projectName string
 			TagSpecifications: tagSpecification,
 		}
 
-		scMakeResult, err := MakeSecurityGroup(context.TODO(), client, scInput)
+		securityGroupMakeResult, err := MakeSecurityGroup(context.TODO(), client, scInput)
 		if err != nil {
-			panic("error when creating the security group: " + err.Error())
+			panic("error creating Security Group," + err.Error())
 		}
 
-		scID = *scMakeResult.GroupId
+		securityGroupID = *securityGroupMakeResult.GroupId
 
-		scPermissionsInput := &ec2.AuthorizeSecurityGroupIngressInput{
-			GroupId: aws.String(scID),
+		securityGroupPermissionsInput := &ec2.AuthorizeSecurityGroupIngressInput{
+			GroupId: aws.String(securityGroupID),
 			IpPermissions: []types.IpPermission{
 				{
 					IpProtocol: aws.String("tcp"),
@@ -542,12 +541,12 @@ func getOrCreateSecurityGroup(client *ec2.Client, vID string, projectName string
 			},
 		}
 
-		_, err = MakeSecurityGroupPermissions(context.TODO(), client, scPermissionsInput)
+		_, err = MakeSecurityGroupPermissions(context.TODO(), client, securityGroupPermissionsInput)
 		if err != nil {
-			panic("error when adding permissions to the security group: " + err.Error())
+			panic("error adding permissions to the Security Group," + err.Error())
 		}
 	}
-	return scID
+	return securityGroupID
 }
 func getKeyPairName(r *ec2.DescribeKeyPairsOutput, projectName string) string {
 
@@ -566,15 +565,15 @@ func WriteKey(fileName string, fileData *string) error {
 }
 func getOrCreateKeyPair(client *ec2.Client, projectName string) string {
 
-	describeInput := &ec2.DescribeKeyPairsInput{
+	keyPairDescribeInput := &ec2.DescribeKeyPairsInput{
 		IncludePublicKey: aws.Bool(true),
 	}
 
-	kpDescribeResult, err := GetKeyPairs(context.TODO(), client, describeInput)
+	keyPairDescribeResult, err := GetKeyPairs(context.TODO(), client, keyPairDescribeInput)
 	if err != nil {
-		panic("error when fetching key pairs: " + err.Error())
+		panic("error fetching Key Pairs: " + err.Error())
 	}
-	keyName := getKeyPairName(kpDescribeResult, projectName)
+	keyName := getKeyPairName(keyPairDescribeResult, projectName)
 
 	if keyName == "" {
 		tagSpecification := []types.TagSpecification{
@@ -598,16 +597,16 @@ func getOrCreateKeyPair(client *ec2.Client, projectName string) string {
 		}
 
 		keyName = projectName + "-hyperdrive"
-		makeInput := &ec2.CreateKeyPairInput{
+		keyPairMakeInput := &ec2.CreateKeyPairInput{
 			KeyName:           aws.String(keyName),
 			TagSpecifications: tagSpecification,
 		}
 
-		makeResult, err := MakeKeyPair(context.TODO(), client, makeInput)
+		keyPairMakeResult, err := MakeKeyPair(context.TODO(), client, keyPairMakeInput)
 		if err != nil {
-			panic("error when creating key pair: " + err.Error())
+			panic("error creating Key Pair," + err.Error())
 		}
-		err = WriteKey(os.Getenv("HOME")+"/aws_ec2_key.pem", makeResult.KeyMaterial)
+		err = WriteKey(os.Getenv("HOME")+"/aws_ec2_key.pem", keyPairMakeResult.KeyMaterial)
 		if err != nil {
 			fmt.Printf("Couldn't write key pair to file: %v", err)
 		}
