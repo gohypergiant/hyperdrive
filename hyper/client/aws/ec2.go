@@ -75,6 +75,11 @@ type AssociateRouteTableAPI interface {
 		params *ec2.AssociateRouteTableInput,
 		optFns ...func(*ec2.Options)) (*ec2.AssociateRouteTableOutput, error)
 }
+type CreateRouteAPI interface {
+	CreateRoute(ctx context.Context,
+		params *ec2.CreateRouteInput,
+		optFns ...func(*ec2.Options)) (*ec2.CreateRouteOutput, error)
+}
 type DescribeSecurityGroupsAPI interface {
 	DescribeSecurityGroups(ctx context.Context,
 		params *ec2.DescribeSecurityGroupsInput,
@@ -188,6 +193,9 @@ func MakeRouteTable(c context.Context, api CreateRouteTableAPI, input *ec2.Creat
 func AddRouteTable(c context.Context, api AssociateRouteTableAPI, input *ec2.AssociateRouteTableInput) (*ec2.AssociateRouteTableOutput, error) {
 	return api.AssociateRouteTable(c, input)
 }
+func AddRoute(c context.Context, api CreateRouteAPI, input *ec2.CreateRouteInput) (*ec2.CreateRouteOutput, error) {
+	return api.CreateRoute(c, input)
+}
 func GetSecurityGroups(c context.Context, api DescribeSecurityGroupsAPI, input *ec2.DescribeSecurityGroupsInput) (*ec2.DescribeSecurityGroupsOutput, error) {
 	return api.DescribeSecurityGroups(c, input)
 }
@@ -260,16 +268,16 @@ func GetVpcId(r *ec2.DescribeVpcsOutput, projectName string) string {
 }
 
 func getOrCreateVPC(client *ec2.Client, projectName string) (string, string) {
-	var rtID string
+	var routeTableID string
 	vpcInput := &ec2.DescribeVpcsInput{}
 	result, err := GetVpcs(context.TODO(), client, vpcInput)
 	if err != nil {
 		panic("error when fetching VPCs, " + err.Error())
 	}
 
-	vID := GetVpcId(result, projectName)
+	vpcID := GetVpcId(result, projectName)
 
-	if vID == "" {
+	if vpcID == "" {
 		fmt.Println("No Hyperdrive VPC found")
 		fmt.Println("Creating Hyperdrive VPC")
 
@@ -302,13 +310,13 @@ func getOrCreateVPC(client *ec2.Client, projectName string) (string, string) {
 		if err != nil {
 			panic("error when creating a VPC " + err.Error())
 		}
-		vID = *result.Vpc.VpcId
-		fmt.Println("Created VPC with ID:", vID)
+		vpcID = *result.Vpc.VpcId
+		fmt.Println("Created VPC with ID:", vpcID)
 
 		internetGatewayID := CreateInternetGateway(client, projectName)
 		fmt.Println("Create Internet Gateway with ID:", internetGatewayID)
 
-		AddInternetGateway(client, vID, internetGatewayID)
+		AddInternetGateway(client, vpcID, internetGatewayID)
 
 		tagSpecification = []types.TagSpecification{
 			{
@@ -331,7 +339,7 @@ func getOrCreateVPC(client *ec2.Client, projectName string) (string, string) {
 		}
 
 		inputMakeRouteTable := &ec2.CreateRouteTableInput{
-			VpcId:             aws.String(vID),
+			VpcId:             aws.String(vpcID),
 			TagSpecifications: tagSpecification,
 		}
 
@@ -340,19 +348,20 @@ func getOrCreateVPC(client *ec2.Client, projectName string) (string, string) {
 			panic("error when creating a Route Table " + err.Error())
 		}
 
-		rtID := *resultMakeRouteTable.RouteTable.RouteTableId
+		routeTableID = *resultMakeRouteTable.RouteTable.RouteTableId
 
-		inputAddRouteTable := &ec2.AssociateRouteTableInput{
-			RouteTableId: aws.String(rtID),
-			GatewayId:    aws.String(internetGatewayID),
+		inputAddRoute := &ec2.CreateRouteInput{
+			RouteTableId:         aws.String(routeTableID),
+			DestinationCidrBlock: aws.String("0.0.0.0/0"),
+			GatewayId:            aws.String(internetGatewayID),
 		}
 
-		_, err = AddRouteTable(context.TODO(), client, inputAddRouteTable)
+		_, err = AddRoute(context.TODO(), client, inputAddRoute)
 		if err != nil {
-			panic("error associating Route Table to internet gateway " + err.Error())
+			panic("error adding Route to Route Table:" + err.Error())
 		}
 	}
-	return vID, rtID
+	return vpcID, routeTableID
 }
 
 func GetSubnetID(r *ec2.DescribeSubnetsOutput, projectName string) string {
@@ -386,7 +395,7 @@ func getOrCreateSubnet(client *ec2.Client, vID string, region string, projectNam
 
 	if snID == "" {
 		fmt.Println("No Subnet found for VPC", vID)
-		fmt.Println("Creating subnet for project", projectName)
+		fmt.Println("Creating subnet")
 
 		tagSpecification := []types.TagSpecification{
 			{
