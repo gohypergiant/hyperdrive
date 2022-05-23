@@ -35,6 +35,7 @@ var (
 	s3Region        string
 	ec2InstanceType string
 	remoteProfile   string
+	amiID           string
 )
 
 // jupyterCmd represents the jupyter command
@@ -67,7 +68,7 @@ var jupyterCreateCmd = &cobra.Command{
 	Short: "Create EC2 instance to run a remote jupyter server",
 	Run: func(cmd *cobra.Command, args []string) {
 		remoteConfiguration := config.GetRemote(remoteProfile)
-		aws.StartServer(manifestPath, remoteConfiguration.EC2Configuration, ec2InstanceType)
+		aws.StartServer(manifestPath, remoteConfiguration.EC2Configuration, ec2InstanceType, amiID)
 	},
 }
 
@@ -86,4 +87,5 @@ func init() {
 	jupyterStopCmd.Flags().StringVar(&mountPoint, "mountPoint", "", "Mount Point of Jupyter Server to be stopped")
 	jupyterCreateCmd.Flags().StringVar(&ec2InstanceType, "ec2InstanceType", "", "The type of EC2 instance to be created")
 	jupyterCreateCmd.Flags().StringVar(&remoteProfile, "remoteProfile", "", "Name of the remote profiile to be used to create a EC2 instance")
+	jupyterCreateCmd.Flags().StringVar(&amiID, "amiId", "", "The ID of the AMI")
 }
