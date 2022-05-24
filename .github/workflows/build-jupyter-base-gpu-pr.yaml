@@ -12,6 +12,6 @@ jobs:
     if: github.event_name == 'pull_request'
     uses: ./.github/workflows/build-jupyter-workflow.yml
     with:
-      image: gpu-base
+      image: "[\"gpu-base\"]"
     secrets:
       GHCR_TOKEN: ${{ secrets.GHCR_TOKEN }}
