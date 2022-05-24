@@ -77,7 +77,7 @@ func (s LocalNotebookService) Start(flavor string, pullImage bool, jupyterBrowse
 
 	imageName := ""
 	if requirements {
-		imageName = "hyperdrive-jupyter-reqs:byoc"
+		imageName = fmt.Sprintf("hyperdrive-jupyter-reqs:%s", name)
 	} else {
 		imageName = imageOptions.Image
 	}
@@ -112,9 +112,9 @@ func (s LocalNotebookService) Start(flavor string, pullImage bool, jupyterBrowse
 			dockerClient.RemoveContainer(name)
 		}
 		dockerClient.CreateDockerFile("", "Dockerfile.reqs", true)
-		dockerClient.BuildImage("Dockerfile.reqs", []string{"hyperdrive-jupyter-reqs:byoc"})
+		dockerClient.BuildImage("Dockerfile.reqs", []string{imageName})
 
-		createdIdReqs, errReqs := dockerClient.CreateContainer("hyperdrive-jupyter-reqs:byoc", name, contConfig, hostConfig, false)
+		createdIdReqs, errReqs := dockerClient.CreateContainer(imageName, name, contConfig, hostConfig, false)
 		id = createdIdReqs
 		if errReqs != nil {
 			fmt.Println(errReqs)
