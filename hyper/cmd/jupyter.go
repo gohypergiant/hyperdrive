@@ -16,8 +16,6 @@ limitations under the License.
 package cmd
 
 import (
-	"github.com/gohypergiant/hyperdrive/hyper/client/aws"
-	"github.com/gohypergiant/hyperdrive/hyper/services/config"
 	"github.com/gohypergiant/hyperdrive/hyper/services/notebook"
 	"github.com/spf13/cobra"
 )
@@ -34,7 +32,6 @@ var (
 	s3AccessSecret  string
 	s3Region        string
 	ec2InstanceType string
-	remoteProfile   string
 	amiID           string
 )
 
@@ -43,7 +40,7 @@ var jupyterCmd = &cobra.Command{
 	Use:   "jupyter",
 	Short: "Run a local jupyter server",
 	Run: func(cmd *cobra.Command, args []string) {
-		notebook.NotebookService(RemoteName, manifestPath, s3AccessKey, s3AccessSecret, s3Region).Start(image, pullImage, jupyterBrowser)
+		notebook.NotebookService(RemoteName, manifestPath, s3AccessKey, s3AccessSecret, s3Region).Start(image, pullImage, jupyterBrowser, ec2InstanceType, amiID)
 	},
 }
 
@@ -63,20 +60,10 @@ var jupyterStopCmd = &cobra.Command{
 	},
 }
 
-var jupyterCreateCmd = &cobra.Command{
-	Use:   "create",
-	Short: "Create EC2 instance to run a remote jupyter server",
-	Run: func(cmd *cobra.Command, args []string) {
-		remoteConfiguration := config.GetRemote(remoteProfile)
-		aws.StartServer(manifestPath, remoteConfiguration.EC2Configuration, ec2InstanceType, amiID)
-	},
-}
-
 func init() {
 	rootCmd.AddCommand(jupyterCmd)
 	jupyterCmd.AddCommand(jupyterListCmd)
 	jupyterCmd.AddCommand(jupyterStopCmd)
-	jupyterCmd.AddCommand(jupyterCreateCmd)
 
 	jupyterCmd.Flags().BoolVarP(&jupyterBrowser, "browser", "", false, "Open jupyter in a browser after launching")
 	jupyterCmd.Flags().BoolVarP(&pullImage, "pull", "", false, "Pull latest image before running")
@@ -84,8 +71,7 @@ func init() {
 	jupyterCmd.Flags().StringVar(&s3AccessKey, "s3AccessKey", "", "S3 Access Key to use")
 	jupyterCmd.Flags().StringVar(&s3AccessSecret, "s3AccessSecret", "", "S3 Secret to use")
 	jupyterCmd.Flags().StringVar(&s3Region, "s3Region", "", "S3 Region")
+	jupyterCmd.Flags().StringVar(&ec2InstanceType, "ec2InstanceType", "", "The type of EC2 instance to be created")
+	jupyterCmd.Flags().StringVar(&amiID, "amiId", "", "The ID of the AMI")
 	jupyterStopCmd.Flags().StringVar(&mountPoint, "mountPoint", "", "Mount Point of Jupyter Server to be stopped")
-	jupyterCreateCmd.Flags().StringVar(&ec2InstanceType, "ec2InstanceType", "", "The type of EC2 instance to be created")
-	jupyterCreateCmd.Flags().StringVar(&remoteProfile, "remoteProfile", "", "Name of the remote profiile to be used to create a EC2 instance")
-	jupyterCreateCmd.Flags().StringVar(&amiID, "amiId", "", "The ID of the AMI")
 }
