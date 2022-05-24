@@ -76,6 +76,9 @@ func (s LocalNotebookService) Start(flavor string, pullImage bool, jupyterBrowse
 	runningContainers, _ := dockerClient.ListContainers(name)
 
 	if requirements {
+		if len(runningContainers) != 0 {
+			dockerClient.RemoveContainer(name)
+		}
 		dockerClient.CreateDockerFile("", "Dockerfile.reqs", true)
 		dockerClient.BuildImage("Dockerfile.reqs", []string{"hyperdrive-jupyter-reqs:latest"})
 
@@ -103,7 +106,7 @@ func (s LocalNotebookService) Start(flavor string, pullImage bool, jupyterBrowse
 				},
 			},
 		}
-		createdIdReqs, errReqs := dockerClient.CreateContainer("hyperdrive-jupyter-reqs:latest", name, contConfig, hostConfig, pullImage)
+		createdIdReqs, errReqs := dockerClient.CreateContainer("hyperdrive-jupyter-reqs:latest", name, contConfig, hostConfig, false)
 		id = createdIdReqs
 		if errReqs != nil {
 			fmt.Println(errReqs)
