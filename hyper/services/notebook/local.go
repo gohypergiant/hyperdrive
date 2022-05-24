@@ -77,6 +77,7 @@ func (s LocalNotebookService) Start(flavor string, pullImage bool, jupyterBrowse
 
 	if requirements {
 		dockerClient.CreateDockerFile("", "Dockerfile.reqs", true)
+		dockerClient.BuildImage("Dockerfile.reqs", []string{"reqs-test:latest"})
 	}
 
 	if len(runningContainers) == 0 {

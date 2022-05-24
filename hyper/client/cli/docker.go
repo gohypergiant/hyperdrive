@@ -167,7 +167,8 @@ func (dockerClient *DockerClient) CreateDockerFile(studyPath string, savePath st
 	dockerFileTemplate := ""
 	if requirements {
 		dockerFileTemplate = `
-FROM ubuntu:latest as builder
+FROM ghcr.io/gohypergiant/hyperdrive-jupyter:cpu-localstable
+COPY requirements.txt /home/jovyan/requirements.txt
 RUN pip install -r requirements.txt
 `
 	} else {
