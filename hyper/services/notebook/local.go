@@ -78,9 +78,39 @@ func (s LocalNotebookService) Start(flavor string, pullImage bool, jupyterBrowse
 	if requirements {
 		dockerClient.CreateDockerFile("", "Dockerfile.reqs", true)
 		dockerClient.BuildImage("Dockerfile.reqs", []string{"hyperdrive-jupyter-reqs:latest"})
-	}
 
-	if len(runningContainers) == 0 {
+		contConfig := &container.Config{
+			Hostname: name,
+			Image:    "hyperdrive-jupyter-reqs:latest",
+			Tty:      true,
+			Env:      env,
+		}
+
+		hostConfig := &container.HostConfig{
+			PortBindings: nat.PortMap{
+				"8888/tcp": []nat.PortBinding{
+					{
+						HostIP:   hostIP,
+						HostPort: "",
+					},
+				},
+			},
+			Mounts: []mount.Mount{
+				{
+					Type:   mount.TypeBind,
+					Source: cwdPath,
+					Target: "/home/jovyan",
+				},
+			},
+		}
+		createdIdReqs, errReqs := dockerClient.CreateContainer("hyperdrive-jupyter-reqs:latest", name, contConfig, hostConfig, pullImage)
+		id = createdIdReqs
+		if errReqs != nil {
+			fmt.Println(errReqs)
+			os.Exit(1)
+		}
+		execute = true
+	} else if len(runningContainers) == 0 {
 		contConfig := &container.Config{
 			Hostname: name,
 			Image:    imageOptions.Image,
