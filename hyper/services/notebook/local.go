@@ -25,6 +25,7 @@ var (
 	mountPoint     string
 	pullImage      bool
 	repoTag        string
+	requirements   bool
 	publicPort     uint16
 )
 
@@ -43,8 +44,7 @@ func (s LocalNotebookService) GetGitRoot() string {
 	return strings.TrimSpace(string(gitRoot))
 }
 
-func (s LocalNotebookService) Start(flavor string, pullImage bool, jupyterBrowser bool) {
-
+func (s LocalNotebookService) Start(flavor string, pullImage bool, jupyterBrowser bool, requirements bool) {
 	dockerClient := cli.NewDockerClient()
 	cwdPath, _ := os.Getwd()
 	name := GetNotebookName(s.ManifestPath)
@@ -75,31 +75,53 @@ func (s LocalNotebookService) Start(flavor string, pullImage bool, jupyterBrowse
 
 	runningContainers, _ := dockerClient.ListContainers(name)
 
-	if len(runningContainers) == 0 {
-		contConfig := &container.Config{
-			Hostname: name,
-			Image:    imageOptions.Image,
-			Tty:      true,
-			Env:      env,
-		}
+	imageName := ""
+	if requirements {
+		imageName = fmt.Sprintf("hyperdrive-jupyter-reqs:%s", name)
+	} else {
+		imageName = imageOptions.Image
+	}
 
-		hostConfig := &container.HostConfig{
-			PortBindings: nat.PortMap{
-				"8888/tcp": []nat.PortBinding{
-					{
-						HostIP:   hostIP,
-						HostPort: "",
-					},
-				},
-			},
-			Mounts: []mount.Mount{
+	contConfig := &container.Config{
+		Hostname: name,
+		Image:    imageName,
+		Tty:      true,
+		Env:      env,
+	}
+
+	hostConfig := &container.HostConfig{
+		PortBindings: nat.PortMap{
+			"8888/tcp": []nat.PortBinding{
 				{
-					Type:   mount.TypeBind,
-					Source: cwdPath,
-					Target: "/home/jovyan",
+					HostIP:   hostIP,
+					HostPort: "",
 				},
 			},
+		},
+		Mounts: []mount.Mount{
+			{
+				Type:   mount.TypeBind,
+				Source: cwdPath,
+				Target: "/home/jovyan",
+			},
+		},
+	}
+
+	if requirements {
+		if len(runningContainers) != 0 {
+			dockerClient.RemoveContainer(name)
 		}
+		dockerClient.CreateDockerFile("", "Dockerfile.reqs", true)
+		dockerClient.BuildImage("Dockerfile.reqs", []string{imageName})
+
+		createdIdReqs, errReqs := dockerClient.CreateContainer(imageName, name, contConfig, hostConfig, false)
+		id = createdIdReqs
+		if errReqs != nil {
+			fmt.Println(errReqs)
+			os.Exit(1)
+		}
+		execute = true
+	} else if len(runningContainers) == 0 {
 		createdId, err := dockerClient.CreateContainer(imageOptions.Image, name, contConfig, hostConfig, pullImage)
 		id = createdId
 		if err != nil {
