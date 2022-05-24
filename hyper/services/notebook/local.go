@@ -75,6 +75,38 @@ func (s LocalNotebookService) Start(flavor string, pullImage bool, jupyterBrowse
 
 	runningContainers, _ := dockerClient.ListContainers(name)
 
+	imageName := ""
+	if requirements {
+		imageName = "hyperdrive-jupyter-reqs:byoc"
+	} else {
+		imageName = imageOptions.Image
+	}
+
+	contConfig := &container.Config{
+		Hostname: name,
+		Image:    imageName,
+		Tty:      true,
+		Env:      env,
+	}
+
+	hostConfig := &container.HostConfig{
+		PortBindings: nat.PortMap{
+			"8888/tcp": []nat.PortBinding{
+				{
+					HostIP:   hostIP,
+					HostPort: "",
+				},
+			},
+		},
+		Mounts: []mount.Mount{
+			{
+				Type:   mount.TypeBind,
+				Source: cwdPath,
+				Target: "/home/jovyan",
+			},
+		},
+	}
+
 	if requirements {
 		if len(runningContainers) != 0 {
 			dockerClient.RemoveContainer(name)
@@ -82,30 +114,6 @@ func (s LocalNotebookService) Start(flavor string, pullImage bool, jupyterBrowse
 		dockerClient.CreateDockerFile("", "Dockerfile.reqs", true)
 		dockerClient.BuildImage("Dockerfile.reqs", []string{"hyperdrive-jupyter-reqs:byoc"})
 
-		contConfig := &container.Config{
-			Hostname: name,
-			Image:    "hyperdrive-jupyter-reqs:byoc",
-			Tty:      true,
-			Env:      env,
-		}
-
-		hostConfig := &container.HostConfig{
-			PortBindings: nat.PortMap{
-				"8888/tcp": []nat.PortBinding{
-					{
-						HostIP:   hostIP,
-						HostPort: "",
-					},
-				},
-			},
-			Mounts: []mount.Mount{
-				{
-					Type:   mount.TypeBind,
-					Source: cwdPath,
-					Target: "/home/jovyan",
-				},
-			},
-		}
 		createdIdReqs, errReqs := dockerClient.CreateContainer("hyperdrive-jupyter-reqs:byoc", name, contConfig, hostConfig, false)
 		id = createdIdReqs
 		if errReqs != nil {
@@ -114,30 +122,6 @@ func (s LocalNotebookService) Start(flavor string, pullImage bool, jupyterBrowse
 		}
 		execute = true
 	} else if len(runningContainers) == 0 {
-		contConfig := &container.Config{
-			Hostname: name,
-			Image:    imageOptions.Image,
-			Tty:      true,
-			Env:      env,
-		}
-
-		hostConfig := &container.HostConfig{
-			PortBindings: nat.PortMap{
-				"8888/tcp": []nat.PortBinding{
-					{
-						HostIP:   hostIP,
-						HostPort: "",
-					},
-				},
-			},
-			Mounts: []mount.Mount{
-				{
-					Type:   mount.TypeBind,
-					Source: cwdPath,
-					Target: "/home/jovyan",
-				},
-			},
-		}
 		createdId, err := dockerClient.CreateContainer(imageOptions.Image, name, contConfig, hostConfig, pullImage)
 		id = createdId
 		if err != nil {
