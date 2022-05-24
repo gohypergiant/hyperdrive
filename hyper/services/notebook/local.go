@@ -75,6 +75,10 @@ func (s LocalNotebookService) Start(flavor string, pullImage bool, jupyterBrowse
 
 	runningContainers, _ := dockerClient.ListContainers(name)
 
+	if requirements {
+		dockerClient.CreateDockerFile("", "Dockerfile.reqs", true)
+	}
+
 	if len(runningContainers) == 0 {
 		contConfig := &container.Config{
 			Hostname: name,

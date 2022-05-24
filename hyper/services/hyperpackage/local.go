@@ -28,7 +28,7 @@ func (s LocalHyperpackageService) BuildAndRun(dockerfileSavePath string, imageTa
 }
 func (s LocalHyperpackageService) Build(dockerfileSavePath string, imageTags []string) {
 	dockerClient := cli.NewDockerClient()
-	dockerClient.CreateDockerFile(s.HyperpackagePath, dockerfileSavePath)
+	dockerClient.CreateDockerFile(s.HyperpackagePath, dockerfileSavePath, false)
 	dockerClient.BuildImage(strings.TrimLeft(dockerfileSavePath, "./"), imageTags)
 }
 func (s LocalHyperpackageService) Run(imageTag string) {

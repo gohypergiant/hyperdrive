@@ -163,8 +163,15 @@ type HyperPackageDockerfileParameters struct {
 	StudyPath string
 }
 
-func (dockerClient *DockerClient) CreateDockerFile(studyPath string, savePath string) {
-	dockerFileTemplate := `
+func (dockerClient *DockerClient) CreateDockerFile(studyPath string, savePath string, requirements bool) {
+	dockerFileTemplate := ""
+	if requirements {
+		dockerFileTemplate = `
+FROM ubuntu:latest as builder
+RUN pip install -r requirements.txt
+`
+	} else {
+		dockerFileTemplate = `
 FROM ubuntu:latest as builder
 RUN apt update -y && apt install unzip -y
 ADD {{.StudyPath}} study.hyperpackage.zip
@@ -173,6 +180,7 @@ RUN unzip ./study.hyperpackage.zip -d /hyperpackage
 FROM ghcr.io/gohypergiant/gohypergiant/mlsdk-fast-app:stable
 COPY --from=builder /hyperpackage /hyperpackage
 `
+	}
 
 	file, err := os.OpenFile(savePath, os.O_WRONLY|os.O_CREATE|os.O_TRUNC, 0600)
 	if err != nil {
