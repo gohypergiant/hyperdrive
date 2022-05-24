@@ -20,7 +20,7 @@ type RemoteNotebookService struct {
 	ManifestPath        string
 }
 
-func (s RemoteNotebookService) Start(flavor string, pullImage bool, jupyterBrowser bool, ec2InstanceType string, amiID string) {
+func (s RemoteNotebookService) Start(flavor string, pullImage bool, jupyterBrowser bool, requirements bool, ec2InstanceType string, amiID string) {
 
 	imageOptions := GetNotebookImageOptions(flavor)
 	name := GetNotebookName(s.ManifestPath)
