@@ -654,6 +654,6 @@ func StartServer(manifestPath string, remoteCfg HyperConfig.EC2RemoteConfigurati
 		return
 	}
 
-	fmt.Print("EC2 instance provisioned. You can access via ssh it by running:")
+	fmt.Print("EC2 instance provisioned. You can access via ssh by running:")
 	fmt.Print("ssh -i " + keyName + ".pem ec2-user@" + *result.Instances[0].PublicIpAddress)
 }
