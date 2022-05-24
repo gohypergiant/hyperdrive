@@ -44,7 +44,9 @@ func (s LocalNotebookService) GetGitRoot() string {
 	return strings.TrimSpace(string(gitRoot))
 }
 
-func (s LocalNotebookService) Start(flavor string, pullImage bool, jupyterBrowser bool, requirements bool) {
+
+func (s LocalNotebookService) Start(flavor string, pullImage bool, jupyterBrowser bool, requirements bool, ec2InstanceType string, amiID string) {
+
 	dockerClient := cli.NewDockerClient()
 	cwdPath, _ := os.Getwd()
 	name := GetNotebookName(s.ManifestPath)

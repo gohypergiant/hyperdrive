@@ -21,17 +21,19 @@ import (
 )
 
 var (
-	id             string
-	image          string
-	jupyterBrowser bool
-	mountPoint     string
-	pullImage      bool
-	repoTag        string
-	requirements   bool
-	publicPort     uint16
-	s3AccessKey    string
-	s3AccessSecret string
-	s3Region       string
+	id              string
+	image           string
+	jupyterBrowser  bool
+	mountPoint      string
+	pullImage       bool
+	repoTag         string
+	requirements    bool
+	publicPort      uint16
+	s3AccessKey     string
+	s3AccessSecret  string
+	s3Region        string
+	ec2InstanceType string
+	amiID           string
 )
 
 // jupyterCmd represents the jupyter command
@@ -39,7 +41,7 @@ var jupyterCmd = &cobra.Command{
 	Use:   "jupyter",
 	Short: "Run a local jupyter server",
 	Run: func(cmd *cobra.Command, args []string) {
-		notebook.NotebookService(RemoteName, manifestPath, s3AccessKey, s3AccessSecret, s3Region).Start(image, pullImage, jupyterBrowser, requirements)
+		notebook.NotebookService(RemoteName, manifestPath, s3AccessKey, s3AccessSecret, s3Region).Start(image, pullImage, jupyterBrowser, requirements, ec2InstanceType, amiID)
 	},
 }
 
@@ -71,5 +73,7 @@ func init() {
 	jupyterCmd.Flags().StringVar(&s3AccessKey, "s3AccessKey", "", "S3 Access Key to use")
 	jupyterCmd.Flags().StringVar(&s3AccessSecret, "s3AccessSecret", "", "S3 Secret to use")
 	jupyterCmd.Flags().StringVar(&s3Region, "s3Region", "", "S3 Region")
+	jupyterCmd.Flags().StringVar(&ec2InstanceType, "ec2InstanceType", "", "The type of EC2 instance to be created")
+	jupyterCmd.Flags().StringVar(&amiID, "amiId", "", "The ID of the AMI")
 	jupyterStopCmd.Flags().StringVar(&mountPoint, "mountPoint", "", "Mount Point of Jupyter Server to be stopped")
 }

@@ -3,7 +3,7 @@ package notebook
 import "github.com/gohypergiant/hyperdrive/hyper/services/config"
 
 type INotebookService interface {
-	Start(image string, pullImage bool, jupyterBrowser bool, requirements bool)
+	Start(image string, pullImage bool, jupyterBrowser bool, requirements bool, ec2InstanceType string, amiID string)
 	List()
 	Stop(mountPointOrIdentifier string)
 	UploadTrainingJobData()
