@@ -30,7 +30,16 @@ func GetManifest(manifestPath string) Manifest {
 	var m Manifest
 	yamlFile, err := ioutil.ReadFile(manifestPath)
 	if err != nil {
-		log.Printf("yamlFile.Get err   #%v ", err)
+		if os.IsNotExist(err) {
+			file, err := os.Create(manifestPath)
+			if err != nil {
+					log.Fatal(err)
+			}
+			defer file.Close()
+		} else {
+			log.Printf("yamlFile.Get err   #%v ", err)
+		}
+
 	}
 	err = yaml.Unmarshal(yamlFile, &m)
 	if err != nil {
