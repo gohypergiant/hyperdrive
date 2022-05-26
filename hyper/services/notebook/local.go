@@ -5,7 +5,6 @@ import (
 	"fmt"
 	"io"
 	"os"
-	"os/exec"
 	"path/filepath"
 	"strings"
 	"time"
@@ -32,16 +31,6 @@ var (
 type LocalNotebookService struct {
 	ManifestPath  string
 	S3Credentials S3Credentials
-}
-
-func (s LocalNotebookService) GetGitRoot() string {
-	gitRoot, err := exec.Command("git", "rev-parse", "--show-toplevel").Output()
-	if err != nil {
-		fmt.Println(err)
-		os.Exit(1)
-	}
-
-	return strings.TrimSpace(string(gitRoot))
 }
 
 
@@ -218,19 +207,17 @@ func (s LocalNotebookService) UploadTrainingJobData() {
 	//Right now, these two are the same, but in the future I'm sure that will change
 	//studyName := manifestConfig.StudyName
 	//notebookName := GetNotebookName(s.ManifestPath)
-	studyRoot := s.GetStudyRoot()
-	remotePath := s.GetGitRoot()
-	serverPath := s.GetServerPath(remotePath)
+	jobsPath := s.GetJobsPath()
 
 	fmt.Println("Uploading features data")
 	//upload data
 	featuresDataFilePath := strings.TrimLeft(manifestConfig.Training.Data.Features.Source, "./")
-	s.CopyFile(featuresDataFilePath, fmt.Sprintf("%s%s/%s", serverPath, studyRoot, featuresDataFilePath))
+	s.CopyFile(featuresDataFilePath, fmt.Sprintf("%s/%s", jobsPath, featuresDataFilePath))
 	fmt.Println("Uploading target data")
 	targetDataFilePath := strings.TrimLeft(manifestConfig.Training.Data.Target.Source, "./")
-	s.CopyFile(targetDataFilePath, fmt.Sprintf("%s%s/%s", serverPath, studyRoot, targetDataFilePath))
+	s.CopyFile(targetDataFilePath, fmt.Sprintf("%s/%s", jobsPath, targetDataFilePath))
 	fmt.Println("Uploading Study Manifest")
-	s.CopyFile(s.ManifestPath, fmt.Sprintf("%s%s/_study.yaml", serverPath, studyRoot))
+	s.CopyFile(s.ManifestPath, fmt.Sprintf("%s/_study.yaml", jobsPath))
 
 	fmt.Println("Upload complete")
 }
@@ -268,14 +255,13 @@ func (s LocalNotebookService) GetStudyRoot() string {
 }
 func (s LocalNotebookService) WaitForTrainingToComplete(timeout int) {
 
-	remotePath := s.GetGitRoot()
-	serverPath := s.GetServerPath(remotePath)
-	studyRoot := s.GetStudyRoot()
+	jobsPath := s.GetJobsPath()
+
 	fmt.Print("Waiting for training to complete")
 	fmt.Println()
 	for i := 0; i <= timeout; i++ {
 		if i%3 == 0 || i == timeout {
-			status := s.GetTrainingStatus(fmt.Sprintf("%s%s/", serverPath, studyRoot))
+			status := s.GetTrainingStatus(fmt.Sprintf("%s/", jobsPath))
 			if status == TrainingComplete {
 				fmt.Println()
 				fmt.Println("Training completed")
@@ -336,21 +322,24 @@ func (s LocalNotebookService) GetServerPath(rootPath string) string {
 	return containerMount
 
 }
-func (s LocalNotebookService) GetRemoteHyperpackPath() string {
-	remotePath := s.GetGitRoot()
-	serverMount := s.GetServerPath(remotePath)
-	studyRoot := s.GetStudyRoot()
+
+func (s LocalNotebookService) GetJobsPath() string {
 	studyName := manifest.GetName(s.ManifestPath)
-	return fmt.Sprintf("%s%s/%s.hyperpack.zip", serverMount, studyRoot, studyName)
+	return fmt.Sprintf("_jobs/%s", studyName)
+}
+
+func (s LocalNotebookService) GetHyperpackArtifactPath() string {
+	studyName := manifest.GetName(s.ManifestPath)
+	jobsPath := s.GetJobsPath()
+	return fmt.Sprintf("%s/%s.hyperpack.zip", jobsPath, studyName)
 }
 func (s LocalNotebookService) GetHyperpackSavePath() string {
-	gitRootPath := s.GetGitRoot()
 	studyName := manifest.GetName(s.ManifestPath)
-	return fmt.Sprintf("%s/%s.hyperpack.zip", gitRootPath, studyName)
+	return fmt.Sprintf("%s.hyperpack.zip", studyName)
 }
 func (s LocalNotebookService) DownloadHyperpack() {
 
-	hyperpackPath := s.GetRemoteHyperpackPath()
+	hyperpackPath := s.GetHyperpackArtifactPath()
 	savePath := s.GetHyperpackSavePath()
 	fmt.Printf("Saving to %s \n", savePath)
 
