@@ -4,6 +4,7 @@ import (
 	"context"
 	"fmt"
 	"os"
+	"path"
 
 	"github.com/aws/aws-sdk-go-v2/aws"
 	"github.com/aws/aws-sdk-go-v2/config"
@@ -362,7 +363,20 @@ func GetSubnetID(r *ec2.DescribeSubnetsOutput, projectName string) string {
 	}
 	return ""
 }
+func setSubnetToProvisionPublicIP(subnetID string, client *ec2.Client) {
+	subnetChangeInput := &ec2.ModifySubnetAttributeInput{
+		SubnetId: aws.String(subnetID),
+		MapPublicIpOnLaunch: &types.AttributeBooleanValue{
+			Value: aws.Bool(true),
+		},
+	}
 
+	_, err := ChangeSubnet(context.TODO(), client, subnetChangeInput)
+	if err != nil {
+		panic("error modifying Subnet attribute," + err.Error())
+	}
+
+}
 func getOrCreateSubnet(client *ec2.Client, vID string, region string, projectName string, rtID string) string {
 
 	subnetDescribeInput := &ec2.DescribeSubnetsInput{
@@ -380,62 +394,52 @@ func getOrCreateSubnet(client *ec2.Client, vID string, region string, projectNam
 
 	subnetID := GetSubnetID(subnetDescribeResult, projectName)
 
-	if subnetID == "" {
-		fmt.Println("No Subnet found for VPC", vID)
-		fmt.Println("Creating Subnet")
+	if subnetID != "" {
+		setSubnetToProvisionPublicIP(subnetID, client)
+		return subnetID
+	}
+	fmt.Println("No Subnet found for VPC", vID)
+	fmt.Println("Creating Subnet")
 
-		tagSpecification := []types.TagSpecification{
-			{
-				ResourceType: types.ResourceTypeSubnet,
-				Tags: []types.Tag{
-					{
-						Key:   aws.String(HYPERDRIVE_TYPE_TAG),
-						Value: aws.String("true"),
-					},
-					{
-						Key:   aws.String(HYPERDRIVE_NAME_TAG),
-						Value: aws.String(projectName),
-					},
+	tagSpecification := []types.TagSpecification{
+		{
+			ResourceType: types.ResourceTypeSubnet,
+			Tags: []types.Tag{
+				{
+					Key:   aws.String(HYPERDRIVE_TYPE_TAG),
+					Value: aws.String("true"),
+				},
+				{
+					Key:   aws.String(HYPERDRIVE_NAME_TAG),
+					Value: aws.String(projectName),
 				},
 			},
-		}
+		},
+	}
 
-		subnetMakeInput := &ec2.CreateSubnetInput{
-			CidrBlock:         aws.String("10.0.1.0/24"),
-			VpcId:             aws.String(vID),
-			AvailabilityZone:  aws.String(region + "a"),
-			TagSpecifications: tagSpecification,
-		}
+	subnetMakeInput := &ec2.CreateSubnetInput{
+		CidrBlock:         aws.String("10.0.1.0/24"),
+		VpcId:             aws.String(vID),
+		AvailabilityZone:  aws.String(region + "a"),
+		TagSpecifications: tagSpecification,
+	}
 
-		subnetMakeResult, err := MakeSubnet(context.TODO(), client, subnetMakeInput)
-		if err != nil {
-			panic("error creating Subnet," + err.Error())
-		}
+	subnetMakeResult, err := MakeSubnet(context.TODO(), client, subnetMakeInput)
+	if err != nil {
+		panic("error creating Subnet," + err.Error())
+	}
 
-		subnetID = *subnetMakeResult.Subnet.SubnetId
+	subnetID = *subnetMakeResult.Subnet.SubnetId
 
-		subnetChangeInput := &ec2.ModifySubnetAttributeInput{
-			SubnetId: aws.String(subnetID),
-			MapPublicIpOnLaunch: &types.AttributeBooleanValue{
-				Value: aws.Bool(true),
-			},
-		}
+	setSubnetToProvisionPublicIP(subnetID, client)
+	inputAddRouteTable := &ec2.AssociateRouteTableInput{
+		RouteTableId: aws.String(rtID),
+		SubnetId:     aws.String(subnetID),
+	}
 
-		_, err = ChangeSubnet(context.TODO(), client, subnetChangeInput)
-		if err != nil {
-			panic("error modifying Subnet attribute," + err.Error())
-		}
-
-		inputAddRouteTable := &ec2.AssociateRouteTableInput{
-			RouteTableId: aws.String(rtID),
-			SubnetId:     aws.String(subnetID),
-		}
-
-		_, err = AddRouteTable(context.TODO(), client, inputAddRouteTable)
-		if err != nil {
-			panic("error associating Route Table to Subnet," + err.Error())
-		}
-
+	_, err = AddRouteTable(context.TODO(), client, inputAddRouteTable)
+	if err != nil {
+		panic("error associating Route Table to Subnet," + err.Error())
 	}
 
 	return subnetID
@@ -471,60 +475,61 @@ func getOrCreateSecurityGroup(client *ec2.Client, vID string, projectName string
 
 	securityGroupID = GetSecurityGroupId(securityGroupDescribeResult, projectName)
 
-	if securityGroupID == "" {
-		fmt.Println("No Security Group found on VPC", vID)
-		fmt.Println("Creating Security Group for project", projectName)
+	if securityGroupID != "" {
+		return securityGroupID
+	}
+	fmt.Println("No Security Group found on VPC", vID)
+	fmt.Println("Creating Security Group for project", projectName)
 
-		tagSpecification := []types.TagSpecification{
-			{
-				ResourceType: types.ResourceTypeSecurityGroup,
-				Tags: []types.Tag{
-					{
-						Key:   aws.String(HYPERDRIVE_TYPE_TAG),
-						Value: aws.String("true"),
-					},
-					{
-						Key:   aws.String(HYPERDRIVE_NAME_TAG),
-						Value: aws.String(projectName),
-					},
-				},
-			},
-		}
-
-		scInput := &ec2.CreateSecurityGroupInput{
-			GroupName:         aws.String(projectName + HYPERDRIVE_SECURITY_GROUP_NAME),
-			Description:       aws.String("Security group for EC2 instances provisioned by hyper"),
-			VpcId:             aws.String(vID),
-			TagSpecifications: tagSpecification,
-		}
-
-		securityGroupMakeResult, err := MakeSecurityGroup(context.TODO(), client, scInput)
-		if err != nil {
-			panic("error creating Security Group," + err.Error())
-		}
-
-		securityGroupID = *securityGroupMakeResult.GroupId
-
-		securityGroupPermissionsInput := &ec2.AuthorizeSecurityGroupIngressInput{
-			GroupId: aws.String(securityGroupID),
-			IpPermissions: []types.IpPermission{
+	tagSpecification := []types.TagSpecification{
+		{
+			ResourceType: types.ResourceTypeSecurityGroup,
+			Tags: []types.Tag{
 				{
-					IpProtocol: aws.String("tcp"),
-					FromPort:   aws.Int32(22),
-					ToPort:     aws.Int32(22),
-					IpRanges: []types.IpRange{
-						{
-							CidrIp: aws.String("0.0.0.0/0"),
-						},
+					Key:   aws.String(HYPERDRIVE_TYPE_TAG),
+					Value: aws.String("true"),
+				},
+				{
+					Key:   aws.String(HYPERDRIVE_NAME_TAG),
+					Value: aws.String(projectName),
+				},
+			},
+		},
+	}
+
+	scInput := &ec2.CreateSecurityGroupInput{
+		GroupName:         aws.String(projectName + HYPERDRIVE_SECURITY_GROUP_NAME),
+		Description:       aws.String("Security group for EC2 instances provisioned by hyper"),
+		VpcId:             aws.String(vID),
+		TagSpecifications: tagSpecification,
+	}
+
+	securityGroupMakeResult, err := MakeSecurityGroup(context.TODO(), client, scInput)
+	if err != nil {
+		panic("error creating Security Group," + err.Error())
+	}
+
+	securityGroupID = *securityGroupMakeResult.GroupId
+
+	securityGroupPermissionsInput := &ec2.AuthorizeSecurityGroupIngressInput{
+		GroupId: aws.String(securityGroupID),
+		IpPermissions: []types.IpPermission{
+			{
+				IpProtocol: aws.String("tcp"),
+				FromPort:   aws.Int32(22),
+				ToPort:     aws.Int32(22),
+				IpRanges: []types.IpRange{
+					{
+						CidrIp: aws.String("0.0.0.0/0"),
 					},
 				},
 			},
-		}
+		},
+	}
 
-		_, err = MakeSecurityGroupPermissions(context.TODO(), client, securityGroupPermissionsInput)
-		if err != nil {
-			panic("error adding permissions to the Security Group," + err.Error())
-		}
+	_, err = MakeSecurityGroupPermissions(context.TODO(), client, securityGroupPermissionsInput)
+	if err != nil {
+		panic("error adding permissions to the Security Group," + err.Error())
 	}
 	return securityGroupID
 }
@@ -554,6 +559,7 @@ func getOrCreateKeyPair(client *ec2.Client, projectName string) string {
 		panic("error fetching Key Pairs: " + err.Error())
 	}
 	keyName := getKeyPairName(keyPairDescribeResult, projectName)
+	fmt.Printf("keyName: %s", keyName)
 
 	if keyName == "" {
 		tagSpecification := []types.TagSpecification{
@@ -582,7 +588,8 @@ func getOrCreateKeyPair(client *ec2.Client, projectName string) string {
 		if err != nil {
 			panic("error creating Key Pair," + err.Error())
 		}
-		err = WriteKey(os.Getenv("HOME")+"/"+keyName+".pem", keyPairMakeResult.KeyMaterial)
+		keyPath := path.Join(os.Getenv("HOME"), fmt.Sprintf("%s.pem", keyName))
+		err = WriteKey(keyPath, keyPairMakeResult.KeyMaterial) // todo fix path for windows
 		if err != nil {
 			fmt.Printf("Couldn't write key pair to file: %v", err)
 		}
@@ -654,6 +661,11 @@ func StartServer(manifestPath string, remoteCfg HyperConfig.EC2RemoteConfigurati
 		return
 	}
 
+	if result.Instances[0].PublicIpAddress == nil {
+
+		fmt.Println("Provisioned instance but cannot get publicIP")
+		return
+	}
 	fmt.Print("EC2 instance provisioned. You can access via ssh by running:")
 	fmt.Print("ssh -i " + keyName + ".pem ec2-user@" + *result.Instances[0].PublicIpAddress)
 }
