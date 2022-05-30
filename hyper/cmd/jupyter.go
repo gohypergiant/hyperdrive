@@ -16,6 +16,8 @@ limitations under the License.
 package cmd
 
 import (
+	"fmt"
+
 	"github.com/gohypergiant/hyperdrive/hyper/services/notebook"
 	"github.com/spf13/cobra"
 )
@@ -60,11 +62,19 @@ var jupyterStopCmd = &cobra.Command{
 		notebook.NotebookService(RemoteName, manifestPath, s3AccessKey, s3AccessSecret, s3Region).Stop(mountPoint)
 	},
 }
+var jupyterRemoteHost = &cobra.Command{
+	Use:   "remoteHost",
+	Short: "start server on remote host",
+	Run: func(cmd *cobra.Command, args []string) {
+		fmt.Println("Starting jupyter on remote host")
+	},
+}
 
 func init() {
 	rootCmd.AddCommand(jupyterCmd)
 	jupyterCmd.AddCommand(jupyterListCmd)
 	jupyterCmd.AddCommand(jupyterStopCmd)
+	jupyterCmd.AddCommand(jupyterRemoteHost)
 
 	jupyterCmd.Flags().BoolVarP(&jupyterBrowser, "browser", "", false, "Open jupyter in a browser after launching")
 	jupyterCmd.Flags().BoolVarP(&pullImage, "pull", "", false, "Pull latest image before running")
