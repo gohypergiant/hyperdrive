@@ -524,6 +524,16 @@ func getOrCreateSecurityGroup(client *ec2.Client, vID string, projectName string
 					},
 				},
 			},
+			{
+				IpProtocol: aws.String("tcp"),
+				FromPort:   aws.Int32(8080),
+				ToPort:     aws.Int32(8080),
+				IpRanges: []types.IpRange{
+					{
+						CidrIp: aws.String("0.0.0.0/0"),
+					},
+				},
+			},
 		},
 	}
 
