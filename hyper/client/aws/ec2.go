@@ -742,7 +742,8 @@ func StartServer(manifestPath string, remoteCfg HyperConfig.EC2RemoteConfigurati
 	}
 
 	minMaxCount := int32(1)
-startupScript := `
+	//We'll need to update the url for the release artifact
+	startupScript := `
 #!/bin/bash
 yum update
 mkdir -p /tmp/hyperdrive
@@ -760,7 +761,7 @@ hyper jupyter remoteHost
 		SubnetId:          aws.String(subnetID),
 		KeyName:           aws.String(keyName),
 		TagSpecifications: tagSpecification,
-		UserData: aws.String(base64.StdEncoding.EncodeToString([]byte(startupScript))),
+		UserData:          aws.String(base64.StdEncoding.EncodeToString([]byte(startupScript))),
 	}
 
 	result, err := MakeInstance(context.TODO(), client, ec2Input)
