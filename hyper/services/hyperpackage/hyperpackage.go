@@ -4,6 +4,7 @@ type IHyperpackageService interface {
 	Build(dockerfileSavePath string, imageTags []string)
 	Run(imageTag string)
 	BuildAndRun(dockerfileSavePath string, imageTags []string)
+	Import(modelFlavor string)
 	List()
 	Stop(name string)
 }

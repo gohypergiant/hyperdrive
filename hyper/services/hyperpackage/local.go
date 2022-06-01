@@ -71,6 +71,10 @@ func (s LocalHyperpackageService) Run(imageTag string) {
 		}
 	}
 }
+func (s LocalHyperpackageService) Import(modelFlavor string) {
+	fmt.Println("we made it here")
+	fmt.Println("model flavor is: ", modelFlavor)
+}
 func (s LocalHyperpackageService) List() {
 
 	fmt.Println("Currently running hyperpackages:")
