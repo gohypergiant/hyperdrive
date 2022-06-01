@@ -655,6 +655,7 @@ func StartServer(manifestPath string, remoteCfg HyperConfig.EC2RemoteConfigurati
 	minMaxCount := int32(1)
 startupScript := `
 #!/bin/bash
+yum update
 mkdir -p /tmp/hyperdrive
 curl -fsSL https://github.com/gohypergiant/hyperdrive/releases/download/v0.0.0-troubleshoot/hyperdrive_0.0.0-troubleshoot_Linux_x86_64.tar.gz -o /tmp/hyperdrive/hyper.tar
 tar -xvf /tmp/hyperdrive/hyper.tar -C /tmp/hyperdrive
