@@ -34,12 +34,12 @@ type LocalNotebookService struct {
 }
 
 
-func (s LocalNotebookService) Start(flavor string, pullImage bool, jupyterBrowser bool, requirements bool, ec2InstanceType string, amiID string) {
+func (s LocalNotebookService) Start(flavor string, pullImage bool, jupyterBrowser bool, requirements bool, ec2Options EC2StartOptions, hostPort string) {
 
 	dockerClient := cli.NewDockerClient()
 	cwdPath, _ := os.Getwd()
 	name := GetNotebookName(s.ManifestPath)
-	hostIP := "127.0.0.1"
+	hostIP := "0.0.0.0"
 	execute := false
 	projectName := manifest.GetProjectName(s.ManifestPath)
 
@@ -85,7 +85,7 @@ func (s LocalNotebookService) Start(flavor string, pullImage bool, jupyterBrowse
 			"8888/tcp": []nat.PortBinding{
 				{
 					HostIP:   hostIP,
-					HostPort: "",
+					HostPort: hostPort,
 				},
 			},
 		},
