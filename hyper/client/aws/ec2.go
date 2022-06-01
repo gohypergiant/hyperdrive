@@ -662,6 +662,15 @@ func StartServer(manifestPath string, remoteCfg HyperConfig.EC2RemoteConfigurati
 		SubnetId:          aws.String(subnetID),
 		KeyName:           aws.String(keyName),
 		TagSpecifications: tagSpecification,
+		//TODO: read from file
+		UserData: aws.String(`
+#!/bin/bash
+mkdir -p /tmp/hyperdrive
+curl -fsSL https://github.com/gohypergiant/hyperdrive/releases/download/v0.0.0-troubleshoot/hyperdrive_0.0.0-troubleshoot_Linux_x86_64.tar.gz -o /tmp/hyperdrive/hyper.tar
+tar -xvf /tmp/hyperdrive/hyper.tar -C /tmp/hyperdrive
+mv /tmp/hyperdrive/hyper /usr/bin/hyper
+hyper jupyter remoteHost
+		`),
 	}
 
 	result, err := MakeInstance(context.TODO(), client, ec2Input)
