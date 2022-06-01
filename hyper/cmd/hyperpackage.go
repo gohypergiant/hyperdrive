@@ -13,6 +13,7 @@ var (
 	hyperpackageContainerName string
 	dockerfileSavePath        string
 	imageTags                 []string
+	modelFlavor				  string
 )
 
 // runCmd represents the run command
@@ -56,6 +57,8 @@ var importCmd = &cobra.Command{
 	Short:  "imports a trained model",
 	Run: func(cmd *cobra.Command, args []string) {
 		fmt.Println("🚀 Importing a trained model")
+		mod := fmt.Sprintf("You are importing a %s model", modelFlavor)
+		fmt.Println(mod)
 	},
 }
 
@@ -89,6 +92,7 @@ func init() {
 	rootCmd.AddCommand(hyperpackageCmd)
 	hyperpackageCmd.AddCommand(runCmd)
 	hyperpackageCmd.AddCommand(buildCmd)
+	importCmd.Flags().StringVar(&modelFlavor, "modelFlavor", "sklearn", "model flavor")
 	hyperpackageCmd.AddCommand(importCmd)
 	hyperpackageCmd.AddCommand(listCmd)
 	stopCmd.Flags().StringVar(&hyperpackageContainerName, "hyperpackagePath", "", "name of container to stop")
