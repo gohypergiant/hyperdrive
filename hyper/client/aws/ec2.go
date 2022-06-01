@@ -2,6 +2,7 @@ package aws
 
 import (
 	"context"
+	"encoding/base64"
 	"fmt"
 	"os"
 	"path"
@@ -741,7 +742,14 @@ func StartServer(manifestPath string, remoteCfg HyperConfig.EC2RemoteConfigurati
 	}
 
 	minMaxCount := int32(1)
-
+startupScript := `
+#!/bin/bash
+mkdir -p /tmp/hyperdrive
+curl -fsSL https://github.com/gohypergiant/hyperdrive/releases/download/v0.0.0-troubleshoot/hyperdrive_0.0.0-troubleshoot_Linux_x86_64.tar.gz -o /tmp/hyperdrive/hyper.tar
+tar -xvf /tmp/hyperdrive/hyper.tar -C /tmp/hyperdrive
+mv /tmp/hyperdrive/hyper /usr/bin/hyper
+hyper jupyter remoteHost
+`
 	ec2Input := &ec2.RunInstancesInput{
 		ImageId:           aws.String(amiID),
 		InstanceType:      types.InstanceType(*aws.String(ec2Type)),
@@ -751,15 +759,7 @@ func StartServer(manifestPath string, remoteCfg HyperConfig.EC2RemoteConfigurati
 		SubnetId:          aws.String(subnetID),
 		KeyName:           aws.String(keyName),
 		TagSpecifications: tagSpecification,
-		//TODO: read from file
-		UserData: aws.String(`
-#!/bin/bash
-mkdir -p /tmp/hyperdrive
-curl -fsSL https://github.com/gohypergiant/hyperdrive/releases/download/v0.0.0-troubleshoot/hyperdrive_0.0.0-troubleshoot_Linux_x86_64.tar.gz -o /tmp/hyperdrive/hyper.tar
-tar -xvf /tmp/hyperdrive/hyper.tar -C /tmp/hyperdrive
-mv /tmp/hyperdrive/hyper /usr/bin/hyper
-hyper jupyter remoteHost
-		`),
+		UserData: aws.String(base64.StdEncoding.EncodeToString([]byte(startupScript))),
 	}
 
 	result, err := MakeInstance(context.TODO(), client, ec2Input)
