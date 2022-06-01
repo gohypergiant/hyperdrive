@@ -15,7 +15,7 @@ var (
 	imageTags                 []string
 )
 
-// runCmd represents the deploy command
+// runCmd represents the run command
 var runCmd = &cobra.Command{
 	Use:   "run",
 	Short: "run a hyperpack",
@@ -33,7 +33,7 @@ var runCmd = &cobra.Command{
 	},
 }
 
-// runCmd represents the deploy command
+// buildCmd represents the build command
 var buildCmd = &cobra.Command{
 	Use:   "build",
 	Short: "builds a hyperpack (but doesn't run it)",
@@ -50,7 +50,7 @@ var buildCmd = &cobra.Command{
 	},
 }
 
-// listCmd represents the deploy command
+// listCmd represents the list command
 var listCmd = &cobra.Command{
 	Use:   "list",
 	Short: "lists hyperpackage containers that are currently running",
@@ -59,7 +59,7 @@ var listCmd = &cobra.Command{
 	},
 }
 
-// stopCmd represents the deploy command
+// stopCmd represents the stop command
 var stopCmd = &cobra.Command{
 	Use:   "stop",
 	Short: "stops a hyperpackage container that is currently running",
