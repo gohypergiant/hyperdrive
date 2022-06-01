@@ -16,8 +16,6 @@ limitations under the License.
 package cmd
 
 import (
-	"fmt"
-
 	"github.com/gohypergiant/hyperdrive/hyper/services/notebook"
 	"github.com/spf13/cobra"
 )
@@ -36,6 +34,7 @@ var (
 	s3Region        string
 	ec2InstanceType string
 	amiID           string
+	hostPort        string
 )
 
 // jupyterCmd represents the jupyter command
@@ -43,7 +42,18 @@ var jupyterCmd = &cobra.Command{
 	Use:   "jupyter",
 	Short: "Run a local jupyter server",
 	Run: func(cmd *cobra.Command, args []string) {
-		notebook.NotebookService(RemoteName, manifestPath, s3AccessKey, s3AccessSecret, s3Region).Start(image, pullImage, jupyterBrowser, requirements, ec2InstanceType, amiID)
+		notebook.NotebookService(
+			RemoteName,
+			manifestPath,
+			s3AccessKey,
+			s3AccessSecret,
+			s3Region).Start(
+			image,
+			pullImage,
+			jupyterBrowser,
+			requirements,
+			notebook.EC2StartOptions{InstanceType: ec2InstanceType, AmiId: amiID},
+			hostPort)
 	},
 }
 
@@ -66,7 +76,18 @@ var jupyterRemoteHost = &cobra.Command{
 	Use:   "remoteHost",
 	Short: "start server on remote host",
 	Run: func(cmd *cobra.Command, args []string) {
-		fmt.Println("Starting jupyter on remote host")
+		notebook.NotebookService(
+			RemoteName,
+			manifestPath,
+			s3AccessKey,
+			s3AccessSecret,
+			s3Region).Start(
+			image,
+			pullImage,
+			jupyterBrowser,
+			requirements,
+			notebook.EC2StartOptions{InstanceType: ec2InstanceType, AmiId: amiID},
+			hostPort)
 	},
 }
 
@@ -85,5 +106,6 @@ func init() {
 	jupyterCmd.Flags().StringVar(&s3Region, "s3Region", "", "S3 Region")
 	jupyterCmd.Flags().StringVar(&ec2InstanceType, "ec2InstanceType", "", "The type of EC2 instance to be created")
 	jupyterCmd.Flags().StringVar(&amiID, "amiId", "", "The ID of the AMI")
+	jupyterCmd.Flags().StringVar(&hostPort, "hostPort", "", "Host port for container")
 	jupyterStopCmd.Flags().StringVar(&mountPoint, "mountPoint", "", "Mount Point of Jupyter Server to be stopped")
 }
