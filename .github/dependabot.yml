@@ -1,0 +1,10 @@
+version: 2
+updates:
+  - package-ecosystem: gomod
+    directory: /hyper
+    schedule:
+      interval: daily
+    reviewers:
+    - "gohypergiant/platform-engineering"
+    assignees:
+    - "gohypergiant/platform-engineering"
