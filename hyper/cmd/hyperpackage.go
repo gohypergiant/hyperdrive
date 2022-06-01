@@ -50,6 +50,15 @@ var buildCmd = &cobra.Command{
 	},
 }
 
+// importCmd represents the import model command
+var importCmd = &cobra.Command{
+	Use:    "import",
+	Short:  "imports a trained model",
+	Run: func(cmd *cobra.Command, args []string) {
+		fmt.Println("🚀 Importing a trained model")
+	},
+}
+
 // listCmd represents the list command
 var listCmd = &cobra.Command{
 	Use:   "list",
@@ -80,6 +89,7 @@ func init() {
 	rootCmd.AddCommand(hyperpackageCmd)
 	hyperpackageCmd.AddCommand(runCmd)
 	hyperpackageCmd.AddCommand(buildCmd)
+	hyperpackageCmd.AddCommand(importCmd)
 	hyperpackageCmd.AddCommand(listCmd)
 	stopCmd.Flags().StringVar(&hyperpackageContainerName, "hyperpackagePath", "", "name of container to stop")
 	hyperpackageCmd.AddCommand(stopCmd)
