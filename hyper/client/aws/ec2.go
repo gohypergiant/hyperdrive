@@ -758,19 +758,20 @@ func StartServer(manifestPath string, remoteCfg HyperConfig.EC2RemoteConfigurati
 			},
 		},
 	}
-
+	version := "0.0.1-remotestart.0.6d9f91d"
 	minMaxCount := int32(1)
 	//We'll need to update the url for the release artifact
-	startupScript := `
-#!/bin/bash
-yum update
+	startupScript := fmt.Sprintf(`
+#!/bin/bash -xe
+yum update -y
+service docker start
 mkdir -p /tmp/hyperdrive
-curl -fsSL https://github.com/gohypergiant/hyperdrive/releases/download/0.0.1-remotestart.0.07d1e78/hyperdrive_0.0.1-remotestart.0.07d1e78_Linux_x86_64.tar.gz -o /tmp/hyperdrive/hyper.tar
+curl -fsSL https://github.com/gohypergiant/hyperdrive/releases/download/%s/hyperdrive_%s_Linux_x86_64.tar.gz -o /tmp/hyperdrive/hyper.tar
 tar -xvf /tmp/hyperdrive/hyper.tar -C /tmp/hyperdrive
 mv /tmp/hyperdrive/hyper /usr/bin/hyper
 hyper jupyter remoteHost --hostPort 8888
 
-`
+`, version, version)
 	ec2Input := &ec2.RunInstancesInput{
 		ImageId:           aws.String(amiID),
 		InstanceType:      types.InstanceType(*aws.String(ec2Type)),
@@ -809,8 +810,8 @@ hyper jupyter remoteHost --hostPort 8888
 	}
 	if ip == nil {
 
-			fmt.Println("Provisioned instance but cannot get publicIP")
-			return
+		fmt.Println("Provisioned instance but cannot get publicIP")
+		return
 	}
 	fmt.Print("EC2 instance provisioned. You can access via ssh by running:")
 	fmt.Print("ssh -i " + keyName + ".pem ec2-user@" + *ip)
