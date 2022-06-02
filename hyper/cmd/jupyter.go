@@ -53,7 +53,8 @@ var jupyterCmd = &cobra.Command{
 			jupyterBrowser,
 			requirements,
 			notebook.EC2StartOptions{InstanceType: ec2InstanceType, AmiId: amiID},
-			hostPort)
+			hostPort, 
+			false)
 	},
 }
 
@@ -87,7 +88,8 @@ var jupyterRemoteHost = &cobra.Command{
 			jupyterBrowser,
 			requirements,
 			notebook.EC2StartOptions{InstanceType: ec2InstanceType, AmiId: amiID},
-			hostPort)
+			hostPort,
+			true)
 	},
 }
 

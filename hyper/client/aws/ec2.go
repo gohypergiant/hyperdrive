@@ -769,7 +769,7 @@ mkdir -p /tmp/hyperdrive
 curl -fsSL https://github.com/gohypergiant/hyperdrive/releases/download/%s/hyperdrive_%s_Linux_x86_64.tar.gz -o /tmp/hyperdrive/hyper.tar
 tar -xvf /tmp/hyperdrive/hyper.tar -C /tmp/hyperdrive
 mv /tmp/hyperdrive/hyper /usr/bin/hyper
-hyper jupyter remoteHost --hostPort 8888
+nohup hyper jupyter remoteHost --hostPort 8888 &
 
 `, version, version)
 	ec2Input := &ec2.RunInstancesInput{
