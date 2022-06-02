@@ -769,6 +769,7 @@ curl -fsSL https://github.com/gohypergiant/hyperdrive/releases/download/0.0.1-re
 tar -xvf /tmp/hyperdrive/hyper.tar -C /tmp/hyperdrive
 mv /tmp/hyperdrive/hyper /usr/bin/hyper
 hyper jupyter remoteHost --hostPort 8888
+
 `
 	ec2Input := &ec2.RunInstancesInput{
 		ImageId:           aws.String(amiID),
