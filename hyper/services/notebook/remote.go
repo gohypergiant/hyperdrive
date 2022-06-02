@@ -52,6 +52,8 @@ func (s RemoteNotebookService) Stop(identifier string) {
 	name := GetNotebookName(s.ManifestPath)
 	if s.RemoteConfiguration.Type == config.Firefly {
 		firefly.StopServer(s.RemoteConfiguration.FireflyConfiguration, name)
+	} else if s.RemoteConfiguration.Type == config.EC2 {
+		aws.StopServer(s.ManifestPath, s.RemoteConfiguration.EC2Configuration)
 	} else {
 		fmt.Println("Not Implemented")
 	}
