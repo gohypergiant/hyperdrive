@@ -10,6 +10,7 @@ import (
 	"github.com/docker/go-connections/nat"
 	"github.com/gohypergiant/hyperdrive/hyper/client/cli"
 	"github.com/gohypergiant/hyperdrive/hyper/client/manifest"
+	"github.com/gohypergiant/hyperdrive/hyper/services/notebook"
 )
 
 type LocalHyperpackageService struct {
@@ -72,8 +73,49 @@ func (s LocalHyperpackageService) Run(imageTag string) {
 	}
 }
 func (s LocalHyperpackageService) Import(modelFlavor string) {
-	fmt.Println("we made it here")
-	fmt.Println("model flavor is: ", modelFlavor)
+
+	dockerClient := cli.NewDockerClient()
+	cwdPath, _ := os.Getwd()
+	name := fmt.Sprintf("imported_%s", modelFlavor)
+	hostIP := "127.0.0.1"
+	imageOptions := notebook.GetNotebookImageOptions("dev") // using "dev" for dev purposes. Need to change to "local" later
+	imageName := "cpu-local:latest" // need to change to imageOptions.Image later
+	env := []string{"JUPYTER_TOKEN=firefly"}
+
+	contConfig := &container.Config{
+		Hostname: name,
+		Image:    imageName,
+		Tty:      true,
+		Env:      env,
+	}
+
+	hostConfig := &container.HostConfig{
+		PortBindings: nat.PortMap{
+			"8888/tcp": []nat.PortBinding{
+				{
+					HostIP:   hostIP,
+					HostPort: "",
+				},
+			},
+		},
+		Mounts: []mount.Mount{
+			{
+				Type:   mount.TypeBind,
+				Source: cwdPath,
+				Target: "/home/jovyan",
+			},
+		},
+	}
+
+	createdId, err := dockerClient.CreateContainer(imageOptions.Image, name, contConfig, hostConfig, false) // last arg set to false for dev purposes. Need to change to true later
+	if err != nil {
+		fmt.Println(err)
+		os.Exit(1)
+	}
+
+	dockerClient.ExecuteContainer(createdId, false)
+	fmt.Println("started from the bottom now we here. Which is the bottom of this function.")
+
 }
 func (s LocalHyperpackageService) List() {
 
