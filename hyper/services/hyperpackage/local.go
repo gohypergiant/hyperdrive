@@ -81,6 +81,22 @@ func (s LocalHyperpackageService) Import(modelFlavor string) {
 	imageOptions := notebook.GetNotebookImageOptions("dev") // using "dev" for dev purposes. Need to change to "local" later
 	imageName := "cpu-local:latest" // need to change to imageOptions.Image later
 	env := []string{"JUPYTER_TOKEN=firefly"}
+	inImageCache := false
+	pullImage := false
+	fmt.Println("pullImage:", pullImage) // remove this later
+
+	clientImages, _ := dockerClient.ListImages()
+	for _, clientImage := range clientImages {
+		for _, tag := range clientImage.RepoTags {
+			if tag == imageOptions.Image {
+				inImageCache = true
+				break
+			}
+		}
+	}
+	if !inImageCache {
+		pullImage = true
+	}
 
 	contConfig := &container.Config{
 		Hostname: name,
@@ -107,7 +123,7 @@ func (s LocalHyperpackageService) Import(modelFlavor string) {
 		},
 	}
 
-	createdId, err := dockerClient.CreateContainer(imageOptions.Image, name, contConfig, hostConfig, false) // last arg set to false for dev purposes. Need to change to true later
+	createdId, err := dockerClient.CreateContainer(imageOptions.Image, name, contConfig, hostConfig, false) // last arg set to false for dev purposes. Need to change to pullImage later
 	if err != nil {
 		fmt.Println(err)
 		os.Exit(1)
