@@ -1,0 +1,39 @@
+# .github/workflows/module1.yml
+name: Release cli
+
+on:
+  pull_request:
+    paths:
+      - .github/workflows/release-cli.yml
+      - .github/workflows/build-release.yml
+      - hyper/**
+  push:
+    paths:
+      - .github/workflows/release-cli.yml
+      - .github/workflows/build-release.yml
+      - hyper/**
+    branches:
+      - stable
+
+jobs:
+  lint:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v2
+        with:
+          ref: ${{ github.head_ref }}   # checkout the correct branch name
+          fetch-depth: 0                # fetch the whole repo history
+          token: ${{ secrets.TAG_TOKEN }}
+
+      - name: Version
+        id: version
+        uses: codacy/git-version@2.2.0
+        with:
+          prefix: ""
+          log-path: hyper/
+          release-branch: stable
+      - name: Tag
+        run: |
+          git tag ${{ steps.version.outputs.version }}
+          git push origin ${{ steps.version.outputs.version }}

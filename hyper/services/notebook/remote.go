@@ -4,7 +4,7 @@ import (
 	"encoding/base64"
 	"fmt"
 	"os"
-	"strings"
+	"path"
 	"time"
 
 	"github.com/gohypergiant/hyperdrive/hyper/client/aws"
@@ -52,6 +52,8 @@ func (s RemoteNotebookService) Stop(identifier string) {
 	name := GetNotebookName(s.ManifestPath)
 	if s.RemoteConfiguration.Type == config.Firefly {
 		firefly.StopServer(s.RemoteConfiguration.FireflyConfiguration, name)
+	} else if s.RemoteConfiguration.Type == config.EC2 {
+		aws.StopServer(s.ManifestPath, s.RemoteConfiguration.EC2Configuration)
 	} else {
 		fmt.Println("Not Implemented")
 	}
@@ -67,10 +69,10 @@ func (s RemoteNotebookService) UploadTrainingJobData() {
 
 	fmt.Println("Uploading features data")
 	//upload data
-	featuresDataFilePath := strings.TrimLeft(manifestConfig.Training.Data.Features.Source, "./")
+	featuresDataFilePath := path.Clean(manifestConfig.Training.Data.Features.Source)
 	firefly.UploadData(s.RemoteConfiguration.FireflyConfiguration, notebookName, featuresDataFilePath, fmt.Sprintf("%s/%s", studyRoot, featuresDataFilePath))
 	fmt.Println("Uploading target data")
-	targetDataFilePath := strings.TrimLeft(manifestConfig.Training.Data.Target.Source, "./")
+	targetDataFilePath := path.Clean(manifestConfig.Training.Data.Target.Source)
 	firefly.UploadData(s.RemoteConfiguration.FireflyConfiguration, notebookName, targetDataFilePath, fmt.Sprintf("%s/%s", studyRoot, targetDataFilePath))
 	fmt.Println("Uploading Study Manifest")
 	firefly.UploadData(s.RemoteConfiguration.FireflyConfiguration, notebookName, s.ManifestPath, fmt.Sprintf("%s/_study.yaml", studyRoot))
@@ -112,12 +114,12 @@ func (s RemoteNotebookService) GetRemoteHyperpackPath() string {
 
 	studyRoot := s.GetStudyRoot()
 	studyName := manifest.GetName(s.ManifestPath)
-	return fmt.Sprintf("%s/%s.hyperpack.zip", studyRoot, studyName)
+	return path.Join( studyRoot, fmt.Sprintf("%s.hyperpack.zip", studyName))
 }
 func (s RemoteNotebookService) GetHyperpackSavePath() string {
 
 	studyName := manifest.GetName(s.ManifestPath)
-	return fmt.Sprintf("./%s.hyperpack.zip", studyName)
+	return path.Join( ".", fmt.Sprintf("%s.hyperpack.zip", studyName));
 }
 func (s RemoteNotebookService) DownloadHyperpack() {
 
