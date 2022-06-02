@@ -28,7 +28,7 @@ jobs:
           prefix: hyper-
           log-path: hyper/
           release-branch: stable
-      # - name: Tag
-      #   run: |
-      #     git tag ${{ steps.version.outputs.version }}
-      #     git push origin ${{ steps.version.outputs.version }}
+      - name: Tag
+        run: |
+          git tag ${{ steps.version.outputs.version }}
+          git push origin ${{ steps.version.outputs.version }}
