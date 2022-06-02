@@ -4,9 +4,13 @@ name: Release cli
 on:
   pull_request:
     paths:
+      - .github/workflows/release-cli.yml
+      - .github/workflows/build-release.yml
       - hyper/**
   push:
     paths:
+      - .github/workflows/release-cli.yml
+      - .github/workflows/build-release.yml
       - hyper/**
     branches:
       - stable
