@@ -758,17 +758,18 @@ func StartServer(manifestPath string, remoteCfg HyperConfig.EC2RemoteConfigurati
 			},
 		},
 	}
-	version := "0.0.1-remotestart.0.a7bed97"
+	version := "0.0.1-remotestart.0.a2da59a"
 	minMaxCount := int32(1)
 	startupScript := fmt.Sprintf(`
 #!/bin/bash -xe
 #yum update -y
 service docker start
-mkdir -p /tmp/hyperdrive
+mkdir -p /tmp/hyperdrive/project
 curl -fsSL https://github.com/gohypergiant/hyperdrive/releases/download/%s/hyperdrive_%s_Linux_x86_64.tar.gz -o /tmp/hyperdrive/hyper.tar
 tar -xvf /tmp/hyperdrive/hyper.tar -C /tmp/hyperdrive
 mv /tmp/hyperdrive/hyper /usr/bin/hyper
-nohup hyper jupyter remoteHost --hostPort 8888 &
+cd /tmp/hyperdrive/project
+hyper jupyter remoteHost --hostPort 8888 &
 
 `, version, version)
 	ec2Input := &ec2.RunInstancesInput{
