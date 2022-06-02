@@ -15,15 +15,20 @@ jobs:
   lint:
     runs-on: ubuntu-latest
     steps:
-      - name: Checkout Code
+      - name: Checkout
         uses: actions/checkout@v2
         with:
           ref: ${{ github.head_ref }}   # checkout the correct branch name
           fetch-depth: 0                # fetch the whole repo history
 
-      - name: Git Version
+      - name: Version
+        id: version
         uses: codacy/git-version@2.2.0
         with:
           prefix: hyper-
           log-path: hyper/
           release-branch: stable
+      # - name: Tag
+      #   run: |
+      #     git tag ${{ steps.version.outputs.version }}
+      #     git push origin ${{ steps.version.outputs.version }}
