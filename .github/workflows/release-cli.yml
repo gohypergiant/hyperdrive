@@ -26,7 +26,7 @@ jobs:
         id: version
         uses: codacy/git-version@2.2.0
         with:
-          prefix: hyper-
+          prefix: ""
           log-path: hyper/
           release-branch: stable
       - name: Tag
