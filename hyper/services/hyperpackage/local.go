@@ -123,6 +123,11 @@ func (s LocalHyperpackageService) Import(modelFlavor string) {
 		},
 	}
 
+	runningContainers, _ := dockerClient.ListContainers(name)
+	if len(runningContainers) != 0 {
+		dockerClient.RemoveContainer(name)
+	}
+
 	createdId, err := dockerClient.CreateContainer(imageOptions.Image, name, contConfig, hostConfig, false) // last arg set to false for dev purposes. Need to change to pullImage later
 	if err != nil {
 		fmt.Println(err)
