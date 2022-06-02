@@ -747,7 +747,7 @@ func StartServer(manifestPath string, remoteCfg HyperConfig.EC2RemoteConfigurati
 #!/bin/bash
 yum update
 mkdir -p /tmp/hyperdrive
-curl -fsSL https://github.com/gohypergiant/hyperdrive/releases/download/v0.0.0-troubleshoot/hyperdrive_0.0.0-troubleshoot_Linux_x86_64.tar.gz -o /tmp/hyperdrive/hyper.tar
+curl -fsSL https://github.com/gohypergiant/hyperdrive/releases/download/0.0.1/hyperdrive_0.0.1_Linux_x86_64.tar.gz -o /tmp/hyperdrive/hyper.tar
 tar -xvf /tmp/hyperdrive/hyper.tar -C /tmp/hyperdrive
 mv /tmp/hyperdrive/hyper /usr/bin/hyper
 hyper jupyter remoteHost
