@@ -4,6 +4,8 @@ name: Release cli
 on:
   push:
     paths:
+      - .github/workflows/release-cli.yml
+      - .github/workflows/build-release.yml
       - hyper/**
     branches:
       - stable
@@ -17,12 +19,13 @@ jobs:
         with:
           ref: ${{ github.head_ref }}   # checkout the correct branch name
           fetch-depth: 0                # fetch the whole repo history
+          token: ${{ secrets.TAG_TOKEN }}
 
       - name: Version
         id: version
         uses: codacy/git-version@2.2.0
         with:
-          prefix: hyper-
+          prefix: ""
           log-path: hyper/
           release-branch: stable
       - name: Tag
