@@ -81,7 +81,6 @@ func (s LocalNotebookService) Start(flavor string, pullImage bool, jupyterBrowse
 
 	restartPolicy := container.RestartPolicy{
 		Name:              "unless-stopped",
-		MaximumRetryCount: 5,
 	}
 	if restartAlways {
 		restartPolicy = container.RestartPolicy{
