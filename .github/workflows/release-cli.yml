@@ -2,9 +2,6 @@
 name: Release cli
 
 on:
-  pull_request:
-    paths:
-      - hyper/**
   push:
     paths:
       - hyper/**
