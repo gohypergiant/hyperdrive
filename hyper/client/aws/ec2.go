@@ -768,9 +768,9 @@ mkdir -p /tmp/hyperdrive/project
 curl -fsSL https://github.com/gohypergiant/hyperdrive/releases/download/%s/hyperdrive_%s_Linux_x86_64.tar.gz -o /tmp/hyperdrive/hyper.tar
 tar -xvf /tmp/hyperdrive/hyper.tar -C /tmp/hyperdrive
 mv /tmp/hyperdrive/hyper /usr/bin/hyper
+sudo chown ec2-user:ec2-user /tmp/hyperdrive/project
 cd /tmp/hyperdrive/project
-hyper jupyter remoteHost --hostPort 8888 &
-
+sudo -u ec2-user bash -c 'hyper jupyter remoteHost --hostPort 8888 &'
 `, version, version)
 	ec2Input := &ec2.RunInstancesInput{
 		ImageId:           aws.String(amiID),
@@ -813,8 +813,11 @@ hyper jupyter remoteHost --hostPort 8888 &
 		fmt.Println("Provisioned instance but cannot get publicIP")
 		return
 	}
-	fmt.Print("EC2 instance provisioned. You can access via ssh by running:")
-	fmt.Print("ssh -i " + keyName + ".pem ec2-user@" + *ip)
+	fmt.Println("")
+	fmt.Println("EC2 instance provisioned. You can access via ssh by running:")
+	fmt.Println("ssh -i " + keyName + ".pem ec2-user@" + *ip)
+	fmt.Println("")
+	fmt.Println("In a few minutes, you should be able to access jupyter lab at http://" + *ip + ":8888/lab")
 }
 func GetRouteTableID(r *ec2.DescribeRouteTablesOutput, projectName string) string {
 
