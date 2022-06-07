@@ -135,12 +135,23 @@ func (s LocalHyperpackageService) Import(modelFlavor string) {
 		os.Exit(1)
 	}
 
-	notebookOutPath := "/home/jovyan/import_outs.ipynb"
 	dockerClient.ExecuteContainer(createdId, false)
+
+	nowRunningContainers, _ := dockerClient.ListAllRunningContainers()
+
+	for _, runningContainer := range nowRunningContainers {
+		if runningContainer.ID == createdId {
+			publicPort := runningContainer.Ports[0].PublicPort
+			fmt.Println("Importing process now running via Docker Container", runningContainer.ID[:10], "on port", publicPort)
+		}
+	}
+
+	notebookOutPath := "/home/jovyan/import_outs.ipynb"
+
 	_, errExec := exec.Command("docker", "exec", name, "papermill",
 		"/home/jovyan/.executor/notebooks/importer.ipynb", notebookOutPath, "-p", "flavor", modelFlavor).Output()
 	if errExec != nil {
-		fmt.Println("Error with hypertrain execution in the docker container: ", err)
+		fmt.Println("Error with importer notebook execution in the docker container: ", err)
 		os.Exit(1)
 	}
 	fmt.Println("started from the bottom now we here. Which is the bottom of this function.")
