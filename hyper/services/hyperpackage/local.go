@@ -154,7 +154,7 @@ func (s LocalHyperpackageService) Import(importModelFileName string, modelFlavor
 	notebookOutPath := "/home/jovyan/import_outs.ipynb"
 
 	_, errExec := exec.Command("docker", "exec", name, "papermill",
-		"/home/jovyan/.executor/notebooks/importer.ipynb", notebookOutPath, "-p", "flavor", modelFlavor).Output()
+		"/home/jovyan/.executor/notebooks/importer.ipynb", notebookOutPath, "-p", "filename", importModelFileName, "-p", "flavor", modelFlavor).Output()
 	if errExec != nil {
 		fmt.Println("Error with importer notebook execution in the docker container: ", err)
 		os.Exit(1)
