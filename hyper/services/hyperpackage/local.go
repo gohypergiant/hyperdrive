@@ -162,8 +162,6 @@ func (s LocalHyperpackageService) Import(importModelFileName string, modelFlavor
 		fmt.Println("Error with importer notebook execution in the docker container: ", err)
 		os.Exit(1)
 	}
-	fmt.Println("started from the bottom now we here. Which is the bottom of this function.")
-
 }
 func (s LocalHyperpackageService) List() {
 
