@@ -33,13 +33,12 @@ type LocalNotebookService struct {
 	S3Credentials S3Credentials
 }
 
-
-func (s LocalNotebookService) Start(flavor string, pullImage bool, jupyterBrowser bool, requirements bool, ec2InstanceType string, amiID string) {
+func (s LocalNotebookService) Start(flavor string, pullImage bool, jupyterBrowser bool, requirements bool, ec2Options EC2StartOptions, hostPort string, restartAlways bool) {
 
 	dockerClient := cli.NewDockerClient()
 	cwdPath, _ := os.Getwd()
 	name := GetNotebookName(s.ManifestPath)
-	hostIP := "127.0.0.1"
+	hostIP := "0.0.0.0"
 	execute := false
 	projectName := manifest.GetProjectName(s.ManifestPath)
 
@@ -80,12 +79,20 @@ func (s LocalNotebookService) Start(flavor string, pullImage bool, jupyterBrowse
 		Env:      env,
 	}
 
+	restartPolicy := container.RestartPolicy{
+		Name:              "unless-stopped",
+	}
+	if restartAlways {
+		restartPolicy = container.RestartPolicy{
+			Name: "always",
+		}
+	}
 	hostConfig := &container.HostConfig{
 		PortBindings: nat.PortMap{
 			"8888/tcp": []nat.PortBinding{
 				{
 					HostIP:   hostIP,
-					HostPort: "",
+					HostPort: hostPort,
 				},
 			},
 		},
@@ -96,6 +103,7 @@ func (s LocalNotebookService) Start(flavor string, pullImage bool, jupyterBrowse
 				Target: "/home/jovyan",
 			},
 		},
+		RestartPolicy: restartPolicy,
 	}
 
 	if requirements {
