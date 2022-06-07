@@ -13,6 +13,7 @@ var (
 	hyperpackageContainerName string
 	dockerfileSavePath        string
 	imageTags                 []string
+	importModelFileName		  string
 	modelFlavor				  string
 )
 
@@ -59,7 +60,7 @@ var importCmd = &cobra.Command{
 		fmt.Println("🚀 Importing a trained model")
 		mod := fmt.Sprintf("You are importing a %s model", modelFlavor)
 		fmt.Println(mod)
-		hyperpackage.HyperpackageService(hyperpackagePath, manifestPath).Import(modelFlavor)
+		hyperpackage.HyperpackageService(hyperpackagePath, manifestPath).Import(importModelFileName, modelFlavor)
 	},
 }
 
@@ -93,6 +94,7 @@ func init() {
 	rootCmd.AddCommand(hyperpackageCmd)
 	hyperpackageCmd.AddCommand(runCmd)
 	hyperpackageCmd.AddCommand(buildCmd)
+	importCmd.Flags().StringVar(&importModelFileName, "filename", "", "import model filename")
 	importCmd.Flags().StringVar(&modelFlavor, "modelFlavor", "sklearn", "model flavor")
 	hyperpackageCmd.AddCommand(importCmd)
 	hyperpackageCmd.AddCommand(listCmd)

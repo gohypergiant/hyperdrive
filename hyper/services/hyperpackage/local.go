@@ -73,7 +73,12 @@ func (s LocalHyperpackageService) Run(imageTag string) {
 		}
 	}
 }
-func (s LocalHyperpackageService) Import(modelFlavor string) {
+func (s LocalHyperpackageService) Import(importModelFileName string, modelFlavor string) {
+
+	if importModelFileName == "" {
+		fmt.Println("Must specify filename of trained model to be imported with the --filename flag.")
+		os.Exit(1)
+	}
 
 	dockerClient := cli.NewDockerClient()
 	cwdPath, _ := os.Getwd()
