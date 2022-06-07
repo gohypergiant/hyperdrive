@@ -73,14 +73,14 @@ func (s LocalHyperpackageService) Run(imageTag string) {
 		}
 	}
 }
-func (s LocalHyperpackageService) Import(importModelFileName string, modelFlavor string, trainShape int) {
+func (s LocalHyperpackageService) Import(importModelFileName string, modelFlavor string, trainShape string) {
 
 	if importModelFileName == "" {
 		fmt.Println("Error: Must specify filename of trained model to be imported with the --filename flag.")
 		os.Exit(1)
 	}
 	
-	if trainShape == 0 {
+	if trainShape == "" {
 		fmt.Println("Error: Must specify the number of columns in the training data. Use the --shape flag.")
 		os.Exit(1)
 	}

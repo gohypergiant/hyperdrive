@@ -15,7 +15,7 @@ var (
 	imageTags                 []string
 	importModelFileName		  string
 	modelFlavor				  string
-	trainShape				  int
+	trainShape				  string
 )
 
 // runCmd represents the run command
@@ -95,7 +95,7 @@ func init() {
 	hyperpackageCmd.AddCommand(buildCmd)
 	importCmd.Flags().StringVar(&importModelFileName, "filename", "", "import model filename")
 	importCmd.Flags().StringVar(&modelFlavor, "modelFlavor", "sklearn", "model flavor")
-	importCmd.Flags().IntVar(&trainShape, "shape", 0, "Training shape of data, specifically the number of columns.")
+	importCmd.Flags().StringVar(&trainShape, "shape", "", "Training shape of data, specifically the number of columns.")
 	hyperpackageCmd.AddCommand(importCmd)
 	hyperpackageCmd.AddCommand(listCmd)
 	stopCmd.Flags().StringVar(&hyperpackageContainerName, "hyperpackagePath", "", "name of container to stop")
