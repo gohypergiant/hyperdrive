@@ -76,9 +76,12 @@ func (s LocalHyperpackageService) Run(imageTag string) {
 func (s LocalHyperpackageService) Import(importModelFileName string, modelFlavor string) {
 
 	if importModelFileName == "" {
-		fmt.Println("Must specify filename of trained model to be imported with the --filename flag.")
+		fmt.Println("Error: Must specify filename of trained model to be imported with the --filename flag.")
 		os.Exit(1)
 	}
+
+	mod := fmt.Sprintf("You are importing a %s model", modelFlavor)
+	fmt.Println(mod)
 
 	dockerClient := cli.NewDockerClient()
 	cwdPath, _ := os.Getwd()
