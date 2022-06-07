@@ -58,8 +58,9 @@ var importCmd = &cobra.Command{
 	Use:    "import",
 	Short:  "imports a trained model",
 	Run: func(cmd *cobra.Command, args []string) {
-		fmt.Println("🚀 Importing a trained model")
+		fmt.Println("🚀 Importing a trained model...")
 		hyperpackage.HyperpackageService(hyperpackagePath, manifestPath).Import(importModelFileName, modelFlavor, trainShape)
+		fmt.Println("Importing complete.")
 	},
 }
 
