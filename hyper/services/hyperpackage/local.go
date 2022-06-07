@@ -3,6 +3,7 @@ package hyperpackage
 import (
 	"fmt"
 	"os"
+	"os/exec"
 	"strings"
 
 	"github.com/docker/docker/api/types/container"
@@ -134,7 +135,14 @@ func (s LocalHyperpackageService) Import(modelFlavor string) {
 		os.Exit(1)
 	}
 
+	notebookOutPath := "/home/jovyan/import_outs.ipynb"
 	dockerClient.ExecuteContainer(createdId, false)
+	_, errExec := exec.Command("docker", "exec", name, "papermill",
+		"/home/jovyan/.executor/notebooks/importer.ipynb", notebookOutPath, "-p", "flavor", modelFlavor).Output()
+	if errExec != nil {
+		fmt.Println("Error with hypertrain execution in the docker container: ", err)
+		os.Exit(1)
+	}
 	fmt.Println("started from the bottom now we here. Which is the bottom of this function.")
 
 }
