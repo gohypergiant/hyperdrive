@@ -73,10 +73,15 @@ func (s LocalHyperpackageService) Run(imageTag string) {
 		}
 	}
 }
-func (s LocalHyperpackageService) Import(importModelFileName string, modelFlavor string) {
+func (s LocalHyperpackageService) Import(importModelFileName string, modelFlavor string, trainShape int) {
 
 	if importModelFileName == "" {
 		fmt.Println("Error: Must specify filename of trained model to be imported with the --filename flag.")
+		os.Exit(1)
+	}
+	
+	if trainShape == 0 {
+		fmt.Println("Error: Must specify the number of columns in the training data. Use the --shape flag.")
 		os.Exit(1)
 	}
 
@@ -157,7 +162,7 @@ func (s LocalHyperpackageService) Import(importModelFileName string, modelFlavor
 	notebookOutPath := "/home/jovyan/import_outs.ipynb"
 
 	_, errExec := exec.Command("docker", "exec", name, "papermill",
-		"/home/jovyan/.executor/notebooks/importer.ipynb", notebookOutPath, "-p", "filename", importModelFileName, "-p", "flavor", modelFlavor).Output()
+		"/home/jovyan/.executor/notebooks/importer.ipynb", notebookOutPath, "-p", "filename", importModelFileName, "-p", "flavor", modelFlavor, "-p", "shape", trainShape).Output()
 	if errExec != nil {
 		fmt.Println("Error with importer notebook execution in the docker container: ", err)
 		os.Exit(1)
