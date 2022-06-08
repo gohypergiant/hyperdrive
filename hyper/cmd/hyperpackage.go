@@ -13,9 +13,12 @@ var (
 	hyperpackageContainerName string
 	dockerfileSavePath        string
 	imageTags                 []string
+	importModelFileName		  string
+	modelFlavor				  string
+	trainShape				  string
 )
 
-// runCmd represents the deploy command
+// runCmd represents the run command
 var runCmd = &cobra.Command{
 	Use:   "run",
 	Short: "run a hyperpack",
@@ -33,7 +36,7 @@ var runCmd = &cobra.Command{
 	},
 }
 
-// runCmd represents the deploy command
+// buildCmd represents the build command
 var buildCmd = &cobra.Command{
 	Use:   "build",
 	Short: "builds a hyperpack (but doesn't run it)",
@@ -50,7 +53,18 @@ var buildCmd = &cobra.Command{
 	},
 }
 
-// listCmd represents the deploy command
+// importCmd represents the import model command
+var importCmd = &cobra.Command{
+	Use:    "import",
+	Short:  "imports a trained model",
+	Run: func(cmd *cobra.Command, args []string) {
+		fmt.Println("🚀 Importing a trained model...")
+		hyperpackage.HyperpackageService(hyperpackagePath, manifestPath).Import(importModelFileName, modelFlavor, trainShape)
+		fmt.Println("Importing complete.")
+	},
+}
+
+// listCmd represents the list command
 var listCmd = &cobra.Command{
 	Use:   "list",
 	Short: "lists hyperpackage containers that are currently running",
@@ -59,7 +73,7 @@ var listCmd = &cobra.Command{
 	},
 }
 
-// stopCmd represents the deploy command
+// stopCmd represents the stop command
 var stopCmd = &cobra.Command{
 	Use:   "stop",
 	Short: "stops a hyperpackage container that is currently running",
@@ -80,6 +94,10 @@ func init() {
 	rootCmd.AddCommand(hyperpackageCmd)
 	hyperpackageCmd.AddCommand(runCmd)
 	hyperpackageCmd.AddCommand(buildCmd)
+	importCmd.Flags().StringVar(&importModelFileName, "filename", "", "import model filename")
+	importCmd.Flags().StringVar(&modelFlavor, "modelFlavor", "sklearn", "model flavor")
+	importCmd.Flags().StringVar(&trainShape, "shape", "", "Training shape of data, specifically the number of columns.")
+	hyperpackageCmd.AddCommand(importCmd)
 	hyperpackageCmd.AddCommand(listCmd)
 	stopCmd.Flags().StringVar(&hyperpackageContainerName, "hyperpackagePath", "", "name of container to stop")
 	hyperpackageCmd.AddCommand(stopCmd)
