@@ -34,6 +34,7 @@ var (
 	s3Region        string
 	ec2InstanceType string
 	amiID           string
+	hostPort        string
 )
 
 // jupyterCmd represents the jupyter command
@@ -41,7 +42,19 @@ var jupyterCmd = &cobra.Command{
 	Use:   "jupyter",
 	Short: "Run a local jupyter server",
 	Run: func(cmd *cobra.Command, args []string) {
-		notebook.NotebookService(RemoteName, manifestPath, s3AccessKey, s3AccessSecret, s3Region).Start(image, pullImage, jupyterBrowser, requirements, ec2InstanceType, amiID)
+		notebook.NotebookService(
+			RemoteName,
+			manifestPath,
+			s3AccessKey,
+			s3AccessSecret,
+			s3Region).Start(
+			image,
+			pullImage,
+			jupyterBrowser,
+			requirements,
+			notebook.EC2StartOptions{InstanceType: ec2InstanceType, AmiId: amiID},
+			hostPort, 
+			false)
 	},
 }
 
@@ -60,11 +73,31 @@ var jupyterStopCmd = &cobra.Command{
 		notebook.NotebookService(RemoteName, manifestPath, s3AccessKey, s3AccessSecret, s3Region).Stop(mountPoint)
 	},
 }
+var jupyterRemoteHost = &cobra.Command{
+	Use:   "remoteHost",
+	Short: "start server on remote host",
+	Run: func(cmd *cobra.Command, args []string) {
+		notebook.NotebookService(
+			RemoteName,
+			manifestPath,
+			s3AccessKey,
+			s3AccessSecret,
+			s3Region).Start(
+			image,
+			pullImage,
+			jupyterBrowser,
+			requirements,
+			notebook.EC2StartOptions{InstanceType: ec2InstanceType, AmiId: amiID},
+			hostPort,
+			true)
+	},
+}
 
 func init() {
 	rootCmd.AddCommand(jupyterCmd)
 	jupyterCmd.AddCommand(jupyterListCmd)
 	jupyterCmd.AddCommand(jupyterStopCmd)
+	jupyterCmd.AddCommand(jupyterRemoteHost)
 
 	jupyterCmd.Flags().BoolVarP(&jupyterBrowser, "browser", "", false, "Open jupyter in a browser after launching")
 	jupyterCmd.Flags().BoolVarP(&pullImage, "pull", "", false, "Pull latest image before running")
@@ -75,5 +108,6 @@ func init() {
 	jupyterCmd.Flags().StringVar(&s3Region, "s3Region", "", "S3 Region")
 	jupyterCmd.Flags().StringVar(&ec2InstanceType, "ec2InstanceType", "", "The type of EC2 instance to be created")
 	jupyterCmd.Flags().StringVar(&amiID, "amiId", "", "The ID of the AMI")
+	jupyterCmd.PersistentFlags().StringVar(&hostPort, "hostPort", "", "Host port for container")
 	jupyterStopCmd.Flags().StringVar(&mountPoint, "mountPoint", "", "Mount Point of Jupyter Server to be stopped")
 }

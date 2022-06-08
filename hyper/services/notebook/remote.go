@@ -19,8 +19,12 @@ type RemoteNotebookService struct {
 	RemoteConfiguration config.RemoteConfiguration
 	ManifestPath        string
 }
+type EC2StartOptions struct {
+	InstanceType string
+	AmiId string
+}
 
-func (s RemoteNotebookService) Start(flavor string, pullImage bool, jupyterBrowser bool, requirements bool, ec2InstanceType string, amiID string) {
+func (s RemoteNotebookService) Start(flavor string, pullImage bool, jupyterBrowser bool, requirements bool, ec2Options EC2StartOptions, hostPort string, restartAlways bool) {
 
 	imageOptions := GetNotebookImageOptions(flavor)
 	name := GetNotebookName(s.ManifestPath)
@@ -28,7 +32,7 @@ func (s RemoteNotebookService) Start(flavor string, pullImage bool, jupyterBrows
 	if s.RemoteConfiguration.Type == config.Firefly {
 		firefly.StartServer(s.RemoteConfiguration.FireflyConfiguration, name, imageOptions.Profile)
 	} else if s.RemoteConfiguration.Type == config.EC2 {
-		aws.StartServer(s.ManifestPath, s.RemoteConfiguration.EC2Configuration, ec2InstanceType, amiID)
+		aws.StartServer(s.ManifestPath, s.RemoteConfiguration.EC2Configuration, ec2Options.InstanceType, ec2Options.AmiId )
 	} else {
 		fmt.Println("Not Implemented")
 	}

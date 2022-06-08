@@ -2,6 +2,7 @@ package aws
 
 import (
 	"context"
+	"encoding/base64"
 	"fmt"
 	"os"
 	"path"
@@ -182,14 +183,31 @@ func GetEC2Client(remoteCfg HyperConfig.EC2RemoteConfiguration) *ec2.Client {
 }
 func ListServers(remoteCfg HyperConfig.EC2RemoteConfiguration) {
 
-	client := GetEC2Client(remoteCfg)
-	input := &ec2.DescribeInstancesInput{}
-
-	result, err := GetInstances(context.TODO(), client, input)
+	result, err := GetHyperdriveInstances(remoteCfg)
 	if err != nil {
 		fmt.Println(err)
 		os.Exit(1)
 		return
+	}
+
+	for _, i := range result {
+		fmt.Println("   " + GetHyperName(i))
+		fmt.Println("")
+	}
+
+}
+func GetHyperdriveInstances(remoteCfg HyperConfig.EC2RemoteConfiguration) ([]types.Instance, error) {
+
+	client := GetEC2Client(remoteCfg)
+	input := &ec2.DescribeInstancesInput{}
+
+	result, err := GetInstances(context.TODO(), client, input)
+	instances := []types.Instance{}
+
+	if err != nil {
+		fmt.Println(err)
+		os.Exit(1)
+		return nil, err
 	}
 
 	for _, r := range result.Reservations {
@@ -197,12 +215,13 @@ func ListServers(remoteCfg HyperConfig.EC2RemoteConfiguration) {
 		for _, i := range r.Instances {
 			if IsHyperdriveInstance(i) {
 				fmt.Println("   " + GetHyperName(i))
+				instances = append(instances, i)
 			}
 		}
 
 		fmt.Println("")
 	}
-
+	return instances, nil
 }
 func IsHyperdriveInstance(i types.Instance) bool {
 	for _, t := range i.Tags {
@@ -613,6 +632,16 @@ func getOrCreateSecurityGroup(client *ec2.Client, vID string, projectName string
 					},
 				},
 			},
+			{
+				IpProtocol: aws.String("tcp"),
+				FromPort:   aws.Int32(8888),
+				ToPort:     aws.Int32(8888),
+				IpRanges: []types.IpRange{
+					{
+						CidrIp: aws.String("0.0.0.0/0"),
+					},
+				},
+			},
 		},
 	}
 
@@ -730,8 +759,20 @@ func StartServer(manifestPath string, remoteCfg HyperConfig.EC2RemoteConfigurati
 		},
 	}
 
+	version := "0.0.2"
 	minMaxCount := int32(1)
-
+	startupScript := fmt.Sprintf(`
+#!/bin/bash -xe
+#yum update -y
+service docker start
+mkdir -p /tmp/hyperdrive/project
+curl -fsSL https://github.com/gohypergiant/hyperdrive/releases/download/%s/hyperdrive_%s_Linux_x86_64.tar.gz -o /tmp/hyperdrive/hyper.tar
+tar -xvf /tmp/hyperdrive/hyper.tar -C /tmp/hyperdrive
+mv /tmp/hyperdrive/hyper /usr/bin/hyper
+sudo chown ec2-user:ec2-user /tmp/hyperdrive/project
+cd /tmp/hyperdrive/project
+sudo -u ec2-user bash -c 'hyper jupyter remoteHost --hostPort 8888 &'
+`, version, version)
 	ec2Input := &ec2.RunInstancesInput{
 		ImageId:           aws.String(amiID),
 		InstanceType:      types.InstanceType(*aws.String(ec2Type)),
@@ -741,6 +782,7 @@ func StartServer(manifestPath string, remoteCfg HyperConfig.EC2RemoteConfigurati
 		SubnetId:          aws.String(subnetID),
 		KeyName:           aws.String(keyName),
 		TagSpecifications: tagSpecification,
+		UserData:          aws.String(base64.StdEncoding.EncodeToString([]byte(startupScript))),
 	}
 
 	result, err := MakeInstance(context.TODO(), client, ec2Input)
@@ -750,13 +792,33 @@ func StartServer(manifestPath string, remoteCfg HyperConfig.EC2RemoteConfigurati
 		return
 	}
 
-	if result.Instances[0].PublicIpAddress == nil {
+	ip := result.Instances[0].PublicIpAddress
+	if ip == nil {
+
+		instances, err := GetHyperdriveInstances(remoteCfg)
+		if err != nil {
+
+			fmt.Println("Provisioned instance but cannot get publicIP")
+			return
+		}
+		for _, i := range instances {
+			if *i.InstanceId == *result.Instances[0].InstanceId {
+				ip = i.PublicIpAddress
+				break
+			}
+		}
+
+	}
+	if ip == nil {
 
 		fmt.Println("Provisioned instance but cannot get publicIP")
 		return
 	}
-	fmt.Print("EC2 instance provisioned. You can access via ssh by running:")
-	fmt.Print("ssh -i " + keyName + ".pem ec2-user@" + *result.Instances[0].PublicIpAddress)
+	fmt.Println("")
+	fmt.Println("EC2 instance provisioned. You can access via ssh by running:")
+	fmt.Println("ssh -i " + keyName + ".pem ec2-user@" + *ip)
+	fmt.Println("")
+	fmt.Println("In a few minutes, you should be able to access jupyter lab at http://" + *ip + ":8888/lab")
 }
 func GetRouteTableID(r *ec2.DescribeRouteTablesOutput, projectName string) string {
 
