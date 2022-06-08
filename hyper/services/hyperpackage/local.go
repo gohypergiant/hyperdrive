@@ -92,12 +92,11 @@ func (s LocalHyperpackageService) Import(importModelFileName string, modelFlavor
 	cwdPath, _ := os.Getwd()
 	name := fmt.Sprintf("imported_%s", modelFlavor)
 	hostIP := "127.0.0.1"
-	imageOptions := notebook.GetNotebookImageOptions("dev") // using "dev" for dev purposes. Need to change to "local" later
-	imageName := "cpu-local:latest" // need to change to imageOptions.Image later
+	imageOptions := notebook.GetNotebookImageOptions("local")
+	imageName := imageOptions.Image
 	env := []string{"JUPYTER_TOKEN=firefly"}
 	inImageCache := false
 	pullImage := false
-	fmt.Println("pullImage:", pullImage) // remove this later
 
 	clientImages, _ := dockerClient.ListImages()
 	for _, clientImage := range clientImages {
@@ -142,7 +141,7 @@ func (s LocalHyperpackageService) Import(importModelFileName string, modelFlavor
 		dockerClient.RemoveContainer(name)
 	}
 
-	createdId, err := dockerClient.CreateContainer(imageOptions.Image, name, contConfig, hostConfig, false) // last arg set to false for dev purposes. Need to change to pullImage later
+	createdId, err := dockerClient.CreateContainer(imageOptions.Image, name, contConfig, hostConfig, pullImage)
 	if err != nil {
 		fmt.Println(err)
 		os.Exit(1)
