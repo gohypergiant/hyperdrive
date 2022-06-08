@@ -9,3 +9,5 @@ _jobs
 .vscode/
 __pycache__/
 hyper.exe
+*.code-workspace
+*.pem

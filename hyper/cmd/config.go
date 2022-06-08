@@ -34,6 +34,8 @@ var configCmd = &cobra.Command{
 
 var remoteName string
 var remoteTypeInput string
+var remoteJupyterAPIKey string
+var remoteJupyterPassword string
 var fireflyUrl string
 var fireflyUsername string
 var fireflyToken string
@@ -180,6 +182,7 @@ var initCmd = &cobra.Command{
 			})
 		}
 		remoteType := getConfigType()
+		// if
 		switch remoteType {
 		case config.EC2:
 			remoteConfig = getEC2Config()
@@ -191,6 +194,20 @@ var initCmd = &cobra.Command{
 			break
 		}
 
+		if remoteJupyterAPIKey == "" {
+			remoteJupyterAPIKey = getOptionalString("Enter an API key to use for remote Jupyter instances [leave blank to generate one]")
+			if remoteJupyterAPIKey == "" {
+				//TODO generate
+			}
+		}
+		if remoteJupyterPassword == "" {
+			remoteJupyterPassword = getOptionalString("Enter a password to use for remote Jupyter instances [leave blank to generate one]")
+			if remoteJupyterPassword == "" {
+				//TODO generate
+			}
+		}
+		remoteConfig.JupyterAPIKey = remoteJupyterAPIKey
+		remoteConfig.JupyterPassword = remoteJupyterPassword
 		config.UpdateRemote(remoteName, remoteConfig)
 	},
 }
@@ -198,6 +215,8 @@ var initCmd = &cobra.Command{
 func init() {
 	initCmd.Flags().StringVar(&remoteName, "remoteName", "", "Name of the remote for the config")
 	initCmd.Flags().StringVarP(&remoteTypeInput, "remoteType", "r", "", "Remote type [firefly|ec2]")
+	initCmd.Flags().StringVar(&remoteJupyterAPIKey, "jupyterAPIKey", "", "API key to use on jupyter instances that get created")
+	initCmd.Flags().StringVar(&remoteJupyterPassword, "jupyterPassword", "", "Password to use on jupyter instances that get created")
 	/*
 	* Firefly flags
 	 */
