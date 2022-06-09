@@ -135,7 +135,7 @@ func (s LocalNotebookService) Start(flavor string, pullImage bool, jupyterBrowse
 	if execute {
 		dockerClient.ExecuteContainer(id, false)
 	}
-    time.Sleep(1 * time.Second)
+        time.Sleep(1 * time.Second)
 
 	nowRunningContainers, _ := dockerClient.ListContainers(name)
 
