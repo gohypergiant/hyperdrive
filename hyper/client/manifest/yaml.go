@@ -33,7 +33,7 @@ func GetManifest(manifestPath string) Manifest {
 		if os.IsNotExist(err) {
 			file, err := os.Create(manifestPath)
 			if err != nil {
-					log.Fatal(err)
+				log.Fatal(err)
 			}
 			defer file.Close()
 		} else {

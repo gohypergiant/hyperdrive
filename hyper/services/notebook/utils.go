@@ -7,7 +7,7 @@ import (
 )
 
 func GetNotebookName(manifestPath string) string {
- return strings.ToLower(manifest.GetName(manifestPath))
+	return strings.ToLower(manifest.GetName(manifestPath))
 }
 
 type ImageOptions struct {
