@@ -18,13 +18,10 @@ import (
 )
 
 var (
-	id    string
-	image string
-	// jupyterBrowser bool
+	id         string
+	image      string
 	mountPoint string
-	// pullImage      bool
-	repoTag string
-	// requirements   bool
+	repoTag    string
 	publicPort uint16
 )
 
@@ -137,7 +134,7 @@ func (s LocalNotebookService) Start(jupyterOptions JupyterLaunchOptions, ec2Opti
 	if execute {
 		dockerClient.ExecuteContainer(id, false)
 	}
-        time.Sleep(1 * time.Second)
+	time.Sleep(1 * time.Second)
 
 	nowRunningContainers, _ := dockerClient.ListContainers(name)
 
