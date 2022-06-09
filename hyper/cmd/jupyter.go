@@ -91,7 +91,8 @@ var jupyterRemoteHost = &cobra.Command{
 			requirements,
 			notebook.EC2StartOptions{InstanceType: ec2InstanceType, AmiId: amiID},
 			hostPort,
-			true)
+			true,
+			awsProfile)
 	},
 }
 

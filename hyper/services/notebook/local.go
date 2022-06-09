@@ -33,7 +33,17 @@ type LocalNotebookService struct {
 	S3Credentials S3Credentials
 }
 
-func (s LocalNotebookService) Start(flavor string, pullImage bool, jupyterBrowser bool, requirements bool, ec2Options EC2StartOptions, hostPort string, restartAlways bool, awsProfile string) {
+func (s LocalNotebookService) Start(flavor string, pullImage bool,
+	jupyterBrowser bool, requirements bool, ec2Options EC2StartOptions,
+	hostPort string, restartAlways bool, awsProfile string) {
+
+	homeDir, errDir := os.UserHomeDir()
+	if errDir != nil {
+		fmt.Println(errDir)
+        os.Exit(1)
+    }
+	awsConfigFilePath := homeDir + "/.aws/config"
+	fmt.Println("aws config file loc:", awsConfigFilePath)
 
 	dockerClient := cli.NewDockerClient()
 	cwdPath, _ := os.Getwd()
@@ -42,7 +52,7 @@ func (s LocalNotebookService) Start(flavor string, pullImage bool, jupyterBrowse
 	execute := false
 	projectName := manifest.GetProjectName(s.ManifestPath)
 
-	imageOptions := GetNotebookImageOptions("local")
+	imageOptions := GetNotebookImageOptions("dev") // change to "local" later
 	clientImages, _ := dockerClient.ListImages()
 	inImageCache := false
 	env := []string{"JUPYTER_TOKEN=firefly",
