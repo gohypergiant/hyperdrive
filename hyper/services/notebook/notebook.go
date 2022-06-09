@@ -3,13 +3,13 @@ package notebook
 import "github.com/gohypergiant/hyperdrive/hyper/services/config"
 
 type JupyterLaunchOptions struct {
-	Flavor string
-	APIKey string
-	Password string
-	HostPort string
-	PullImage bool
+	Flavor        string
+	APIKey        string
+	Password      string
+	HostPort      string
+	PullImage     bool
 	LaunchBrowser bool
-	Requirements bool
+	Requirements  bool
 	RestartAlways bool
 }
 type INotebookService interface {
@@ -25,6 +25,7 @@ type S3Credentials struct {
 	AccessSecret string
 	Region       string
 }
+
 func NotebookService(remoteName string, manifestPath string, s3AccessKey string, s3AccessSecret string, s3Region string) INotebookService {
 
 	s3Creds := S3Credentials{

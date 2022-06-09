@@ -21,7 +21,7 @@ type RemoteNotebookService struct {
 }
 type EC2StartOptions struct {
 	InstanceType string
-	AmiId string
+	AmiId        string
 }
 
 func (s RemoteNotebookService) Start(jupyterOptions JupyterLaunchOptions, ec2Options EC2StartOptions) {
@@ -32,7 +32,7 @@ func (s RemoteNotebookService) Start(jupyterOptions JupyterLaunchOptions, ec2Opt
 	if s.RemoteConfiguration.Type == config.Firefly {
 		firefly.StartServer(s.RemoteConfiguration.FireflyConfiguration, name, imageOptions.Profile)
 	} else if s.RemoteConfiguration.Type == config.EC2 {
-		aws.StartServer(s.ManifestPath, s.RemoteConfiguration.EC2Configuration, ec2Options.InstanceType, ec2Options.AmiId )
+		aws.StartServer(s.ManifestPath, s.RemoteConfiguration.EC2Configuration, ec2Options.InstanceType, ec2Options.AmiId, jupyterOptions)
 	} else {
 		fmt.Println("Not Implemented")
 	}
@@ -118,12 +118,12 @@ func (s RemoteNotebookService) GetRemoteHyperpackPath() string {
 
 	studyRoot := s.GetStudyRoot()
 	studyName := manifest.GetName(s.ManifestPath)
-	return path.Join( studyRoot, fmt.Sprintf("%s.hyperpack.zip", studyName))
+	return path.Join(studyRoot, fmt.Sprintf("%s.hyperpack.zip", studyName))
 }
 func (s RemoteNotebookService) GetHyperpackSavePath() string {
 
 	studyName := manifest.GetName(s.ManifestPath)
-	return path.Join( ".", fmt.Sprintf("%s.hyperpack.zip", studyName));
+	return path.Join(".", fmt.Sprintf("%s.hyperpack.zip", studyName))
 }
 func (s RemoteNotebookService) DownloadHyperpack() {
 

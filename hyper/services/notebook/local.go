@@ -18,14 +18,14 @@ import (
 )
 
 var (
-	id             string
-	image          string
+	id    string
+	image string
 	// jupyterBrowser bool
-	mountPoint     string
+	mountPoint string
 	// pullImage      bool
-	repoTag        string
+	repoTag string
 	// requirements   bool
-	publicPort     uint16
+	publicPort uint16
 )
 
 type LocalNotebookService struct {
@@ -46,6 +46,8 @@ func (s LocalNotebookService) Start(jupyterOptions JupyterLaunchOptions, ec2Opti
 	clientImages, _ := dockerClient.ListImages()
 	inImageCache := false
 	env := []string{"JUPYTER_TOKEN=firefly",
+		fmt.Sprintf("NB_API_KEY=%s", jupyterOptions.APIKey),
+		fmt.Sprintf("NB_PASSWORD=%s", jupyterOptions.Password),
 		fmt.Sprintf("AWS_ACCESS_KEY_ID=%s", s.S3Credentials.AccessKey),
 		fmt.Sprintf("AWS_SECRET_ACCESS_KEY=%s", s.S3Credentials.AccessSecret),
 		fmt.Sprintf("AWS_DEFAULT_REGION=%s", s.S3Credentials.Region),
@@ -80,7 +82,7 @@ func (s LocalNotebookService) Start(jupyterOptions JupyterLaunchOptions, ec2Opti
 	}
 
 	restartPolicy := container.RestartPolicy{
-		Name:              "unless-stopped",
+		Name: "unless-stopped",
 	}
 	if jupyterOptions.RestartAlways {
 		restartPolicy = container.RestartPolicy{

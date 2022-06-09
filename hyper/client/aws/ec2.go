@@ -17,6 +17,7 @@ import (
 
 	"github.com/gohypergiant/hyperdrive/hyper/client/manifest"
 	HyperConfig "github.com/gohypergiant/hyperdrive/hyper/services/config"
+	"github.com/gohypergiant/hyperdrive/hyper/services/notebook"
 )
 
 const HYPERDRIVE_TYPE_TAG string = "hyperdrive-type"
@@ -716,7 +717,7 @@ func getOrCreateKeyPair(client *ec2.Client, projectName string) string {
 	return keyName
 }
 
-func StartServer(manifestPath string, remoteCfg HyperConfig.EC2RemoteConfiguration, ec2Type string, amiID string) {
+func StartServer(manifestPath string, remoteCfg HyperConfig.EC2RemoteConfiguration, ec2Type string, amiID string, jupyterLaunchOptions notebook.JupyterLaunchOptions) {
 
 	if ec2Type == "" {
 		fmt.Println("EC2InstanceTypeNotFound: please specify a EC2 instance type using the flag --ec2InstanceType")
@@ -771,8 +772,8 @@ tar -xvf /tmp/hyperdrive/hyper.tar -C /tmp/hyperdrive
 mv /tmp/hyperdrive/hyper /usr/bin/hyper
 sudo chown ec2-user:ec2-user /tmp/hyperdrive/project
 cd /tmp/hyperdrive/project
-sudo -u ec2-user bash -c 'hyper jupyter remoteHost --hostPort 8888 &'
-`, version, version)
+sudo -u ec2-user bash -c 'hyper jupyter remoteHost --hostPort 8888 --jupyterApiKey %s --jupyterPassword %s &'
+`, version, version, jupyterLaunchOptions.APIKey, jupyterLaunchOptions.Password)
 	ec2Input := &ec2.RunInstancesInput{
 		ImageId:           aws.String(amiID),
 		InstanceType:      types.InstanceType(*aws.String(ec2Type)),
