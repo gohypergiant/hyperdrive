@@ -137,6 +137,7 @@ func (s LocalNotebookService) Start(jupyterOptions JupyterLaunchOptions, ec2Opti
 	if execute {
 		dockerClient.ExecuteContainer(id, false)
 	}
+        time.Sleep(1 * time.Second)
 
 	nowRunningContainers, _ := dockerClient.ListContainers(name)
 

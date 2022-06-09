@@ -3,7 +3,7 @@
 mkdir -p \
   /home/jovyan/.executor
 
-cp -R /tmp/repo/data/notebooks /home/jovyan/.executor/notebooks
+cp -R /tmp/repo/data/notebooks /home/jovyan/.executor/
 
 start-notebook.sh \
   --NotebookApp.token=${NB_API_KEY} \
