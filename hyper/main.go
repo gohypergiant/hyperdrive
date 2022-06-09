@@ -19,7 +19,4 @@ import "github.com/gohypergiant/hyperdrive/hyper/cmd"
 
 func main() {
 	cmd.Execute()
-	newline
-
-	usingtabkey
 }
