@@ -13,9 +13,9 @@ var (
 	hyperpackageContainerName string
 	dockerfileSavePath        string
 	imageTags                 []string
-	importModelFileName		  string
-	modelFlavor				  string
-	trainShape				  string
+	importModelFileName       string
+	modelFlavor               string
+	trainShape                string
 )
 
 // runCmd represents the run command
@@ -55,8 +55,8 @@ var buildCmd = &cobra.Command{
 
 // importCmd represents the import model command
 var importCmd = &cobra.Command{
-	Use:    "import",
-	Short:  "imports a trained model",
+	Use:   "import",
+	Short: "imports a trained model",
 	Run: func(cmd *cobra.Command, args []string) {
 		fmt.Println("🚀 Importing a trained model...")
 		hyperpackage.HyperpackageService(hyperpackagePath, manifestPath).Import(importModelFileName, modelFlavor, trainShape)
