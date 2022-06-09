@@ -20,11 +20,11 @@ import (
 var (
 	id             string
 	image          string
-	jupyterBrowser bool
+	// jupyterBrowser bool
 	mountPoint     string
-	pullImage      bool
+	// pullImage      bool
 	repoTag        string
-	requirements   bool
+	// requirements   bool
 	publicPort     uint16
 )
 
@@ -33,7 +33,7 @@ type LocalNotebookService struct {
 	S3Credentials S3Credentials
 }
 
-func (s LocalNotebookService) Start(flavor string, pullImage bool, jupyterBrowser bool, requirements bool, ec2Options EC2StartOptions, hostPort string, restartAlways bool) {
+func (s LocalNotebookService) Start(jupyterOptions JupyterLaunchOptions, ec2Options EC2StartOptions) {
 
 	dockerClient := cli.NewDockerClient()
 	cwdPath, _ := os.Getwd()
@@ -60,13 +60,13 @@ func (s LocalNotebookService) Start(flavor string, pullImage bool, jupyterBrowse
 		}
 	}
 	if !inImageCache {
-		pullImage = true
+		jupyterOptions.PullImage = true
 	}
 
 	runningContainers, _ := dockerClient.ListContainers(name)
 
 	imageName := ""
-	if requirements {
+	if jupyterOptions.Requirements {
 		imageName = fmt.Sprintf("hyperdrive-jupyter-reqs:%s", name)
 	} else {
 		imageName = imageOptions.Image
@@ -82,7 +82,7 @@ func (s LocalNotebookService) Start(flavor string, pullImage bool, jupyterBrowse
 	restartPolicy := container.RestartPolicy{
 		Name:              "unless-stopped",
 	}
-	if restartAlways {
+	if jupyterOptions.RestartAlways {
 		restartPolicy = container.RestartPolicy{
 			Name: "always",
 		}
@@ -92,7 +92,7 @@ func (s LocalNotebookService) Start(flavor string, pullImage bool, jupyterBrowse
 			"8888/tcp": []nat.PortBinding{
 				{
 					HostIP:   hostIP,
-					HostPort: hostPort,
+					HostPort: jupyterOptions.HostPort,
 				},
 			},
 		},
@@ -106,7 +106,7 @@ func (s LocalNotebookService) Start(flavor string, pullImage bool, jupyterBrowse
 		RestartPolicy: restartPolicy,
 	}
 
-	if requirements {
+	if jupyterOptions.Requirements {
 		if len(runningContainers) != 0 {
 			dockerClient.RemoveContainer(name)
 		}
@@ -121,7 +121,7 @@ func (s LocalNotebookService) Start(flavor string, pullImage bool, jupyterBrowse
 		}
 		execute = true
 	} else if len(runningContainers) == 0 {
-		createdId, err := dockerClient.CreateContainer(imageOptions.Image, name, contConfig, hostConfig, pullImage)
+		createdId, err := dockerClient.CreateContainer(imageOptions.Image, name, contConfig, hostConfig, jupyterOptions.PullImage)
 		id = createdId
 		if err != nil {
 			fmt.Println(err)
@@ -145,7 +145,7 @@ func (s LocalNotebookService) Start(flavor string, pullImage bool, jupyterBrowse
 
 	}
 
-	if jupyterBrowser {
+	if jupyterOptions.LaunchBrowser {
 		url := fmt.Sprintf("http://%s:%d/lab?token=firefly", hostIP, publicPort)
 		fmt.Println("Launching Jupyter Lab")
 		fmt.Println("    Mount Point:", cwdPath)

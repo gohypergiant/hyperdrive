@@ -2,8 +2,18 @@ package notebook
 
 import "github.com/gohypergiant/hyperdrive/hyper/services/config"
 
+type JupyterLaunchOptions struct {
+	Flavor string
+	APIKey string
+	Password string
+	HostPort string
+	PullImage bool
+	LaunchBrowser bool
+	Requirements bool
+	RestartAlways bool
+}
 type INotebookService interface {
-	Start(image string, pullImage bool, jupyterBrowser bool, requirements bool, ec2Options EC2StartOptions, hostPort string, restartAlways bool)
+	Start(jupyterOptions JupyterLaunchOptions, ec2Options EC2StartOptions)
 	List()
 	Stop(mountPointOrIdentifier string)
 	UploadTrainingJobData()
@@ -15,7 +25,6 @@ type S3Credentials struct {
 	AccessSecret string
 	Region       string
 }
-
 func NotebookService(remoteName string, manifestPath string, s3AccessKey string, s3AccessSecret string, s3Region string) INotebookService {
 
 	s3Creds := S3Credentials{

@@ -35,6 +35,8 @@ var (
 	ec2InstanceType string
 	amiID           string
 	hostPort        string
+	jupyterApiKey   string
+	jupyterPassword string
 )
 
 // jupyterCmd represents the jupyter command
@@ -42,19 +44,22 @@ var jupyterCmd = &cobra.Command{
 	Use:   "jupyter",
 	Short: "Run a local jupyter server",
 	Run: func(cmd *cobra.Command, args []string) {
+		launchOptions := notebook.JupyterLaunchOptions{
+			Flavor:        image,
+			PullImage:     pullImage,
+			LaunchBrowser: jupyterBrowser,
+			Requirements:  requirements,
+			RestartAlways: false,
+		}
 		notebook.NotebookService(
 			RemoteName,
 			manifestPath,
 			s3AccessKey,
 			s3AccessSecret,
 			s3Region).Start(
-			image,
-			pullImage,
-			jupyterBrowser,
-			requirements,
+			launchOptions,
 			notebook.EC2StartOptions{InstanceType: ec2InstanceType, AmiId: amiID},
-			hostPort, 
-			false)
+		)
 	},
 }
 
@@ -77,19 +82,23 @@ var jupyterRemoteHost = &cobra.Command{
 	Use:   "remoteHost",
 	Short: "start server on remote host",
 	Run: func(cmd *cobra.Command, args []string) {
+		launchOptions := notebook.JupyterLaunchOptions{
+			Flavor:        image,
+			PullImage:     pullImage,
+			LaunchBrowser: jupyterBrowser,
+			Requirements:  requirements,
+			HostPort:      hostPort,
+			RestartAlways: true,
+		}
 		notebook.NotebookService(
 			RemoteName,
 			manifestPath,
 			s3AccessKey,
 			s3AccessSecret,
 			s3Region).Start(
-			image,
-			pullImage,
-			jupyterBrowser,
-			requirements,
+			launchOptions,
 			notebook.EC2StartOptions{InstanceType: ec2InstanceType, AmiId: amiID},
-			hostPort,
-			true)
+		)
 	},
 }
 
@@ -108,6 +117,8 @@ func init() {
 	jupyterCmd.Flags().StringVar(&s3Region, "s3Region", "", "S3 Region")
 	jupyterCmd.Flags().StringVar(&ec2InstanceType, "ec2InstanceType", "", "The type of EC2 instance to be created")
 	jupyterCmd.Flags().StringVar(&amiID, "amiId", "", "The ID of the AMI")
+	jupyterCmd.Flags().StringVar(&jupyterApiKey, "apiKey", "firefly", "API key to use for the jupyter instance")
+	jupyterCmd.Flags().StringVar(&jupyterPassword, "password", "firefly", "password to use for the jupyter instance")
 	jupyterCmd.PersistentFlags().StringVar(&hostPort, "hostPort", "", "Host port for container")
 	jupyterStopCmd.Flags().StringVar(&mountPoint, "mountPoint", "", "Mount Point of Jupyter Server to be stopped")
 }
