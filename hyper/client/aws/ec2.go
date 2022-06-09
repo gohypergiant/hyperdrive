@@ -710,7 +710,7 @@ func getOrCreateKeyPair(client *ec2.Client, projectName string) string {
 		keyPath := path.Join(os.Getenv("HOME"), fmt.Sprintf("%s.pem", keyName))
 		err = WriteKey(keyPath, keyPairMakeResult.KeyMaterial) // todo fix path for windows
 		if err != nil {
-	fmt.Printf("Couldn't write key pair to file: %v", err)
+			fmt.Printf("Couldn't write key pair to file: %v", err)
 		}
 
 	}
