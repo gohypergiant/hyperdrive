@@ -18,7 +18,6 @@ package cmd
 
 import (
 	"fmt"
-	"github.com/gohypergiant/hyperdrive/hyper/client/manifest"
 	"github.com/gohypergiant/hyperdrive/hyper/services/notebook"
 
 	"github.com/spf13/cobra"

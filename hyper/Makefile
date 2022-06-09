@@ -5,7 +5,7 @@ build:
 
 build-dev:
 	go build -o ${BINARY_NAME}
-	chmod +x ${BINARY_NAME}	
+	chmod +x ${BINARY_NAME}
 	sudo rm /usr/local/bin/hyper-dev
 	sudo ln ${BINARY_NAME} /usr/local/bin/hyper-dev
 	echo "${BINARY_NAME}"
