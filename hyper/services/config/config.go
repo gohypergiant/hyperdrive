@@ -77,6 +77,6 @@ func UpdateRemote(name string, configuration RemoteConfiguration) {
 	}
 	config.Remotes[name] = configuration
 	viper.Set("remotes", config.Remotes)
-	viper.WriteConfig()
+    viper.WriteConfig()
 
 }
