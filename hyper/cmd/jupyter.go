@@ -54,8 +54,9 @@ var jupyterCmd = &cobra.Command{
 			jupyterBrowser,
 			requirements,
 			notebook.EC2StartOptions{InstanceType: ec2InstanceType, AmiId: amiID},
-			hostPort, 
-			false)
+			hostPort,
+			false,
+			awsProfile)
 	},
 }
 

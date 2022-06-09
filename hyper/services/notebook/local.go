@@ -33,7 +33,7 @@ type LocalNotebookService struct {
 	S3Credentials S3Credentials
 }
 
-func (s LocalNotebookService) Start(flavor string, pullImage bool, jupyterBrowser bool, requirements bool, ec2Options EC2StartOptions, hostPort string, restartAlways bool) {
+func (s LocalNotebookService) Start(flavor string, pullImage bool, jupyterBrowser bool, requirements bool, ec2Options EC2StartOptions, hostPort string, restartAlways bool, awsProfile string) {
 
 	dockerClient := cli.NewDockerClient()
 	cwdPath, _ := os.Getwd()
