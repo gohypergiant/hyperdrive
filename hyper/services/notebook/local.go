@@ -54,7 +54,16 @@ func (s LocalNotebookService) Start(flavor string, pullImage bool,
 		fmt.Println("Error:", errConfig)
 		os.Exit(1)
 	}
-	fmt.Println("cfg region:", cfg.Region)
+	creds, errCreds := cfg.Credentials.Retrieve(ctx)
+	if errCreds != nil {
+		fmt.Println(errCreds)
+		os.Exit(1)
+	}
+	fmt.Println("creds access key id:", creds.AccessKeyID)
+	fmt.Println("creds secret access key:", creds.SecretAccessKey)
+	// creds session token: creds.SessionToken
+	// fmt.Printf("%+v\n", cfg)
+	// fmt.Printf("access key id:", cfg.Credentials)
 	os.Exit(1)
 
 	dockerClient := cli.NewDockerClient()
