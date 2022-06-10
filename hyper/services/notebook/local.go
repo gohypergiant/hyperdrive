@@ -6,6 +6,7 @@ import (
 	"fmt"
 	"io"
 	"os"
+	"path"
 	"path/filepath"
 	"strings"
 	"time"
@@ -39,14 +40,19 @@ func (s LocalNotebookService) Start(flavor string, pullImage bool,
 	jupyterBrowser bool, requirements bool, ec2Options EC2StartOptions,
 	hostPort string, restartAlways bool, s3AwsProfile string) {
 
-	/*homeDir, errDir := os.UserHomeDir()
+	homeDir, errDir := os.UserHomeDir()
 	if errDir != nil {
 		fmt.Println(errDir)
         os.Exit(1)
     }
-	awsConfigFilePath := homeDir + "/.aws/config"
-	fmt.Println("aws config file loc:", awsConfigFilePath)
-	awsConfigFile, errRead := ioutil.ReadFile(awsConfigFilePath)*/
+	awsConfigFilePath := path.Join(homeDir, ".aws/config")
+	if _, errFile := os.Stat(awsConfigFilePath); errFile == nil {
+		// AWS config file exists at $HOME/.aws/config. We're good.
+	} else if errors.Is(errFile, os.ErrNotExist) {
+		fmt.Println("Error:", awsConfigFilePath, "does not exist. Please create one.")
+		os.Exit(1)
+	}
+
 	ctx := context.TODO()
 	cfg, errConfig := config.LoadDefaultConfig(ctx,
 		config.WithSharedConfigProfile(s3AwsProfile))
