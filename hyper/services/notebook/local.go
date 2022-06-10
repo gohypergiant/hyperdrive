@@ -37,7 +37,7 @@ type LocalNotebookService struct {
 
 func (s LocalNotebookService) Start(flavor string, pullImage bool,
 	jupyterBrowser bool, requirements bool, ec2Options EC2StartOptions,
-	hostPort string, restartAlways bool, awsProfile string) {
+	hostPort string, restartAlways bool, s3AwsProfile string) {
 
 	/*homeDir, errDir := os.UserHomeDir()
 	if errDir != nil {
@@ -49,7 +49,7 @@ func (s LocalNotebookService) Start(flavor string, pullImage bool,
 	awsConfigFile, errRead := ioutil.ReadFile(awsConfigFilePath)*/
 	ctx := context.TODO()
 	cfg, errConfig := config.LoadDefaultConfig(ctx,
-		config.WithSharedConfigProfile(awsProfile))
+		config.WithSharedConfigProfile(s3AwsProfile))
 	if errConfig != nil {
 		fmt.Println("Error:", errConfig)
 		os.Exit(1)

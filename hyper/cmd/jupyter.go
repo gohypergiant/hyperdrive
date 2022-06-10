@@ -35,7 +35,7 @@ var (
 	ec2InstanceType string
 	amiID           string
 	hostPort        string
-	awsProfile		string
+	s3AwsProfile	string
 )
 
 // jupyterCmd represents the jupyter command
@@ -56,7 +56,7 @@ var jupyterCmd = &cobra.Command{
 			notebook.EC2StartOptions{InstanceType: ec2InstanceType, AmiId: amiID},
 			hostPort,
 			false,
-			awsProfile)
+			s3AwsProfile)
 	},
 }
 
@@ -92,7 +92,7 @@ var jupyterRemoteHost = &cobra.Command{
 			notebook.EC2StartOptions{InstanceType: ec2InstanceType, AmiId: amiID},
 			hostPort,
 			true,
-			awsProfile)
+			s3AwsProfile)
 	},
 }
 
@@ -111,7 +111,7 @@ func init() {
 	jupyterCmd.Flags().StringVar(&s3Region, "s3Region", "", "S3 Region")
 	jupyterCmd.Flags().StringVar(&ec2InstanceType, "ec2InstanceType", "", "The type of EC2 instance to be created")
 	jupyterCmd.Flags().StringVar(&amiID, "amiId", "", "The ID of the AMI")
-	jupyterCmd.Flags().StringVar(&awsProfile, "aws-profile", "", "Named AWS profile")
+	jupyterCmd.Flags().StringVar(&s3AwsProfile, "s3AwsProfile", "", "Named AWS profile")
 	jupyterCmd.PersistentFlags().StringVar(&hostPort, "hostPort", "", "Host port for container")
 	jupyterStopCmd.Flags().StringVar(&mountPoint, "mountPoint", "", "Mount Point of Jupyter Server to be stopped")
 }

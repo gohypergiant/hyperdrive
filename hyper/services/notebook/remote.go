@@ -26,7 +26,7 @@ type EC2StartOptions struct {
 
 func (s RemoteNotebookService) Start(flavor string, pullImage bool,
 	jupyterBrowser bool, requirements bool, ec2Options EC2StartOptions,
-	hostPort string, restartAlways bool, awsProfile string) {
+	hostPort string, restartAlways bool, s3AwsProfile string) {
 
 	imageOptions := GetNotebookImageOptions(flavor)
 	name := GetNotebookName(s.ManifestPath)

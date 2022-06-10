@@ -5,7 +5,7 @@ import "github.com/gohypergiant/hyperdrive/hyper/services/config"
 type INotebookService interface {
 	Start(image string, pullImage bool, jupyterBrowser bool, requirements bool,
 		ec2Options EC2StartOptions, hostPort string, restartAlways bool,
-		awsProfile string)
+		s3AwsProfile string)
 	List()
 	Stop(mountPointOrIdentifier string)
 	UploadTrainingJobData()
