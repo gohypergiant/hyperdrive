@@ -1,6 +1,7 @@
 package notebook
 
 import (
+	"context"
 	"errors"
 	"fmt"
 	"io"
@@ -9,6 +10,7 @@ import (
 	"strings"
 	"time"
 
+	"github.com/aws/aws-sdk-go-v2/config"
 	"github.com/docker/docker/api/types/container"
 	"github.com/docker/docker/api/types/mount"
 	"github.com/docker/go-connections/nat"
@@ -37,13 +39,22 @@ func (s LocalNotebookService) Start(flavor string, pullImage bool,
 	jupyterBrowser bool, requirements bool, ec2Options EC2StartOptions,
 	hostPort string, restartAlways bool, awsProfile string) {
 
-	homeDir, errDir := os.UserHomeDir()
+	/*homeDir, errDir := os.UserHomeDir()
 	if errDir != nil {
 		fmt.Println(errDir)
         os.Exit(1)
     }
 	awsConfigFilePath := homeDir + "/.aws/config"
 	fmt.Println("aws config file loc:", awsConfigFilePath)
+	awsConfigFile, errRead := ioutil.ReadFile(awsConfigFilePath)*/
+	ctx := context.TODO()
+	cfg, errConfig := config.LoadDefaultConfig(ctx)
+	if errConfig != nil {
+		fmt.Println("Error:", errConfig)
+		os.Exit(1)
+	}
+	fmt.Println("cfg region:", cfg.Region)
+	os.Exit(1)
 
 	dockerClient := cli.NewDockerClient()
 	cwdPath, _ := os.Getwd()
