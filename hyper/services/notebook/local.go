@@ -39,31 +39,6 @@ func (s LocalNotebookService) Start(flavor string, pullImage bool,
 	jupyterBrowser bool, requirements bool, ec2Options EC2StartOptions,
 	hostPort string, restartAlways bool, s3AwsProfile string) {
 
-	awsConfigFilePath := config.DefaultSharedConfigFilename()
-	if _, errFile := os.Stat(awsConfigFilePath); errFile == nil {
-		// AWS config file exists at $HOME/.aws/config. We're good.
-	} else if errors.Is(errFile, os.ErrNotExist) {
-		fmt.Println("Error:", awsConfigFilePath, "does not exist. Please create one.")
-		os.Exit(1)
-	}
-
-	ctx := context.TODO()
-	cfg, errConfig := config.LoadDefaultConfig(ctx,
-		config.WithSharedConfigProfile(s3AwsProfile))
-	if errConfig != nil {
-		fmt.Println("Error:", errConfig)
-		os.Exit(1)
-	}
-	creds, errCreds := cfg.Credentials.Retrieve(ctx)
-	if errCreds != nil {
-		fmt.Println(errCreds)
-		os.Exit(1)
-	}
-	fmt.Println("creds access key id:", creds.AccessKeyID)
-	fmt.Println("creds secret access key:", creds.SecretAccessKey)
-	fmt.Println("creds session token:", creds.SessionToken)
-	os.Exit(1)
-
 	dockerClient := cli.NewDockerClient()
 	cwdPath, _ := os.Getwd()
 	name := GetNotebookName(s.ManifestPath)
@@ -74,10 +49,44 @@ func (s LocalNotebookService) Start(flavor string, pullImage bool,
 	imageOptions := GetNotebookImageOptions("dev") // change to "local" later
 	clientImages, _ := dockerClient.ListImages()
 	inImageCache := false
+	aws_access_key_id := ""
+	aws_secret_access_key := ""
+	region := ""
+	if s3AwsProfile != "" {
+		awsConfigFilePath := config.DefaultSharedConfigFilename()
+		if _, errFile := os.Stat(awsConfigFilePath); errFile == nil {
+			// AWS config file exists at $HOME/.aws/config. We're good.
+		} else if errors.Is(errFile, os.ErrNotExist) {
+			fmt.Println("Error:", awsConfigFilePath, "does not exist. Please create one.")
+			os.Exit(1)
+		}
+
+		ctx := context.TODO()
+		cfg, errConfig := config.LoadDefaultConfig(ctx,
+			config.WithSharedConfigProfile(s3AwsProfile))
+		if errConfig != nil {
+			fmt.Println("Error:", errConfig)
+			os.Exit(1)
+		}
+		creds, errCreds := cfg.Credentials.Retrieve(ctx)
+		if errCreds != nil {
+			fmt.Println(errCreds)
+			os.Exit(1)
+		}
+		
+		aws_access_key_id = creds.AccessKeyID
+		aws_secret_access_key = creds.SecretAccessKey
+		region = cfg.Region
+		// fmt.Println("creds session token:", creds.SessionToken)
+	} else {
+		aws_access_key_id = s.S3Credentials.AccessKey
+		aws_secret_access_key = s.S3Credentials.AccessSecret
+		region = s.S3Credentials.Region
+	}
 	env := []string{"JUPYTER_TOKEN=firefly",
-		fmt.Sprintf("AWS_ACCESS_KEY_ID=%s", s.S3Credentials.AccessKey),
-		fmt.Sprintf("AWS_SECRET_ACCESS_KEY=%s", s.S3Credentials.AccessSecret),
-		fmt.Sprintf("AWS_DEFAULT_REGION=%s", s.S3Credentials.Region),
+		fmt.Sprintf("AWS_ACCESS_KEY_ID=%s", aws_access_key_id),
+		fmt.Sprintf("AWS_SECRET_ACCESS_KEY=%s", aws_secret_access_key),
+		fmt.Sprintf("AWS_DEFAULT_REGION=%s", region),
 		fmt.Sprintf("HYPER_PROJECT_NAME=%s", projectName),
 	}
 	for _, clientImage := range clientImages {
