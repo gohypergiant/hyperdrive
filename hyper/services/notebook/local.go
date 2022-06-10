@@ -48,7 +48,8 @@ func (s LocalNotebookService) Start(flavor string, pullImage bool,
 	fmt.Println("aws config file loc:", awsConfigFilePath)
 	awsConfigFile, errRead := ioutil.ReadFile(awsConfigFilePath)*/
 	ctx := context.TODO()
-	cfg, errConfig := config.LoadDefaultConfig(ctx)
+	cfg, errConfig := config.LoadDefaultConfig(ctx,
+		config.WithSharedConfigProfile(awsProfile))
 	if errConfig != nil {
 		fmt.Println("Error:", errConfig)
 		os.Exit(1)
