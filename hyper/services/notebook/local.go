@@ -61,9 +61,7 @@ func (s LocalNotebookService) Start(flavor string, pullImage bool,
 	}
 	fmt.Println("creds access key id:", creds.AccessKeyID)
 	fmt.Println("creds secret access key:", creds.SecretAccessKey)
-	// creds session token: creds.SessionToken
-	// fmt.Printf("%+v\n", cfg)
-	// fmt.Printf("access key id:", cfg.Credentials)
+	fmt.Println("creds session token:", creds.SessionToken)
 	os.Exit(1)
 
 	dockerClient := cli.NewDockerClient()
