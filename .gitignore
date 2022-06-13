@@ -12,3 +12,5 @@ hyper-binary-*
 hyper.exe
 *.code-workspace
 *.pem
+.idea
+hyper/hyper
