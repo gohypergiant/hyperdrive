@@ -3,6 +3,7 @@ package notebook
 import (
 	"encoding/base64"
 	"fmt"
+	"github.com/gohypergiant/hyperdrive/hyper/types"
 	"os"
 	"path"
 	"time"
@@ -19,12 +20,8 @@ type RemoteNotebookService struct {
 	RemoteConfiguration config.RemoteConfiguration
 	ManifestPath        string
 }
-type EC2StartOptions struct {
-	InstanceType string
-	AmiId        string
-}
 
-func (s RemoteNotebookService) Start(jupyterOptions JupyterLaunchOptions, ec2Options EC2StartOptions) {
+func (s RemoteNotebookService) Start(jupyterOptions types.JupyterLaunchOptions, ec2Options types.EC2StartOptions) {
 
 	imageOptions := GetNotebookImageOptions(jupyterOptions.Flavor)
 	name := GetNotebookName(s.ManifestPath)

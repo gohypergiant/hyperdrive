@@ -3,6 +3,7 @@ package notebook
 import (
 	"errors"
 	"fmt"
+	"github.com/gohypergiant/hyperdrive/hyper/types"
 	"io"
 	"os"
 	"path/filepath"
@@ -27,10 +28,10 @@ var (
 
 type LocalNotebookService struct {
 	ManifestPath  string
-	S3Credentials S3Credentials
+	S3Credentials types.S3Credentials
 }
 
-func (s LocalNotebookService) Start(jupyterOptions JupyterLaunchOptions, ec2Options EC2StartOptions) {
+func (s LocalNotebookService) Start(jupyterOptions types.JupyterLaunchOptions, ec2Options types.EC2StartOptions) {
 
 	dockerClient := cli.NewDockerClient()
 	cwdPath, _ := os.Getwd()
@@ -42,8 +43,9 @@ func (s LocalNotebookService) Start(jupyterOptions JupyterLaunchOptions, ec2Opti
 	imageOptions := GetNotebookImageOptions("local")
 	clientImages, _ := dockerClient.ListImages()
 	inImageCache := false
+	fmt.Printf("token: %s password: %s", jupyterOptions.APIKey, jupyterOptions.Password)
 	env := []string{"JUPYTER_TOKEN=firefly",
-		fmt.Sprintf("NB_API_KEY=%s", jupyterOptions.APIKey),
+		fmt.Sprintf("NB_TOKEN=%s", jupyterOptions.APIKey),
 		fmt.Sprintf("NB_PASSWORD=%s", jupyterOptions.Password),
 		fmt.Sprintf("AWS_ACCESS_KEY_ID=%s", s.S3Credentials.AccessKey),
 		fmt.Sprintf("AWS_SECRET_ACCESS_KEY=%s", s.S3Credentials.AccessSecret),
