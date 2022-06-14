@@ -17,9 +17,9 @@ setuptools.setup(
     description="Data Manager for Various Cloud Data Services",
     long_description="Data Manager for Various Cloud Data Services",
     long_description_content_type="text/markdown",
-    url="https://github.com/gohypergiant/hyperdrive-data-client",
+    url="https://github.com/gohypergiant",
     project_urls={
-        "Bug Tracker": "https://github.com/gohypergiant/hyperdrive-data-client/issues",
+        "Bug Tracker": "https://github.com/gohypergiant/issues",
     },
     classifiers=[
         "Programming Language :: Python :: 3",
