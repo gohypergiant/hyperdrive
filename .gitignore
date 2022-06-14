@@ -9,4 +9,5 @@ _jobs
 .vscode/
 __pycache__/
 hyper-binary-*
+hyper/hyper
 hyper.exe
