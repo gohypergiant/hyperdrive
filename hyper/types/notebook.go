@@ -23,3 +23,9 @@ type S3Credentials struct {
 	AccessSecret string
 	Region       string
 }
+
+type ImageOptions struct {
+	Image   string
+	RepoTag string
+	Profile string
+}
