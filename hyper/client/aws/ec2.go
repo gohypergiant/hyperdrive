@@ -99,87 +99,6 @@ func GetHyperName(i types.Instance) string {
 	}
 	return ""
 }
-func MakeInstance(c context.Context, api hyperdriveTypes.EC2CreateInstanceAPI, input *ec2.RunInstancesInput) (*ec2.RunInstancesOutput, error) {
-	return api.RunInstances(c, input)
-}
-func DeleteInstances(c context.Context, api hyperdriveTypes.TerminateInstancesAPI, input *ec2.TerminateInstancesInput) (*ec2.TerminateInstancesOutput, error) {
-	return api.TerminateInstances(c, input)
-}
-func GetVpcs(c context.Context, api hyperdriveTypes.DescribeVpcsAPI, input *ec2.DescribeVpcsInput) (*ec2.DescribeVpcsOutput, error) {
-	return api.DescribeVpcs(c, input)
-}
-func MakeVpc(c context.Context, api hyperdriveTypes.CreateVpcAPI, input *ec2.CreateVpcInput) (*ec2.CreateVpcOutput, error) {
-	return api.CreateVpc(c, input)
-}
-func DeleteVpc(c context.Context, api hyperdriveTypes.DeleteVpcAPI, input *ec2.DeleteVpcInput) (*ec2.DeleteVpcOutput, error) {
-	return api.DeleteVpc(c, input)
-}
-func GetSubnets(c context.Context, api hyperdriveTypes.DescribeSubnetsAPI, input *ec2.DescribeSubnetsInput) (*ec2.DescribeSubnetsOutput, error) {
-	return api.DescribeSubnets(c, input)
-}
-func MakeSubnet(c context.Context, api hyperdriveTypes.CreateSubnetAPI, input *ec2.CreateSubnetInput) (*ec2.CreateSubnetOutput, error) {
-	return api.CreateSubnet(c, input)
-}
-func DeleteSubnet(c context.Context, api hyperdriveTypes.DeleteSubnetAPI, input *ec2.DeleteSubnetInput) (*ec2.DeleteSubnetOutput, error) {
-	return api.DeleteSubnet(c, input)
-}
-func ChangeSubnet(c context.Context, api hyperdriveTypes.ModifySubnetAttributeAPI, input *ec2.ModifySubnetAttributeInput) (*ec2.ModifySubnetAttributeOutput, error) {
-	return api.ModifySubnetAttribute(c, input)
-}
-func GetInternetGateways(c context.Context, api hyperdriveTypes.DescribeInternetGatewaysAPI, input *ec2.DescribeInternetGatewaysInput) (*ec2.DescribeInternetGatewaysOutput, error) {
-	return api.DescribeInternetGateways(c, input)
-}
-func MakeInternetGateway(c context.Context, api hyperdriveTypes.CreateInternetGatewayAPI, input *ec2.CreateInternetGatewayInput) (*ec2.CreateInternetGatewayOutput, error) {
-	return api.CreateInternetGateway(c, input)
-}
-func DeleteInternetGateway(c context.Context, api hyperdriveTypes.DeleteInternetGatewayAPI, input *ec2.DeleteInternetGatewayInput) (*ec2.DeleteInternetGatewayOutput, error) {
-	return api.DeleteInternetGateway(c, input)
-}
-func AttachInternetGateway(c context.Context, api hyperdriveTypes.AttachInternetGatewayAPI, input *ec2.AttachInternetGatewayInput) (*ec2.AttachInternetGatewayOutput, error) {
-	return api.AttachInternetGateway(c, input)
-}
-func DetachInternetGateway(c context.Context, api hyperdriveTypes.DetachInternetGatewayAPI, input *ec2.DetachInternetGatewayInput) (*ec2.DetachInternetGatewayOutput, error) {
-	return api.DetachInternetGateway(c, input)
-}
-func DescribeRouteTables(c context.Context, api hyperdriveTypes.DescribeRouteTablesAPI, input *ec2.DescribeRouteTablesInput) (*ec2.DescribeRouteTablesOutput, error) {
-	return api.DescribeRouteTables(c, input)
-}
-func MakeRouteTable(c context.Context, api hyperdriveTypes.CreateRouteTableAPI, input *ec2.CreateRouteTableInput) (*ec2.CreateRouteTableOutput, error) {
-	return api.CreateRouteTable(c, input)
-}
-func DeleteRouteTable(c context.Context, api hyperdriveTypes.DeleteRouteTableAPI, input *ec2.DeleteRouteTableInput) (*ec2.DeleteRouteTableOutput, error) {
-	return api.DeleteRouteTable(c, input)
-}
-func AddRouteTable(c context.Context, api hyperdriveTypes.AssociateRouteTableAPI, input *ec2.AssociateRouteTableInput) (*ec2.AssociateRouteTableOutput, error) {
-	return api.AssociateRouteTable(c, input)
-}
-func DisassociateRouteTable(c context.Context, api hyperdriveTypes.DisassociateRouteTableAPI, input *ec2.DisassociateRouteTableInput) (*ec2.DisassociateRouteTableOutput, error) {
-	return api.DisassociateRouteTable(c, input)
-}
-func AddRoute(c context.Context, api hyperdriveTypes.CreateRouteAPI, input *ec2.CreateRouteInput) (*ec2.CreateRouteOutput, error) {
-	return api.CreateRoute(c, input)
-}
-func GetSecurityGroups(c context.Context, api hyperdriveTypes.DescribeSecurityGroupsAPI, input *ec2.DescribeSecurityGroupsInput) (*ec2.DescribeSecurityGroupsOutput, error) {
-	return api.DescribeSecurityGroups(c, input)
-}
-func MakeSecurityGroup(c context.Context, api hyperdriveTypes.CreateSecurityGroupAPI, input *ec2.CreateSecurityGroupInput) (*ec2.CreateSecurityGroupOutput, error) {
-	return api.CreateSecurityGroup(c, input)
-}
-func DeleteSecurityGroup(c context.Context, api hyperdriveTypes.DeleteSecurityGroupAPI, input *ec2.DeleteSecurityGroupInput) (*ec2.DeleteSecurityGroupOutput, error) {
-	return api.DeleteSecurityGroup(c, input)
-}
-func MakeSecurityGroupPermissions(c context.Context, api hyperdriveTypes.AddSecurityGroupPermissionsAPI, input *ec2.AuthorizeSecurityGroupIngressInput) (*ec2.AuthorizeSecurityGroupIngressOutput, error) {
-	return api.AuthorizeSecurityGroupIngress(c, input)
-}
-func GetKeyPairs(c context.Context, api hyperdriveTypes.DescribeKeyPairsAPI, input *ec2.DescribeKeyPairsInput) (*ec2.DescribeKeyPairsOutput, error) {
-	return api.DescribeKeyPairs(c, input)
-}
-func MakeKeyPair(c context.Context, api hyperdriveTypes.CreateKeyPairAPI, input *ec2.CreateKeyPairInput) (*ec2.CreateKeyPairOutput, error) {
-	return api.CreateKeyPair(c, input)
-}
-func DeleteKeyPair(c context.Context, api hyperdriveTypes.DeleteKeyPairAPI, input *ec2.DeleteKeyPairInput) (*ec2.DeleteKeyPairOutput, error) {
-	return api.DeleteKeyPair(c, input)
-}
 func CreateInternetGateway(client *ec2.Client, projectName string) string {
 	tagSpecification := []types.TagSpecification{
 		{
@@ -229,6 +148,62 @@ func GetVpcId(r *ec2.DescribeVpcsOutput, projectName string) string {
 		}
 	}
 
+	return ""
+}
+
+func GetSubnetID(r *ec2.DescribeSubnetsOutput, projectName string) string {
+
+	for _, s := range r.Subnets {
+		for _, t := range s.Tags {
+			if *t.Key == HYPERDRIVE_NAME_TAG && *t.Value == projectName {
+				return *s.SubnetId
+			}
+		}
+	}
+	return ""
+}
+
+func GetSecurityGroupId(r *ec2.DescribeSecurityGroupsOutput, projectName string) string {
+
+	for _, s := range r.SecurityGroups {
+		for _, t := range s.Tags {
+			if *t.Key == HYPERDRIVE_NAME_TAG && *t.Value == projectName {
+				return *s.GroupId
+			}
+		}
+	}
+	return ""
+}
+
+func GetRouteTableID(r *ec2.DescribeRouteTablesOutput, projectName string) string {
+
+	for _, r := range r.RouteTables {
+		for _, t := range r.Tags {
+			if *t.Key == HYPERDRIVE_NAME_TAG && *t.Value == projectName {
+				return *r.RouteTableId
+			}
+		}
+	}
+	return ""
+}
+func GetAssociationID(r *ec2.DescribeRouteTablesOutput, subnetID string) string {
+	for _, rt := range r.RouteTables {
+		for _, a := range rt.Associations {
+			if a.SubnetId == &subnetID {
+				return *a.RouteTableAssociationId
+			}
+		}
+	}
+	return ""
+}
+func GetInternetGatewayID(r *ec2.DescribeInternetGatewaysOutput, projectName string) string {
+	for _, i := range r.InternetGateways {
+		for _, t := range i.Tags {
+			if *t.Key == HYPERDRIVE_NAME_TAG && *t.Value == projectName {
+				return *i.InternetGatewayId
+			}
+		}
+	}
 	return ""
 }
 
@@ -320,17 +295,6 @@ func getOrCreateVPC(client *ec2.Client, projectName string) (string, string) {
 	return vpcID, routeTableID
 }
 
-func GetSubnetID(r *ec2.DescribeSubnetsOutput, projectName string) string {
-
-	for _, s := range r.Subnets {
-		for _, t := range s.Tags {
-			if *t.Key == HYPERDRIVE_NAME_TAG && *t.Value == projectName {
-				return *s.SubnetId
-			}
-		}
-	}
-	return ""
-}
 func setSubnetToProvisionPublicIP(subnetID string, client *ec2.Client) {
 	subnetChangeInput := &ec2.ModifySubnetAttributeInput{
 		SubnetId: aws.String(subnetID),
@@ -411,18 +375,6 @@ func getOrCreateSubnet(client *ec2.Client, vID string, region string, projectNam
 	}
 
 	return subnetID
-}
-
-func GetSecurityGroupId(r *ec2.DescribeSecurityGroupsOutput, projectName string) string {
-
-	for _, s := range r.SecurityGroups {
-		for _, t := range s.Tags {
-			if *t.Key == HYPERDRIVE_NAME_TAG && *t.Value == projectName {
-				return *s.GroupId
-			}
-		}
-	}
-	return ""
 }
 
 func getOrCreateSecurityGroup(client *ec2.Client, vID string, projectName string) string {
@@ -618,7 +570,7 @@ func StartServer(manifestPath string, remoteCfg HyperConfig.EC2RemoteConfigurati
 		},
 	}
 
-	version := "0.0.2"
+	version := "0.0.12"
 	minMaxCount := int32(1)
 	startupScript := fmt.Sprintf(`
 #!/bin/bash -xe
@@ -678,37 +630,6 @@ sudo -u ec2-user bash -c 'hyper jupyter remoteHost --hostPort 8888 --jupyterApiK
 	fmt.Println("ssh -i " + keyName + ".pem ec2-user@" + *ip)
 	fmt.Println("")
 	fmt.Println("In a few minutes, you should be able to access jupyter lab at http://" + *ip + ":8888/lab")
-}
-func GetRouteTableID(r *ec2.DescribeRouteTablesOutput, projectName string) string {
-
-	for _, r := range r.RouteTables {
-		for _, t := range r.Tags {
-			if *t.Key == HYPERDRIVE_NAME_TAG && *t.Value == projectName {
-				return *r.RouteTableId
-			}
-		}
-	}
-	return ""
-}
-func GetAssociationID(r *ec2.DescribeRouteTablesOutput, subnetID string) string {
-	for _, rt := range r.RouteTables {
-		for _, a := range rt.Associations {
-			if a.SubnetId == &subnetID {
-				return *a.RouteTableAssociationId
-			}
-		}
-	}
-	return ""
-}
-func GetInternetGatewayID(r *ec2.DescribeInternetGatewaysOutput, projectName string) string {
-	for _, i := range r.InternetGateways {
-		for _, t := range i.Tags {
-			if *t.Key == HYPERDRIVE_NAME_TAG && *t.Value == projectName {
-				return *i.InternetGatewayId
-			}
-		}
-	}
-	return ""
 }
 func StopServer(manifestPath string, remoteCfg HyperConfig.EC2RemoteConfiguration) {
 	projectName := manifest.GetProjectName(manifestPath)

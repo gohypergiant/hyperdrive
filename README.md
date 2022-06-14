@@ -7,6 +7,10 @@ Your machine should have the following software installed:
 2. Docker
     -Get Docker Here: https://docs.docker.com/get-docker/
 
+##  Contributing
+
+See CONTRIBUTORS.md for details on requirements.
+
 ## Installation Instructions
 
 ### Using the CLI (local)
