@@ -2,6 +2,7 @@ package manifest
 
 import (
 	"fmt"
+	"github.com/gohypergiant/hyperdrive/hyper/types"
 	"io/ioutil"
 	"log"
 	"os"
@@ -10,24 +11,8 @@ import (
 	"gopkg.in/yaml.v2"
 )
 
-type Manifest struct {
-	StudyName   string `yaml:"study_name"`
-	ModelFlavor string `yaml:"model_flavor"`
-	ProjectName string `yaml:"project_name"`
-	Training    struct {
-		Data struct {
-			Features struct {
-				Source string `yaml:"source"`
-			} `yaml:"features"`
-			Target struct {
-				Source string `yaml:"source"`
-			} `yaml:"target"`
-		} `yaml:"data"`
-	} `yaml:"training"`
-}
-
-func GetManifest(manifestPath string) Manifest {
-	var m Manifest
+func GetManifest(manifestPath string) types.Manifest {
+	var m types.Manifest
 	yamlFile, err := ioutil.ReadFile(manifestPath)
 	if err != nil {
 		if os.IsNotExist(err) {
