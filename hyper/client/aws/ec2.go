@@ -570,7 +570,7 @@ func StartServer(manifestPath string, remoteCfg HyperConfig.EC2RemoteConfigurati
 		},
 	}
 
-	version := "0.0.14"
+	version := "0.0.16"
 	minMaxCount := int32(1)
 	startupScript := fmt.Sprintf(`
 #!/bin/bash -xe
@@ -582,8 +582,8 @@ tar -xvf /tmp/hyperdrive/hyper.tar -C /tmp/hyperdrive
 mv /tmp/hyperdrive/hyper /usr/bin/hyper
 sudo chown ec2-user:ec2-user /tmp/hyperdrive/project
 cd /tmp/hyperdrive/project
-sudo -u ec2-user bash -c 'hyper jupyter remoteHost --hostPort 8888 --apiKey %s --password %s &'
-`, version, version, jupyterLaunchOptions.APIKey, jupyterLaunchOptions.Password)
+sudo -u ec2-user bash -c 'hyper jupyter remoteHost --hostPort 8888 --apiKey %s &'
+`, version, version, jupyterLaunchOptions.APIKey)
 	ec2Input := &ec2.RunInstancesInput{
 		ImageId:           aws.String(amiID),
 		InstanceType:      types.InstanceType(*aws.String(ec2Type)),

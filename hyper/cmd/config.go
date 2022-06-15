@@ -3,10 +3,13 @@ package cmd
 import (
 	"errors"
 	"fmt"
+	"log"
 	"os"
+	"strings"
 
 	"github.com/gohypergiant/hyperdrive/hyper/services/config"
 	"github.com/manifoldco/promptui"
+	"github.com/sethvargo/go-password/password"
 	"github.com/spf13/cobra"
 )
 
@@ -35,7 +38,6 @@ var configCmd = &cobra.Command{
 var remoteName string
 var remoteTypeInput string
 var remoteJupyterAPIKey string
-var remoteJupyterPassword string
 var fireflyUrl string
 var fireflyUsername string
 var fireflyToken string
@@ -195,19 +197,18 @@ var initCmd = &cobra.Command{
 		}
 
 		if remoteJupyterAPIKey == "" {
-			remoteJupyterAPIKey = getOptionalString("Enter an API key to use for remote Jupyter instances [leave blank to generate one]")
+			remoteJupyterAPIKey = getOptionalString("Enter a Jupyter token to use for remote instances [leave blank to generate one]")
 			if remoteJupyterAPIKey == "" {
-				//TODO generate
-			}
-		}
-		if remoteJupyterPassword == "" {
-			remoteJupyterPassword = getOptionalString("Enter a password to use for remote Jupyter instances [leave blank to generate one]")
-			if remoteJupyterPassword == "" {
-				//TODO generate
+
+				pass, err := password.Generate(64, 10, 0, true, true)
+				if err != nil {
+					log.Fatal(err)
+				}
+				jupyterApiKey = strings.ToUpper(pass)
+				log.Printf("A Jupyter Token of %s has been generated. You will need it to access the UI on remote instances. If you need to find this later you can find it in your ~/.hyperdrive file", jupyterApiKey)
 			}
 		}
 		remoteConfig.JupyterAPIKey = remoteJupyterAPIKey
-		remoteConfig.JupyterPassword = remoteJupyterPassword
 		config.UpdateRemote(remoteName, remoteConfig)
 	},
 }
@@ -216,7 +217,6 @@ func init() {
 	initCmd.Flags().StringVar(&remoteName, "remoteName", "", "Name of the remote for the config")
 	initCmd.Flags().StringVarP(&remoteTypeInput, "remoteType", "r", "", "Remote type [firefly|ec2]")
 	initCmd.Flags().StringVar(&remoteJupyterAPIKey, "jupyterAPIKey", "", "API key to use on jupyter instances that get created")
-	initCmd.Flags().StringVar(&remoteJupyterPassword, "jupyterPassword", "", "Password to use on jupyter instances that get created")
 	/*
 	* Firefly flags
 	 */

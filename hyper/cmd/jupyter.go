@@ -51,7 +51,6 @@ var jupyterCmd = &cobra.Command{
 			LaunchBrowser: jupyterBrowser,
 			Requirements:  requirements,
 			RestartAlways: false,
-			Password:      jupyterPassword,
 			APIKey:        jupyterApiKey,
 		}
 		notebook.NotebookService(
@@ -92,7 +91,6 @@ var jupyterRemoteHost = &cobra.Command{
 			Requirements:  requirements,
 			HostPort:      hostPort,
 			RestartAlways: true,
-			Password:      jupyterPassword,
 			APIKey:        jupyterApiKey,
 		}
 		notebook.NotebookService(
@@ -123,7 +121,6 @@ func init() {
 	jupyterCmd.PersistentFlags().StringVar(&ec2InstanceType, "ec2InstanceType", "", "The type of EC2 instance to be created")
 	jupyterCmd.PersistentFlags().StringVar(&amiID, "amiId", "", "The ID of the AMI")
 	jupyterCmd.PersistentFlags().StringVar(&jupyterApiKey, "apiKey", "", "API key to use for the jupyter instance")
-	jupyterCmd.PersistentFlags().StringVar(&jupyterPassword, "password", "", "password to use for the jupyter instance")
 	jupyterCmd.PersistentFlags().StringVar(&hostPort, "hostPort", "", "Host port for container")
 	jupyterStopCmd.Flags().StringVar(&mountPoint, "mountPoint", "", "Mount Point of Jupyter Server to be stopped")
 }

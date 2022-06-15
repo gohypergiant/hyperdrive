@@ -24,7 +24,6 @@ type RemoteConfiguration struct {
 	FireflyConfiguration FireflyRemoteConfiguration `mapstructure:"firefly" json:"firefly"`
 	EC2Configuration     EC2RemoteConfiguration     `mapstructure:"ec2" json:"ec2"`
 	JupyterAPIKey        string                     `mapstructure:"jupyter_api_key" json:"jupyter_api_key"`
-	JupyterPassword      string                     `mapstructure:"jupyter_password" json:"jupyter_password"`
 }
 type FireflyRemoteConfiguration struct {
 	Url      string `mapstructure:"url" json:"url"`

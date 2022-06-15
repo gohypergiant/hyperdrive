@@ -3,7 +3,6 @@ package types
 type JupyterLaunchOptions struct {
 	Flavor        string
 	APIKey        string
-	Password      string
 	HostPort      string
 	PullImage     bool
 	LaunchBrowser bool
