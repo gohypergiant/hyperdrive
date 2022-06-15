@@ -3,6 +3,7 @@ package aws
 import (
 	"context"
 	"encoding/base64"
+	"errors"
 	"fmt"
 	hyperdriveTypes "github.com/gohypergiant/hyperdrive/hyper/types"
 	"os"
@@ -182,7 +183,8 @@ func getOrCreateVPC(client *ec2.Client, projectName string) (string, string) {
 
 	vpcID := GetVpcId(result, projectName)
 
-	if vpcID == "" {
+	if vpcID != "" {
+
 		fmt.Println("Creating VPC")
 
 		inputMakeVPC := &ec2.CreateVpcInput{
@@ -459,19 +461,9 @@ func StartServer(manifestPath string, remoteCfg HyperConfig.EC2RemoteConfigurati
 	fmt.Println("Key name:", keyName)
 
 	version := "0.0.16"
+	startupScript := getEc2StartScript(version, jupyterLaunchOptions)
+
 	minMaxCount := int32(1)
-	startupScript := fmt.Sprintf(`
-#!/bin/bash -xe
-#yum update -y
-service docker start
-mkdir -p /tmp/hyperdrive/project
-curl -fsSL https://github.com/gohypergiant/hyperdrive/releases/download/%s/hyperdrive_%s_Linux_x86_64.tar.gz -o /tmp/hyperdrive/hyper.tar
-tar -xvf /tmp/hyperdrive/hyper.tar -C /tmp/hyperdrive
-mv /tmp/hyperdrive/hyper /usr/bin/hyper
-sudo chown ec2-user:ec2-user /tmp/hyperdrive/project
-cd /tmp/hyperdrive/project
-sudo -u ec2-user bash -c 'hyper jupyter remoteHost --hostPort 8888 --apiKey %s &'
-`, version, version, jupyterLaunchOptions.APIKey)
 	ec2Input := &ec2.RunInstancesInput{
 		ImageId:           aws.String(amiID),
 		InstanceType:      types.InstanceType(*aws.String(ec2Type)),
@@ -493,31 +485,52 @@ sudo -u ec2-user bash -c 'hyper jupyter remoteHost --hostPort 8888 --apiKey %s &
 
 	ip := result.Instances[0].PublicIpAddress
 	if ip == nil {
-
-		instances, err := GetHyperdriveInstances(remoteCfg)
+		ip, err = getInstanceIpAddress(*result.Instances[0].InstanceId, remoteCfg)
 		if err != nil {
 
 			fmt.Println("Provisioned instance but cannot get publicIP")
+			os.Exit(1)
 			return
 		}
-		for _, i := range instances {
-			if *i.InstanceId == *result.Instances[0].InstanceId {
-				ip = i.PublicIpAddress
-				break
-			}
-		}
 
-	}
-	if ip == nil {
-
-		fmt.Println("Provisioned instance but cannot get publicIP")
-		return
 	}
 	fmt.Println("")
 	fmt.Println("EC2 instance provisioned. You can access via ssh by running:")
 	fmt.Println("ssh -i " + keyName + ".pem ec2-user@" + *ip)
 	fmt.Println("")
 	fmt.Println("In a few minutes, you should be able to access jupyter lab at http://" + *ip + ":8888/lab")
+}
+
+func getEc2StartScript(version string, jupyterLaunchOptions hyperdriveTypes.JupyterLaunchOptions) string {
+	startupScript := fmt.Sprintf(`
+#!/bin/bash -xe
+#yum update -y
+service docker start
+mkdir -p /tmp/hyperdrive/project
+curl -fsSL https://github.com/gohypergiant/hyperdrive/releases/download/%s/hyperdrive_%s_Linux_x86_64.tar.gz -o /tmp/hyperdrive/hyper.tar
+tar -xvf /tmp/hyperdrive/hyper.tar -C /tmp/hyperdrive
+mv /tmp/hyperdrive/hyper /usr/bin/hyper
+sudo chown ec2-user:ec2-user /tmp/hyperdrive/project
+cd /tmp/hyperdrive/project
+sudo -u ec2-user bash -c 'hyper jupyter remoteHost --hostPort 8888 --apiKey %s &'
+`, version, version, jupyterLaunchOptions.APIKey)
+	return startupScript
+}
+func getInstanceIpAddress(instanceId string, remoteCfg HyperConfig.EC2RemoteConfiguration) (*string, error) {
+
+	instances, err := GetHyperdriveInstances(remoteCfg)
+	if err != nil {
+
+		return nil, err
+	}
+
+	for _, i := range instances {
+		if *i.InstanceId == instanceId {
+			return i.PublicIpAddress, nil
+		}
+	}
+	return nil, errors.New("Could not find public IP for instance")
+
 }
 func StopServer(manifestPath string, remoteCfg HyperConfig.EC2RemoteConfiguration) {
 	projectName := manifest.GetProjectName(manifestPath)
