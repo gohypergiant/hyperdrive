@@ -87,6 +87,7 @@ func (s LocalNotebookService) Start(flavor string, pullImage bool,
 	env := []string{"JUPYTER_TOKEN=firefly",
 		fmt.Sprintf("AWS_ACCESS_KEY_ID=%s", aws_access_key_id),
 		fmt.Sprintf("AWS_SECRET_ACCESS_KEY=%s", aws_secret_access_key),
+		fmt.Sprintf("AWS_SESSION_TOKEN=%s", aws_session_token),
 		fmt.Sprintf("AWS_DEFAULT_REGION=%s", region),
 		fmt.Sprintf("HYPER_PROJECT_NAME=%s", projectName),
 	}
