@@ -167,7 +167,7 @@ func getConfigType() config.RemoteType {
 
 	fmt.Println("Invalid or unsupported remote type")
 	os.Exit(1)
-	return (config.RemoteType(remoteTypeInput))
+	return config.RemoteType(remoteTypeInput)
 }
 
 var initCmd = &cobra.Command{
@@ -204,8 +204,8 @@ var initCmd = &cobra.Command{
 				if err != nil {
 					log.Fatal(err)
 				}
-				jupyterApiKey = strings.ToUpper(pass)
-				log.Printf("A Jupyter Token of %s has been generated. You will need it to access the UI on remote instances. If you need to find this later you can find it in your ~/.hyperdrive file", jupyterApiKey)
+				remoteJupyterAPIKey = strings.ToUpper(pass)
+				log.Printf("A Jupyter Token of %s has been generated. You will need it to access the UI on remote instances. If you need to find this later you can find it in your ~/.hyperdrive file", remoteJupyterAPIKey)
 			}
 		}
 		remoteConfig.JupyterAPIKey = remoteJupyterAPIKey
