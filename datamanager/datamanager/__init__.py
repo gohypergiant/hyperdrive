@@ -3,6 +3,7 @@ import os
 
 from .controllers.dataset import DatasetController
 from .controllers.file import FileController
+from .controllers.spark import spark_decorator
 from .filesystem import FileSystem
 
 
@@ -22,6 +23,7 @@ class DataManager(
     secret_access_key: str = field(repr=False, default=None)
     session_token: str = field(repr=False, default=None)
     expiration: str = field(repr=False, default=None)
+    instantiate_spark_client: bool = field(repr=False, default=False)
 
     def __post_init__(self):
         if self.storage_provider == "aws":
@@ -49,6 +51,47 @@ class DataManager(
             session_token=self.session_token,
             expiration=self.expiration,
         )
+
+        if self.instantiate_spark_client:
+            import pyspark
+
+            builder = pyspark.sql.SparkSession.builder.config(
+                "spark.jars.packages",
+                (
+                    "org.apache.hadoop:hadoop-aws:3.2.0,"
+                    "com.amazonaws:aws-java-sdk-bundle:1.12.119"
+                ),
+            )
+
+            self.spark = builder.getOrCreate()
+            self.spark.sparkContext.setLogLevel("ERROR")
+            self.spark._sc._jsc.hadoopConfiguration().set(
+                "fs.s3a.impl", "org.apache.hadoop.fs.s3a.S3AFileSystem"
+            )
+
+            self.decorate_spark_methods(pyspark.sql.readwriter.DataFrameReader)
+            self.decorate_spark_methods(pyspark.sql.readwriter.DataFrameWriter)
+
+    def decorate_spark_methods(self, spark_class):
+        readwrite_methods = [
+            "csv",
+            "json",
+            "load",
+            "option",
+            "orc",
+            "parquet",
+            "save",
+            "text",
+        ]
+        method_list = [
+            func
+            for func in dir(spark_class)
+            if callable(getattr(spark_class, func)) and func in readwrite_methods
+        ]
+
+        for method in method_list:
+            decorated_method = spark_decorator(getattr(spark_class, method), self.spark)
+            setattr(spark_class, method, decorated_method)
 
 
 __version__ = "0.0.1"

@@ -3,6 +3,7 @@ cat docker/gpu/Dockerfile.gpu.base > docker/Dockerfile.base
 curl https://raw.githubusercontent.com/jupyter/docker-stacks/master/base-notebook/Dockerfile | grep -v ROOT_CONTAINER >> docker/Dockerfile.base
 curl https://raw.githubusercontent.com/jupyter/docker-stacks/master/minimal-notebook/Dockerfile | grep -v BASE_CONTAINER >> docker/Dockerfile.base
 curl https://raw.githubusercontent.com/jupyter/docker-stacks/master/scipy-notebook/Dockerfile | grep -v BASE_CONTAINER >> docker/Dockerfile.base
+curl https://raw.githubusercontent.com/jupyter/docker-stacks/master/pyspark-notebook/Dockerfile | grep -v BASE_CONTAINER >> docker/Dockerfile.base
 sed 's/cpu/gpu/g' docker/Dockerfile.base | grep -v jupyter/scipy-notebook >> docker/Dockerfile.base
 perl -pi -e 's/tini \\//g' docker/Dockerfile.base
 curl -O https://raw.githubusercontent.com/jupyter/docker-stacks/master/base-notebook/fix-permissions
