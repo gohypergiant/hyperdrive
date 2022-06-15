@@ -26,6 +26,8 @@ func (s RemoteNotebookService) Start(jupyterOptions types.JupyterLaunchOptions, 
 	imageOptions := GetNotebookImageOptions(jupyterOptions.Flavor)
 	name := GetNotebookName(s.ManifestPath)
 	fmt.Println("Starting remote notebook instance")
+	jupyterOptions.Password = s.RemoteConfiguration.JupyterPassword
+	jupyterOptions.APIKey = s.RemoteConfiguration.JupyterAPIKey
 	if s.RemoteConfiguration.Type == config.Firefly {
 		firefly.StartServer(s.RemoteConfiguration.FireflyConfiguration, name, imageOptions.Profile)
 	} else if s.RemoteConfiguration.Type == config.EC2 {
