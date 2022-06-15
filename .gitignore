@@ -11,3 +11,7 @@ __pycache__/
 hyper-binary-*
 hyper/hyper
 hyper.exe
+*.code-workspace
+*.pem
+.idea
+hyper/hyper

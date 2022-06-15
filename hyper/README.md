@@ -2,7 +2,7 @@
 
 ## Remote
 
-To use with a remote Firefly target, add a `.hyperdrive` file to your `$HOME` directory with contents that look like this: 
+To use with a remote Firefly target, add a `.hyperdrive` file to your `$HOME` directory with contents that look like this:
 ```json
 {
    "remotes":{
@@ -18,10 +18,10 @@ To use with a remote Firefly target, add a `.hyperdrive` file to your `$HOME` di
 You should then be able to use the CLI with the `--remote=<REMOTE NAME>` flag. The above example will provide a remote named `dev`
 
 
-The `test-data` directory in this repo contains a `my_study.yaml` file which is the firefly manifest. From that directory, you should be able to run 
+The `test-data` directory in this repo contains a `my_study.yaml` file which is the firefly manifest. From that directory, you should be able to run
 ```bash
 # If a manifest path isn't provided, it will look for a file name study.yaml by default
-> hyper jupyter start --remote=dev --manifestPath=./my_study.yaml 
+> hyper jupyter start --remote=dev --manifestPath=./my_study.yaml
 ```
 Which will start a notebook server instance on the remote using the `study_name` field in the manifest (`log_reg_health_tracker`)
 
@@ -37,7 +37,7 @@ To use a local Firefly server, first create the server
 
 ```bash
 # If a manifest path isn't provided, it will look for a file name study.yaml by default
-> hyper jupyter 
+> hyper jupyter
 ```
 
 Once you have a running notebook server instance, you should be able to start a training session on it by
