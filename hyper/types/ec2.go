@@ -140,6 +140,11 @@ type CreateKeyPairAPI interface {
 		params *ec2.CreateKeyPairInput,
 		optFns ...func(*ec2.Options)) (*ec2.CreateKeyPairOutput, error)
 }
+type ImportKeyPairAPI interface {
+	ImportKeyPair(ctx context.Context,
+		params *ec2.ImportKeyPairInput,
+		optFns ...func(*ec2.Options)) (*ec2.ImportKeyPairOutput, error)
+}
 type DeleteKeyPairAPI interface {
 	DeleteKeyPair(ctx context.Context,
 		params *ec2.DeleteKeyPairInput,
