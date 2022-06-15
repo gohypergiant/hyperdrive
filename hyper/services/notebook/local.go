@@ -51,6 +51,7 @@ func (s LocalNotebookService) Start(flavor string, pullImage bool,
 	inImageCache := false
 	aws_access_key_id := ""
 	aws_secret_access_key := ""
+	aws_session_token := ""
 	region := ""
 	if s3AwsProfile != "" {
 		awsConfigFilePath := config.DefaultSharedConfigFilename()
@@ -76,8 +77,8 @@ func (s LocalNotebookService) Start(flavor string, pullImage bool,
 		
 		aws_access_key_id = creds.AccessKeyID
 		aws_secret_access_key = creds.SecretAccessKey
+		aws_session_token = creds.SessionToken
 		region = cfg.Region
-		// fmt.Println("creds session token:", creds.SessionToken)
 	} else {
 		aws_access_key_id = s.S3Credentials.AccessKey
 		aws_secret_access_key = s.S3Credentials.AccessSecret
