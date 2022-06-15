@@ -186,7 +186,7 @@ func getOrCreateVPC(client *ec2.Client, projectName string) (string, string) {
 
 	vpcID := GetVpcId(result, projectName)
 
-	if vpcID != "" {
+	if vpcID == "" {
 
 		fmt.Println("Creating VPC")
 
@@ -525,7 +525,6 @@ func getInstanceIpAddress(instanceId string, remoteCfg HyperConfig.EC2RemoteConf
 
 	instances, err := GetHyperdriveInstances(remoteCfg)
 	if err != nil {
-
 		return nil, err
 	}
 

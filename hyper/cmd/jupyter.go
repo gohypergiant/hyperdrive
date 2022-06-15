@@ -24,14 +24,11 @@ import (
 )
 
 var (
-	id              string
 	image           string
 	jupyterBrowser  bool
 	mountPoint      string
 	pullImage       bool
-	repoTag         string
 	requirements    bool
-	publicPort      uint16
 	s3AccessKey     string
 	s3AccessSecret  string
 	s3Region        string
@@ -39,7 +36,6 @@ var (
 	amiID           string
 	hostPort        string
 	jupyterApiKey   string
-	jupyterPassword string
 )
 
 // jupyterCmd represents the jupyter command
@@ -86,6 +82,9 @@ var jupyterRemoteHost = &cobra.Command{
 	Use:   "remoteHost",
 	Short: "start server on remote host",
 	Run: func(cmd *cobra.Command, args []string) {
+		if hostPort == "" {
+			hostPort = "8888"
+		}
 		port, err := strconv.Atoi(hostPort)
 		if err != nil {
 			log.Fatal("Couldn't parse port")
