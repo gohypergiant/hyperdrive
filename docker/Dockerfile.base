@@ -5,6 +5,4 @@
 ############################## CPU BASE IMAGE ##################################
 FROM dkr.tools.hg-prototypes.com/dockerhub-proxy/jupyter/scipy-notebook AS cpu-base
 
-ENV PYTORCH_VERSION=1.10.2
-
-RUN pip install --no-cache-dir torch==${PYTORCH_VERSION} torchvision torchaudio torchviz
+RUN pip install --no-cache-dir torch torchvision torchaudio torchviz
