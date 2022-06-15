@@ -3,10 +3,13 @@ package cmd
 import (
 	"errors"
 	"fmt"
+	"log"
 	"os"
+	"strings"
 
 	"github.com/gohypergiant/hyperdrive/hyper/services/config"
 	"github.com/manifoldco/promptui"
+	"github.com/sethvargo/go-password/password"
 	"github.com/spf13/cobra"
 )
 
@@ -34,6 +37,7 @@ var configCmd = &cobra.Command{
 
 var remoteName string
 var remoteTypeInput string
+var remoteJupyterAPIKey string
 var fireflyUrl string
 var fireflyUsername string
 var fireflyToken string
@@ -42,16 +46,9 @@ var ec2AccessKey string
 var ec2Secret string
 var ec2Region string
 
-func getFireflyUsername() string {
-
-	validate := func(input string) error {
-		if len(input) <= 0 {
-			return errors.New("must provide a username")
-		}
-		return nil
-	}
+func getValidatedString(message string, validate promptui.ValidateFunc) string {
 	prompt := promptui.Prompt{
-		Label:    "Enter your username",
+		Label:    message,
 		Validate: validate,
 	}
 
@@ -61,34 +58,11 @@ func getFireflyUsername() string {
 		os.Exit(1)
 	}
 	return result
-
 }
-func getFireflyUrl() string {
+func getOptionalString(message string) string {
 
 	prompt := promptui.Prompt{
-		Label: "Enter the remote URL [default: Use Hypergiant hosted Hyperdrive]",
-	}
-	//TODO: Set default value to hosted backend
-
-	result, err := prompt.Run()
-	if err != nil {
-		fmt.Println(err)
-		os.Exit(1)
-	}
-	return result
-
-}
-func getRemoteName() string {
-
-	validate := func(input string) error {
-		if len(input) <= 0 {
-			return errors.New("must provide a name for the remote")
-		}
-		return nil
-	}
-	prompt := promptui.Prompt{
-		Label:    "Enter remote name",
-		Validate: validate,
+		Label: message,
 	}
 
 	result, err := prompt.Run()
@@ -97,40 +71,28 @@ func getRemoteName() string {
 		os.Exit(1)
 	}
 	return result
-
-}
-
-func getFireflyToken() string {
-
-	validate := func(input string) error {
-		if len(input) <= 0 {
-			return errors.New("must provide an API token")
-		}
-		return nil
-	}
-	prompt := promptui.Prompt{
-		Label:    "Enter your API token",
-		Validate: validate,
-	}
-
-	result, err := prompt.Run()
-	if err != nil {
-		fmt.Println(err)
-		os.Exit(1)
-	}
-	return result
-
 }
 func getFireflyConfig() config.RemoteConfiguration {
 
 	if fireflyUrl == "" {
-		fireflyUrl = getFireflyUrl()
+		fireflyUrl = getOptionalString("Enter the remote URL [default: Use Hypergiant hosted Hyperdrive]")
 	}
 	if fireflyUsername == "" {
-		fireflyUsername = getFireflyUsername()
+		fireflyUsername = getValidatedString("Enter your username", func(input string) error {
+			if len(input) <= 0 {
+				return errors.New("must provide a username")
+			}
+			return nil
+		})
 	}
 	if fireflyToken == "" {
-		fireflyToken = getFireflyToken()
+		fireflyToken = getValidatedString("Enter your firefly API token",
+			func(input string) error {
+				if len(input) <= 0 {
+					return errors.New("must provide an API token")
+				}
+				return nil
+			})
 	}
 	return config.RemoteConfiguration{
 		Type:                 config.Firefly,
@@ -140,21 +102,37 @@ func getFireflyConfig() config.RemoteConfiguration {
 func getEC2Config() config.RemoteConfiguration {
 
 	if ec2Profile == "" {
-		ec2Profile = getEC2Profile()
+		ec2Profile = getOptionalString("Enter the name of the configured AWS profile (leave blank to enter a key pair)")
 	}
 
 	// If the user has left the profile blank, prompt for keypair
 	if ec2Profile == "" {
 		if ec2AccessKey == "" {
-			ec2AccessKey = getEC2AccessKey()
+			ec2AccessKey = getValidatedString("Enter AWS Access Key for provisioning EC2 instances", func(input string) error {
+				if len(input) <= 0 {
+					return errors.New("must provide an Access Key")
+				}
+				return nil
+			})
+
 		}
 		if ec2Secret == "" {
-			ec2Secret = getEC2Secret()
+			ec2Secret = getValidatedString("Enter AWS Secret for provisioning EC2 instances", func(input string) error {
+				if len(input) <= 0 {
+					return errors.New("must provide an Access Secret")
+				}
+				return nil
+			})
 		}
 	}
 
 	if ec2Region == "" {
-		ec2Region = getEC2Region()
+		ec2Region = getValidatedString("Enter the region you wish to provision EC2 instances in", func(input string) error {
+			if len(input) <= 0 {
+				return errors.New("must provide a region")
+			}
+			return nil
+		})
 	}
 
 	return config.RemoteConfiguration{
@@ -166,78 +144,6 @@ func getEC2Config() config.RemoteConfiguration {
 			Region:    ec2Region,
 		},
 	}
-}
-func getEC2Profile() string {
-	prompt := promptui.Prompt{
-		Label: "Enter the name of the configured AWS profile (leave blank to enter a key pair)",
-	}
-
-	result, err := prompt.Run()
-	if err != nil {
-		fmt.Println(err)
-		os.Exit(1)
-	}
-	return result
-}
-func getEC2AccessKey() string {
-
-	validate := func(input string) error {
-		if len(input) <= 0 {
-			return errors.New("must provide an Access Key")
-		}
-		return nil
-	}
-	prompt := promptui.Prompt{
-		Label:    "Enter AWS Access Key for provisioning EC2 instances",
-		Validate: validate,
-	}
-
-	result, err := prompt.Run()
-	if err != nil {
-		fmt.Println(err)
-		os.Exit(1)
-	}
-	return result
-}
-func getEC2Secret() string {
-
-	validate := func(input string) error {
-		if len(input) <= 0 {
-			return errors.New("must provide an Secret")
-		}
-		return nil
-	}
-	prompt := promptui.Prompt{
-		Label:    "Enter AWS Secret for provisioning EC2 instances",
-		Validate: validate,
-	}
-
-	result, err := prompt.Run()
-	if err != nil {
-		fmt.Println(err)
-		os.Exit(1)
-	}
-	return result
-}
-func getEC2Region() string {
-
-	validate := func(input string) error {
-		if len(input) <= 0 {
-			return errors.New("must provide a region")
-		}
-		return nil
-	}
-	prompt := promptui.Prompt{
-		Label:    "Enter the region you wish to provision EC2 instances in",
-		Validate: validate,
-	}
-
-	result, err := prompt.Run()
-	if err != nil {
-		fmt.Println(err)
-		os.Exit(1)
-	}
-	return result
 }
 func getConfigType() config.RemoteType {
 	if remoteTypeInput == "" {
@@ -261,7 +167,7 @@ func getConfigType() config.RemoteType {
 
 	fmt.Println("Invalid or unsupported remote type")
 	os.Exit(1)
-	return (config.RemoteType(remoteTypeInput))
+	return config.RemoteType(remoteTypeInput)
 }
 
 var initCmd = &cobra.Command{
@@ -270,9 +176,15 @@ var initCmd = &cobra.Command{
 	Run: func(cmd *cobra.Command, args []string) {
 		var remoteConfig config.RemoteConfiguration
 		if remoteName == "" {
-			remoteName = getRemoteName()
+			remoteName = getValidatedString("Enter a name for this remote", func(input string) error {
+				if len(input) <= 0 {
+					return errors.New("must provide a name")
+				}
+				return nil
+			})
 		}
 		remoteType := getConfigType()
+		// if
 		switch remoteType {
 		case config.EC2:
 			remoteConfig = getEC2Config()
@@ -284,6 +196,19 @@ var initCmd = &cobra.Command{
 			break
 		}
 
+		if remoteJupyterAPIKey == "" {
+			remoteJupyterAPIKey = getOptionalString("Enter a Jupyter token to use for remote instances [leave blank to generate one]")
+			if remoteJupyterAPIKey == "" {
+
+				pass, err := password.Generate(64, 10, 0, true, true)
+				if err != nil {
+					log.Fatal(err)
+				}
+				remoteJupyterAPIKey = strings.ToUpper(pass)
+				log.Printf("A Jupyter Token of %s has been generated. You will need it to access the UI on remote instances. If you need to find this later you can find it in your ~/.hyperdrive file", remoteJupyterAPIKey)
+			}
+		}
+		remoteConfig.JupyterAPIKey = remoteJupyterAPIKey
 		config.UpdateRemote(remoteName, remoteConfig)
 	},
 }
@@ -291,6 +216,7 @@ var initCmd = &cobra.Command{
 func init() {
 	initCmd.Flags().StringVar(&remoteName, "remoteName", "", "Name of the remote for the config")
 	initCmd.Flags().StringVarP(&remoteTypeInput, "remoteType", "r", "", "Remote type [firefly|ec2]")
+	initCmd.Flags().StringVar(&remoteJupyterAPIKey, "jupyterAPIKey", "", "API key to use on jupyter instances that get created")
 	/*
 	* Firefly flags
 	 */

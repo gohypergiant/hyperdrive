@@ -32,8 +32,8 @@ import (
 )
 
 type DockerClient struct {
-	cli client.Client
-	ctx context.Context
+	Cli client.Client
+	Ctx context.Context
 }
 
 func NewDockerClient() *DockerClient {
@@ -43,8 +43,8 @@ func NewDockerClient() *DockerClient {
 	}
 
 	dockerClient := &DockerClient{
-		cli: *cli,
-		ctx: context.Background(),
+		Cli: *cli,
+		Ctx: context.Background(),
 	}
 
 	return dockerClient
@@ -56,7 +56,7 @@ func (dockerClient *DockerClient) CreateContainer(
 ) (string, error) {
 
 	if pullImage {
-		reader, err := dockerClient.cli.ImagePull(dockerClient.ctx, image, types.ImagePullOptions{})
+		reader, err := dockerClient.Cli.ImagePull(dockerClient.Ctx, image, types.ImagePullOptions{})
 		if err != nil {
 			panic(err)
 		}
@@ -72,18 +72,18 @@ func (dockerClient *DockerClient) CreateContainer(
 
 	}
 
-	containerCreatedBody, err := dockerClient.cli.ContainerCreate(dockerClient.ctx, contConfig, hostConfig, nil, nil, name)
+	containerCreatedBody, err := dockerClient.Cli.ContainerCreate(dockerClient.Ctx, contConfig, hostConfig, nil, nil, name)
 
 	return containerCreatedBody.ID, err
 }
 
 func (dockerClient *DockerClient) ExecuteContainer(containerID string, attach bool) {
-	if err := dockerClient.cli.ContainerStart(dockerClient.ctx, containerID, types.ContainerStartOptions{}); err != nil {
+	if err := dockerClient.Cli.ContainerStart(dockerClient.Ctx, containerID, types.ContainerStartOptions{}); err != nil {
 		panic(err)
 	}
 
 	if attach {
-		statusCh, errCh := dockerClient.cli.ContainerWait(dockerClient.ctx, containerID, container.WaitConditionNotRunning)
+		statusCh, errCh := dockerClient.Cli.ContainerWait(dockerClient.Ctx, containerID, container.WaitConditionNotRunning)
 		select {
 		case err := <-errCh:
 			if err != nil {
@@ -92,7 +92,7 @@ func (dockerClient *DockerClient) ExecuteContainer(containerID string, attach bo
 		case <-statusCh:
 		}
 
-		out, err := dockerClient.cli.ContainerLogs(dockerClient.ctx, containerID, types.ContainerLogsOptions{ShowStdout: true})
+		out, err := dockerClient.Cli.ContainerLogs(dockerClient.Ctx, containerID, types.ContainerLogsOptions{ShowStdout: true})
 		if err != nil {
 			panic(err)
 		}
@@ -110,7 +110,7 @@ func (dockerClient *DockerClient) ListContainers(containerName string) ([]types.
 		containerListOptions.Filters = filters.NewArgs()
 		containerListOptions.Filters.Add("name", containerName)
 	}
-	containers, err := dockerClient.cli.ContainerList(dockerClient.ctx, containerListOptions)
+	containers, err := dockerClient.Cli.ContainerList(dockerClient.Ctx, containerListOptions)
 
 	if err != nil {
 		panic(err)
@@ -124,7 +124,7 @@ func (dockerClient *DockerClient) ListAllRunningContainers() ([]types.Container,
 
 func (dockerClient *DockerClient) ListImages() ([]types.ImageSummary, error) {
 	imageListOptions := types.ImageListOptions{}
-	images, err := dockerClient.cli.ImageList(dockerClient.ctx, imageListOptions)
+	images, err := dockerClient.Cli.ImageList(dockerClient.Ctx, imageListOptions)
 
 	if err != nil {
 		panic(err)
@@ -134,7 +134,7 @@ func (dockerClient *DockerClient) ListImages() ([]types.ImageSummary, error) {
 }
 
 func (dockerClient *DockerClient) InspectContainer(containerId string) types.ContainerJSON {
-	containerJSON, _, err := dockerClient.cli.ContainerInspectWithRaw(dockerClient.ctx, containerId, false)
+	containerJSON, _, err := dockerClient.Cli.ContainerInspectWithRaw(dockerClient.Ctx, containerId, false)
 
 	if err != nil {
 		panic(err)
@@ -144,13 +144,13 @@ func (dockerClient *DockerClient) InspectContainer(containerId string) types.Con
 }
 
 func (dockerClient *DockerClient) RemoveContainer(containerId string) error {
-	errStop := dockerClient.cli.ContainerStop(dockerClient.ctx, containerId, nil)
+	errStop := dockerClient.Cli.ContainerStop(dockerClient.Ctx, containerId, nil)
 
 	if errStop != nil {
 		panic(errStop)
 	}
 
-	errRemove := dockerClient.cli.ContainerRemove(dockerClient.ctx, containerId, types.ContainerRemoveOptions{})
+	errRemove := dockerClient.Cli.ContainerRemove(dockerClient.Ctx, containerId, types.ContainerRemoveOptions{})
 
 	if errRemove != nil {
 		panic(errRemove)
@@ -219,7 +219,7 @@ func (dockerClient *DockerClient) BuildImage(dockerfilePath string, tags []strin
 		Tags:       tags,
 		Remove:     true,
 	}
-	res, err := dockerClient.cli.ImageBuild(dockerClient.ctx, dockerBuildContext, opts)
+	res, err := dockerClient.Cli.ImageBuild(dockerClient.Ctx, dockerBuildContext, opts)
 	if err != nil {
 		fmt.Println(err)
 		os.Exit(1)

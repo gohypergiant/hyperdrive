@@ -14,7 +14,7 @@ data:
 models:
   sklearn.ensemble.RandomForestClassifier:
     n_estimators:
-      - 
+      -
         distribution: int-uniform
         low: 80
         high: 120
@@ -23,7 +23,7 @@ models:
             max_depth: 8
           - entropy:
             max_depth: 4
-      - 
+      -
         distribution: int
         low: 20
         high: 40
@@ -32,7 +32,7 @@ models:
     max_features:
       - auto
       - sqrt
-      - log2 
+      - log2
     class_weight:
       - null
       - balanced
