@@ -570,7 +570,7 @@ func StartServer(manifestPath string, remoteCfg HyperConfig.EC2RemoteConfigurati
 		},
 	}
 
-	version := "0.0.14"
+	version := "0.0.16"
 	minMaxCount := int32(1)
 	startupScript := fmt.Sprintf(`
 #!/bin/bash -xe
