@@ -100,23 +100,8 @@ func GetHyperName(i types.Instance) string {
 	return ""
 }
 func CreateInternetGateway(client *ec2.Client, projectName string) string {
-	tagSpecification := []types.TagSpecification{
-		{
-			ResourceType: types.ResourceTypeInternetGateway,
-			Tags: []types.Tag{
-				{
-					Key:   aws.String(HYPERDRIVE_TYPE_TAG),
-					Value: aws.String("true"),
-				},
-				{
-					Key:   aws.String(HYPERDRIVE_NAME_TAG),
-					Value: aws.String(projectName),
-				},
-			},
-		},
-	}
 	input := &ec2.CreateInternetGatewayInput{
-		TagSpecifications: tagSpecification,
+		TagSpecifications: getTagSpecification(projectName, types.ResourceTypeInternetGateway),
 	}
 
 	result, err := MakeInternetGateway(context.TODO(), client, input)
@@ -175,27 +160,6 @@ func GetSecurityGroupId(r *ec2.DescribeSecurityGroupsOutput, projectName string)
 	return ""
 }
 
-func GetRouteTableID(r *ec2.DescribeRouteTablesOutput, projectName string) string {
-
-	for _, r := range r.RouteTables {
-		for _, t := range r.Tags {
-			if *t.Key == HYPERDRIVE_NAME_TAG && *t.Value == projectName {
-				return *r.RouteTableId
-			}
-		}
-	}
-	return ""
-}
-func GetAssociationID(r *ec2.DescribeRouteTablesOutput, subnetID string) string {
-	for _, rt := range r.RouteTables {
-		for _, a := range rt.Associations {
-			if a.SubnetId == &subnetID {
-				return *a.RouteTableAssociationId
-			}
-		}
-	}
-	return ""
-}
 func GetInternetGatewayID(r *ec2.DescribeInternetGatewaysOutput, projectName string) string {
 	for _, i := range r.InternetGateways {
 		for _, t := range i.Tags {
@@ -221,25 +185,9 @@ func getOrCreateVPC(client *ec2.Client, projectName string) (string, string) {
 	if vpcID == "" {
 		fmt.Println("Creating VPC")
 
-		tagSpecification := []types.TagSpecification{
-			{
-				ResourceType: types.ResourceTypeVpc,
-				Tags: []types.Tag{
-					{
-						Key:   aws.String(HYPERDRIVE_TYPE_TAG),
-						Value: aws.String("true"),
-					},
-					{
-						Key:   aws.String(HYPERDRIVE_NAME_TAG),
-						Value: aws.String(projectName),
-					},
-				},
-			},
-		}
-
 		inputMakeVPC := &ec2.CreateVpcInput{
 			CidrBlock:         aws.String("10.0.0.0/16"),
-			TagSpecifications: tagSpecification,
+			TagSpecifications: getTagSpecification(projectName, types.ResourceTypeVpc),
 		}
 
 		resultMakeVPC, err := MakeVpc(context.TODO(), client, inputMakeVPC)
@@ -253,25 +201,9 @@ func getOrCreateVPC(client *ec2.Client, projectName string) (string, string) {
 
 		AddInternetGateway(client, vpcID, internetGatewayID)
 
-		tagSpecification = []types.TagSpecification{
-			{
-				ResourceType: types.ResourceTypeRouteTable,
-				Tags: []types.Tag{
-					{
-						Key:   aws.String(HYPERDRIVE_TYPE_TAG),
-						Value: aws.String("true"),
-					},
-					{
-						Key:   aws.String(HYPERDRIVE_NAME_TAG),
-						Value: aws.String(projectName),
-					},
-				},
-			},
-		}
-
 		inputMakeRouteTable := &ec2.CreateRouteTableInput{
 			VpcId:             aws.String(vpcID),
-			TagSpecifications: tagSpecification,
+			TagSpecifications: getTagSpecification(projectName, types.ResourceTypeRouteTable),
 		}
 
 		resultMakeRouteTable, err := MakeRouteTable(context.TODO(), client, inputMakeRouteTable)
@@ -293,6 +225,25 @@ func getOrCreateVPC(client *ec2.Client, projectName string) (string, string) {
 		}
 	}
 	return vpcID, routeTableID
+}
+
+func getTagSpecification(projectName string, resourceType types.ResourceType) []types.TagSpecification {
+	tagSpecification := []types.TagSpecification{
+		{
+			ResourceType: resourceType,
+			Tags: []types.Tag{
+				{
+					Key:   aws.String(HYPERDRIVE_TYPE_TAG),
+					Value: aws.String("true"),
+				},
+				{
+					Key:   aws.String(HYPERDRIVE_NAME_TAG),
+					Value: aws.String(projectName),
+				},
+			},
+		},
+	}
+	return tagSpecification
 }
 
 func setSubnetToProvisionPublicIP(subnetID string, client *ec2.Client) {
@@ -333,27 +284,11 @@ func getOrCreateSubnet(client *ec2.Client, vID string, region string, projectNam
 	fmt.Println("No Subnet found for VPC", vID)
 	fmt.Println("Creating Subnet")
 
-	tagSpecification := []types.TagSpecification{
-		{
-			ResourceType: types.ResourceTypeSubnet,
-			Tags: []types.Tag{
-				{
-					Key:   aws.String(HYPERDRIVE_TYPE_TAG),
-					Value: aws.String("true"),
-				},
-				{
-					Key:   aws.String(HYPERDRIVE_NAME_TAG),
-					Value: aws.String(projectName),
-				},
-			},
-		},
-	}
-
 	subnetMakeInput := &ec2.CreateSubnetInput{
 		CidrBlock:         aws.String("10.0.1.0/24"),
 		VpcId:             aws.String(vID),
 		AvailabilityZone:  aws.String(region + "a"),
-		TagSpecifications: tagSpecification,
+		TagSpecifications: getTagSpecification(projectName, types.ResourceTypeSubnet),
 	}
 
 	subnetMakeResult, err := MakeSubnet(context.TODO(), client, subnetMakeInput)
@@ -401,27 +336,11 @@ func getOrCreateSecurityGroup(client *ec2.Client, vID string, projectName string
 	fmt.Println("No Security Group found on VPC", vID)
 	fmt.Println("Creating Security Group for project", projectName)
 
-	tagSpecification := []types.TagSpecification{
-		{
-			ResourceType: types.ResourceTypeSecurityGroup,
-			Tags: []types.Tag{
-				{
-					Key:   aws.String(HYPERDRIVE_TYPE_TAG),
-					Value: aws.String("true"),
-				},
-				{
-					Key:   aws.String(HYPERDRIVE_NAME_TAG),
-					Value: aws.String(projectName),
-				},
-			},
-		},
-	}
-
 	scInput := &ec2.CreateSecurityGroupInput{
 		GroupName:         aws.String(projectName + HYPERDRIVE_SECURITY_GROUP_NAME),
 		Description:       aws.String("Security group for EC2 instances provisioned by hyper"),
 		VpcId:             aws.String(vID),
-		TagSpecifications: tagSpecification,
+		TagSpecifications: getTagSpecification(projectName, types.ResourceTypeSecurityGroup),
 	}
 
 	securityGroupMakeResult, err := MakeSecurityGroup(context.TODO(), client, scInput)
@@ -492,26 +411,11 @@ func getOrCreateKeyPair(client *ec2.Client, projectName string) string {
 	fmt.Printf("keyName: %s", keyName)
 
 	if keyName == "" {
-		tagSpecification := []types.TagSpecification{
-			{
-				ResourceType: types.ResourceTypeKeyPair,
-				Tags: []types.Tag{
-					{
-						Key:   aws.String(HYPERDRIVE_TYPE_TAG),
-						Value: aws.String("true"),
-					},
-					{
-						Key:   aws.String(HYPERDRIVE_NAME_TAG),
-						Value: aws.String(projectName),
-					},
-				},
-			},
-		}
 
 		keyName = projectName + "-hyperdrive"
 		keyPairMakeInput := &ec2.CreateKeyPairInput{
 			KeyName:           aws.String(keyName),
-			TagSpecifications: tagSpecification,
+			TagSpecifications: getTagSpecification(projectName, types.ResourceTypeKeyPair),
 		}
 
 		keyPairMakeResult, err := MakeKeyPair(context.TODO(), client, keyPairMakeInput)
@@ -554,22 +458,6 @@ func StartServer(manifestPath string, remoteCfg HyperConfig.EC2RemoteConfigurati
 	keyName := getOrCreateKeyPair(client, projectName)
 	fmt.Println("Key name:", keyName)
 
-	tagSpecification := []types.TagSpecification{
-		{
-			ResourceType: types.ResourceTypeInstance,
-			Tags: []types.Tag{
-				{
-					Key:   aws.String(HYPERDRIVE_TYPE_TAG),
-					Value: aws.String("true"),
-				},
-				{
-					Key:   aws.String(HYPERDRIVE_NAME_TAG),
-					Value: aws.String(projectName),
-				},
-			},
-		},
-	}
-
 	version := "0.0.16"
 	minMaxCount := int32(1)
 	startupScript := fmt.Sprintf(`
@@ -592,7 +480,7 @@ sudo -u ec2-user bash -c 'hyper jupyter remoteHost --hostPort 8888 --apiKey %s &
 		SecurityGroupIds:  []string{securityGroupID},
 		SubnetId:          aws.String(subnetID),
 		KeyName:           aws.String(keyName),
-		TagSpecifications: tagSpecification,
+		TagSpecifications: getTagSpecification(projectName, types.ResourceTypeInstance),
 		UserData:          aws.String(base64.StdEncoding.EncodeToString([]byte(startupScript))),
 	}
 
@@ -807,7 +695,7 @@ func StopServer(manifestPath string, remoteCfg HyperConfig.EC2RemoteConfiguratio
 				}
 				_, err = DisassociateRouteTable(context.TODO(), client, routeTableDisassociateInput)
 				if err != nil {
-					panic("error disassociationg Route Table," + err.Error())
+					panic("error disassociating Route Table," + err.Error())
 				}
 			}
 			routeTableDeleteInput := &ec2.DeleteRouteTableInput{
