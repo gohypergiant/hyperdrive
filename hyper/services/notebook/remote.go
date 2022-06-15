@@ -30,7 +30,7 @@ func (s RemoteNotebookService) Start(jupyterOptions types.JupyterLaunchOptions, 
 	if s.RemoteConfiguration.Type == config.Firefly {
 		firefly.StartServer(s.RemoteConfiguration.FireflyConfiguration, name, imageOptions.Profile)
 	} else if s.RemoteConfiguration.Type == config.EC2 {
-		aws.StartServer(s.ManifestPath, s.RemoteConfiguration.EC2Configuration, ec2Options.InstanceType, ec2Options.AmiId, jupyterOptions)
+		aws.StartJupyterEC2(s.ManifestPath, s.RemoteConfiguration.EC2Configuration, ec2Options.InstanceType, ec2Options.AmiId, jupyterOptions)
 	} else {
 		fmt.Println("Not Implemented")
 	}

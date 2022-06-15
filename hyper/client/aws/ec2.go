@@ -25,6 +25,9 @@ const HYPERDRIVE_TYPE_TAG string = "hyperdrive-type"
 const HYPERDRIVE_NAME_TAG string = "hyperdrive-name"
 const HYPERDRIVE_SECURITY_GROUP_NAME string = "-SecurityGroup"
 
+// TODO, we should get this dynamically
+const version string = "0.0.16"
+
 func GetInstances(c context.Context, api hyperdriveTypes.EC2DescribeInstancesAPI, input *ec2.DescribeInstancesInput) (*ec2.DescribeInstancesOutput, error) {
 	return api.DescribeInstances(c, input)
 }
@@ -314,7 +317,7 @@ func getOrCreateSubnet(client *ec2.Client, vID string, region string, projectNam
 	return subnetID
 }
 
-func getOrCreateSecurityGroup(client *ec2.Client, vID string, projectName string) string {
+func getOrCreateSecurityGroup(client *ec2.Client, vID string, projectName string, httpPort int) string {
 	var securityGroupID string
 
 	securityGroupDescribeInput := &ec2.DescribeSecurityGroupsInput{
@@ -367,8 +370,8 @@ func getOrCreateSecurityGroup(client *ec2.Client, vID string, projectName string
 			},
 			{
 				IpProtocol: aws.String("tcp"),
-				FromPort:   aws.Int32(8888),
-				ToPort:     aws.Int32(8888),
+				FromPort:   aws.Int32(int32(httpPort)),
+				ToPort:     aws.Int32(int32(httpPort)),
 				IpRanges: []types.IpRange{
 					{
 						CidrIp: aws.String("0.0.0.0/0"),
@@ -433,7 +436,12 @@ func getOrCreateKeyPair(client *ec2.Client, projectName string) string {
 	return keyName
 }
 
-func StartServer(manifestPath string, remoteCfg HyperConfig.EC2RemoteConfiguration, ec2Type string, amiID string, jupyterLaunchOptions hyperdriveTypes.JupyterLaunchOptions) {
+func StartJupyterEC2(manifestPath string, remoteCfg HyperConfig.EC2RemoteConfiguration, ec2Type string, amiID string, jupyterLaunchOptions hyperdriveTypes.JupyterLaunchOptions) {
+	startupScript := getEc2StartScript(version, jupyterLaunchOptions)
+	StartServer(manifestPath, remoteCfg, ec2Type, amiID, startupScript, jupyterLaunchOptions.HostPort)
+}
+
+func StartServer(manifestPath string, remoteCfg HyperConfig.EC2RemoteConfiguration, ec2Type string, amiID string, startupScript string, hostPort int) {
 
 	if ec2Type == "" {
 		fmt.Println("EC2InstanceTypeNotFound: please specify a EC2 instance type using the flag --ec2InstanceType")
@@ -454,14 +462,11 @@ func StartServer(manifestPath string, remoteCfg HyperConfig.EC2RemoteConfigurati
 	subnetID := getOrCreateSubnet(client, vpcID, remoteCfg.Region, projectName, rtID)
 	fmt.Println("Subnet ID:", subnetID)
 
-	securityGroupID := getOrCreateSecurityGroup(client, vpcID, projectName)
+	securityGroupID := getOrCreateSecurityGroup(client, vpcID, projectName, hostPort)
 	fmt.Println("Security group ID:", securityGroupID)
 
 	keyName := getOrCreateKeyPair(client, projectName)
 	fmt.Println("Key name:", keyName)
-
-	version := "0.0.16"
-	startupScript := getEc2StartScript(version, jupyterLaunchOptions)
 
 	minMaxCount := int32(1)
 	ec2Input := &ec2.RunInstancesInput{
@@ -512,8 +517,8 @@ tar -xvf /tmp/hyperdrive/hyper.tar -C /tmp/hyperdrive
 mv /tmp/hyperdrive/hyper /usr/bin/hyper
 sudo chown ec2-user:ec2-user /tmp/hyperdrive/project
 cd /tmp/hyperdrive/project
-sudo -u ec2-user bash -c 'hyper jupyter remoteHost --hostPort 8888 --apiKey %s &'
-`, version, version, jupyterLaunchOptions.APIKey)
+sudo -u ec2-user bash -c 'hyper jupyter remoteHost --hostPort %d --apiKey %s &'
+`, version, version, jupyterLaunchOptions.HostPort, jupyterLaunchOptions.APIKey)
 	return startupScript
 }
 func getInstanceIpAddress(instanceId string, remoteCfg HyperConfig.EC2RemoteConfiguration) (*string, error) {
