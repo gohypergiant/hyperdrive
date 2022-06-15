@@ -43,10 +43,8 @@ func (s LocalNotebookService) Start(jupyterOptions types.JupyterLaunchOptions, e
 	imageOptions := GetNotebookImageOptions("local")
 	clientImages, _ := dockerClient.ListImages()
 	inImageCache := false
-	fmt.Printf("token: %s password: %s", jupyterOptions.APIKey, jupyterOptions.Password)
 	env := []string{"JUPYTER_TOKEN=firefly",
 		fmt.Sprintf("NB_TOKEN=%s", jupyterOptions.APIKey),
-		fmt.Sprintf("NB_PASSWORD=%s", jupyterOptions.Password),
 		fmt.Sprintf("AWS_ACCESS_KEY_ID=%s", s.S3Credentials.AccessKey),
 		fmt.Sprintf("AWS_SECRET_ACCESS_KEY=%s", s.S3Credentials.AccessSecret),
 		fmt.Sprintf("AWS_DEFAULT_REGION=%s", s.S3Credentials.Region),
