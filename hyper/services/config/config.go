@@ -75,6 +75,7 @@ func GetNamedProfileConfig(s3AwsProfile string) NamedProfileConfiguration {
 		fmt.Println("Error:", errConfig)
 		os.Exit(1)
 	}
+
 	creds, errCreds := cfg.Credentials.Retrieve(ctx)
 	if errCreds != nil {
 		fmt.Println("Error:", errCreds)
