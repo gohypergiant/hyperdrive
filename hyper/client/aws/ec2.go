@@ -7,6 +7,7 @@ import (
 	"io/fs"
 	"os"
 	"path"
+	"runtime"
 	"time"
 
 	"github.com/docker/distribution/uuid"
@@ -507,6 +508,16 @@ func WritePublicKey(client *ec2.Client, keyName string, projectName string, publ
 
 	return nil
 }
+func UserHomeDir() string {
+	if runtime.GOOS == "windows" {
+		home := os.Getenv("HOMEDRIVE") + os.Getenv("HOMEPATH")
+		if home == "" {
+			home = os.Getenv("USERPROFILE")
+		}
+		return home
+	}
+	return os.Getenv("HOME")
+}
 func getOrCreateKeyPair(client *ec2.Client, projectName string) string {
 
 	keyPairDescribeInput := &ec2.DescribeKeyPairsInput{
@@ -522,7 +533,7 @@ func getOrCreateKeyPair(client *ec2.Client, projectName string) string {
 	if keyName == "" {
 
 		keyName = projectName
-		sshFolderPath := path.Join(os.Getenv("HOME"), "/.ssh")
+		sshFolderPath := path.Join(UserHomeDir(), "/.ssh")
 		privateKeyPath := path.Join(sshFolderPath, fmt.Sprintf("/%s", keyName))
 
 		if _, err = os.Stat(sshFolderPath); os.IsNotExist(err) {
@@ -769,7 +780,7 @@ func StopServer(manifestPath string, remoteCfg HyperConfig.EC2RemoteConfiguratio
 		}
 		fmt.Println("Key Pair deleted:", keyName)
 
-		sshFolderPath := path.Join(os.Getenv("HOME"), "/.ssh")
+		sshFolderPath := path.Join(UserHomeDir(), "/.ssh")
 
 		if keyName != ssh.DEFAULT_KEY {
 			originalDir, err := os.Getwd()
