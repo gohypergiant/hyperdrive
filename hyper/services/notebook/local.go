@@ -49,9 +49,9 @@ func (s LocalNotebookService) Start(flavor string, pullImage bool,
 	imageOptions := GetNotebookImageOptions("dev") // change to "local" later
 	clientImages, _ := dockerClient.ListImages()
 	inImageCache := false
-	aws_access_key_id := ""
-	aws_secret_access_key := ""
-	aws_session_token := ""
+	awsAccessKeyId := ""
+	awsSecretAccessKey := ""
+	awsSessionToken := ""
 	region := ""
 	if s3AwsProfile != "" {
 		awsConfigFilePath := config.DefaultSharedConfigFilename()
@@ -75,9 +75,9 @@ func (s LocalNotebookService) Start(flavor string, pullImage bool,
 			os.Exit(1)
 		}
 		
-		aws_access_key_id = creds.AccessKeyID
-		aws_secret_access_key = creds.SecretAccessKey
-		aws_session_token = creds.SessionToken
+		awsAccessKeyId = creds.AccessKeyID
+		awsSecretAccessKey = creds.SecretAccessKey
+		awsSessionToken = creds.SessionToken
 		region = cfg.Region
 	} else {
 		aws_access_key_id = s.S3Credentials.AccessKey
@@ -85,9 +85,9 @@ func (s LocalNotebookService) Start(flavor string, pullImage bool,
 		region = s.S3Credentials.Region
 	}
 	env := []string{"JUPYTER_TOKEN=firefly",
-		fmt.Sprintf("AWS_ACCESS_KEY_ID=%s", aws_access_key_id),
-		fmt.Sprintf("AWS_SECRET_ACCESS_KEY=%s", aws_secret_access_key),
-		fmt.Sprintf("AWS_SESSION_TOKEN=%s", aws_session_token),
+		fmt.Sprintf("AWS_ACCESS_KEY_ID=%s", awsAccessKeyId),
+		fmt.Sprintf("AWS_SECRET_ACCESS_KEY=%s", awsSecretAccessKey),
+		fmt.Sprintf("AWS_SESSION_TOKEN=%s", awsSessionToken),
 		fmt.Sprintf("AWS_DEFAULT_REGION=%s", region),
 		fmt.Sprintf("HYPER_PROJECT_NAME=%s", projectName),
 	}
