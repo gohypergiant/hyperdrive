@@ -58,6 +58,35 @@ func GetConfig() Configuration {
 	}
 	return config
 }
+func GetNamedProfileConfig(s3AwsProfile string) NamedProfileConfiguration {
+	var namedProfileConfig NamedProfileConfiguration
+	awsConfigFilePath := awssdkconfig.DefaultSharedConfigFilename()
+	if _, errFile := os.Stat(awsConfigFilePath); errFile == nil {
+		// AWS config file exists at $HOME/.aws/config. We're good.
+	} else if errors.Is(errFile, os.ErrNotExist) {
+		fmt.Println("Error:", awsConfigFilePath, "does not exist. Please create one.")
+		os.Exit(1)
+	}
+
+	ctx := context.TODO()
+	cfg, errConfig := awssdkconfig.LoadDefaultConfig(ctx,
+		awssdkconfig.WithSharedConfigProfile(s3AwsProfile))
+	if errConfig != nil {
+		fmt.Println("Error:", errConfig)
+		os.Exit(1)
+	}
+	creds, errCreds := cfg.Credentials.Retrieve(ctx)
+	if errCreds != nil {
+		fmt.Println(errCreds)
+		os.Exit(1)
+	}
+
+	namedProfileConfig.AccessKey = creds.AccessKeyID
+	namedProfileConfig.Secret = creds.SecretAccessKey
+	namedProfileConfig.Token = creds.SessionToken
+	namedProfileConfig.Region = cfg.Region
+	return namedProfileConfig
+}
 func GetRemotes() map[string]RemoteConfiguration {
 	var remotesMap map[string]RemoteConfiguration
 	err := viper.UnmarshalKey("remotes", &remotesMap)
