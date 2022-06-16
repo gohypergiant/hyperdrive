@@ -541,6 +541,12 @@ func getOrCreateKeyPair(client *ec2.Client, projectName string) string {
 		}
 
 		var publicKeyBytes, privateKeyBytes []byte
+		originalDir, err := os.Getwd()
+		if err != nil {
+			panic("error changing working directory: " + err.Error())
+		}
+		os.Chdir(sshFolderPath)
+
 		if _, err = os.Stat(privateKeyPath); os.IsNotExist(err) {
 			privateKeyBytes, publicKeyBytes = ssh.CreateRSAKeyPair(keyName)
 			err = ssh.WriteKey(privateKeyPath, privateKeyBytes, fs.FileMode(ssh.PRIVATE_KEY_FILE_MODE))
@@ -552,22 +558,18 @@ func getOrCreateKeyPair(client *ec2.Client, projectName string) string {
 			if err != nil {
 				fmt.Println("Couldn't add key to ssh-agent")
 
-				originalDir, err := os.Getwd()
-				if err != nil {
-					panic("error changing working directory: " + err.Error())
-				}
-				os.Chdir(sshFolderPath)
-
 				_, err = os.Stat(ssh.DEFAULT_KEY)
 				if err != nil {
 					fmt.Println("Writing key to default key value: id_rsa")
 					os.Rename(keyName, ssh.DEFAULT_KEY)
 					keyName = ssh.DEFAULT_KEY
 				}
-				os.Chdir(originalDir)
 			}
 
+		} else {
+			_, publicKeyBytes = ssh.ParsePrivateKey(keyName)
 		}
+		os.Chdir(originalDir)
 
 		err = WritePublicKey(client, keyName, projectName, publicKeyBytes)
 		if err != nil {
@@ -788,15 +790,11 @@ func StopServer(manifestPath string, remoteCfg HyperConfig.EC2RemoteConfiguratio
 				panic("error changing working directory: " + err.Error())
 			}
 			os.Chdir(sshFolderPath)
-			_ = ssh.RemoveKeySshAgent(keyName)
 
 			_, err = os.Stat(keyName)
 			if err == nil {
-				err = os.Remove(keyName)
-				if err != nil {
-					panic("error deleting private key: " + err.Error())
-				}
-				fmt.Println("Private key stored at .ssh deleted: ", keyName)
+				_ = ssh.RemoveKeySshAgent(keyName)
+				fmt.Println("Delete your key ~/.ssh/" + keyName + " if it is no longer in use")
 			}
 			os.Chdir(originalDir)
 		}
