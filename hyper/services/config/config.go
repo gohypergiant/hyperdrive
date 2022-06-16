@@ -1,9 +1,12 @@
 package config
 
 import (
+	"context"
+	"errors"
 	"fmt"
 	"os"
 
+	awssdkconfig "github.com/aws/aws-sdk-go-v2/config"
 	"github.com/spf13/viper"
 )
 
@@ -39,6 +42,12 @@ type Configuration struct {
 	SchemaVersion string                         `mapstructure:"schema_version" json:"schema_version"`
 	Remotes       map[string]RemoteConfiguration `mapstructure:"remotes" json:"remotes"`
 }
+type NamedProfileConfiguration struct {
+	AccessKey string
+	Secret string
+	Token string
+	Region string
+}
 
 func GetConfig() Configuration {
 	var config Configuration
@@ -49,7 +58,6 @@ func GetConfig() Configuration {
 	}
 	return config
 }
-
 func GetRemotes() map[string]RemoteConfiguration {
 	var remotesMap map[string]RemoteConfiguration
 	err := viper.UnmarshalKey("remotes", &remotesMap)
