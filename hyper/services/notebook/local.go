@@ -1,7 +1,6 @@
 package notebook
 
 import (
-	"context"
 	"errors"
 	"fmt"
 	"io"
@@ -10,12 +9,12 @@ import (
 	"strings"
 	"time"
 
-	"github.com/aws/aws-sdk-go-v2/config"
 	"github.com/docker/docker/api/types/container"
 	"github.com/docker/docker/api/types/mount"
 	"github.com/docker/go-connections/nat"
 	"github.com/gohypergiant/hyperdrive/hyper/client/cli"
 	"github.com/gohypergiant/hyperdrive/hyper/client/manifest"
+	"github.com/gohypergiant/hyperdrive/hyper/services/config"
 	"github.com/pkg/browser"
 )
 
@@ -54,31 +53,11 @@ func (s LocalNotebookService) Start(flavor string, pullImage bool,
 	awsSessionToken := ""
 	region := ""
 	if s3AwsProfile != "" {
-		awsConfigFilePath := config.DefaultSharedConfigFilename()
-		if _, errFile := os.Stat(awsConfigFilePath); errFile == nil {
-			// AWS config file exists at $HOME/.aws/config. We're good.
-		} else if errors.Is(errFile, os.ErrNotExist) {
-			fmt.Println("Error:", awsConfigFilePath, "does not exist. Please create one.")
-			os.Exit(1)
-		}
-
-		ctx := context.TODO()
-		cfg, errConfig := config.LoadDefaultConfig(ctx,
-			config.WithSharedConfigProfile(s3AwsProfile))
-		if errConfig != nil {
-			fmt.Println("Error:", errConfig)
-			os.Exit(1)
-		}
-		creds, errCreds := cfg.Credentials.Retrieve(ctx)
-		if errCreds != nil {
-			fmt.Println(errCreds)
-			os.Exit(1)
-		}
-		
-		awsAccessKeyId = creds.AccessKeyID
-		awsSecretAccessKey = creds.SecretAccessKey
-		awsSessionToken = creds.SessionToken
-		region = cfg.Region
+		namedProfileConfig := config.GetNamedProfileConfig(s3AwsProfile)
+		awsAccessKeyId = namedProfileConfig.AccessKey
+		awsSecretAccessKey = namedProfileConfig.Secret
+		awsSessionToken = namedProfileConfig.Token
+		region = namedProfileConfig.Region
 	} else {
 		awsAccessKeyId = s.S3Credentials.AccessKey
 		awsSecretAccessKey = s.S3Credentials.AccessSecret
