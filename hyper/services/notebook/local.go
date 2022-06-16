@@ -80,8 +80,8 @@ func (s LocalNotebookService) Start(flavor string, pullImage bool,
 		awsSessionToken = creds.SessionToken
 		region = cfg.Region
 	} else {
-		aws_access_key_id = s.S3Credentials.AccessKey
-		aws_secret_access_key = s.S3Credentials.AccessSecret
+		awsAccessKeyId = s.S3Credentials.AccessKey
+		awsSecretAccessKey = s.S3Credentials.AccessSecret
 		region = s.S3Credentials.Region
 	}
 	env := []string{"JUPYTER_TOKEN=firefly",
