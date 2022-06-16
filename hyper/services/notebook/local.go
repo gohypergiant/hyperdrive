@@ -53,6 +53,7 @@ func (s LocalNotebookService) Start(flavor string, pullImage bool,
 	awsSessionToken := ""
 	region := ""
 	if s3AwsProfile != "" {
+		fmt.Printf("Using AWS named profile '%s' to retrieve AWS creds\n", s3AwsProfile)
 		namedProfileConfig := config.GetNamedProfileConfig(s3AwsProfile)
 		awsAccessKeyId = namedProfileConfig.AccessKey
 		awsSecretAccessKey = namedProfileConfig.Secret
