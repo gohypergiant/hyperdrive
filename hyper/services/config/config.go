@@ -37,6 +37,7 @@ type EC2RemoteConfiguration struct {
 	AccessKey string `mapstructure:"access_key" json:"access_key"`
 	Secret    string `mapstructure:"secret" json:"secret"`
 	Region    string `mapstructure:"region" json:"region"`
+	Token     string
 }
 type Configuration struct {
 	SchemaVersion string                         `mapstructure:"schema_version" json:"schema_version"`
