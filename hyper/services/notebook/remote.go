@@ -42,7 +42,6 @@ func (s RemoteNotebookService) Start(flavor string, pullImage bool,
 			s.RemoteConfiguration.EC2Configuration.Region = namedProfileConfig.Region
 			s.RemoteConfiguration.EC2Configuration.Token = namedProfileConfig.Token
 		}
-		fmt.Println("EC2 config:", s.RemoteConfiguration.EC2Configuration)
 		aws.StartServer(s.ManifestPath, s.RemoteConfiguration.EC2Configuration, ec2Options.InstanceType, ec2Options.AmiId )
 	} else {
 		fmt.Println("Not Implemented")
