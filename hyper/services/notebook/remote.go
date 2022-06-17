@@ -34,6 +34,15 @@ func (s RemoteNotebookService) Start(flavor string, pullImage bool,
 	if s.RemoteConfiguration.Type == config.Firefly {
 		firefly.StartServer(s.RemoteConfiguration.FireflyConfiguration, name, imageOptions.Profile)
 	} else if s.RemoteConfiguration.Type == config.EC2 {
+		if s3AwsProfile != "" {
+			fmt.Printf("Using AWS named profile '%s' to retrieve AWS creds\n", s3AwsProfile)
+			namedProfileConfig := config.GetNamedProfileConfig(s3AwsProfile)
+			s.RemoteConfiguration.EC2Configuration.AccessKey = namedProfileConfig.AccessKey
+			s.RemoteConfiguration.EC2Configuration.Secret = namedProfileConfig.Secret
+			s.RemoteConfiguration.EC2Configuration.Region = namedProfileConfig.Region
+			s.RemoteConfiguration.EC2Configuration.Token = namedProfileConfig.Token
+		}
+		fmt.Println("EC2 config:", s.RemoteConfiguration.EC2Configuration)
 		aws.StartServer(s.ManifestPath, s.RemoteConfiguration.EC2Configuration, ec2Options.InstanceType, ec2Options.AmiId )
 	} else {
 		fmt.Println("Not Implemented")
