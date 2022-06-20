@@ -8,6 +8,7 @@ type JupyterLaunchOptions struct {
 	LaunchBrowser bool
 	Requirements  bool
 	RestartAlways bool
+	S3AwsProfile  string
 }
 type INotebookService interface {
 	Start(jupyterOptions JupyterLaunchOptions, ec2Options EC2StartOptions)

@@ -16,6 +16,7 @@ import (
 	"github.com/docker/go-connections/nat"
 	"github.com/gohypergiant/hyperdrive/hyper/client/cli"
 	"github.com/gohypergiant/hyperdrive/hyper/client/manifest"
+	"github.com/gohypergiant/hyperdrive/hyper/services/config"
 	"github.com/pkg/browser"
 )
 
@@ -38,14 +39,31 @@ func (s LocalNotebookService) Start(jupyterOptions types.JupyterLaunchOptions, _
 	execute := false
 	projectName := manifest.GetProjectName(s.ManifestPath)
 
-	imageOptions := GetNotebookImageOptions("local")
+	imageOptions := GetNotebookImageOptions("dev") // change to "local" later
 	clientImages, _ := dockerClient.ListImages()
 	inImageCache := false
+	awsAccessKeyId := ""
+	awsSecretAccessKey := ""
+	awsSessionToken := ""
+	region := ""
+	if jupyterOptions.S3AwsProfile != "" {
+		fmt.Printf("Using AWS named profile '%s' to retrieve AWS creds\n", jupyterOptions.S3AwsProfile)
+		namedProfileConfig := config.GetNamedProfileConfig(jupyterOptions.S3AwsProfile)
+		awsAccessKeyId = namedProfileConfig.AccessKey
+		awsSecretAccessKey = namedProfileConfig.Secret
+		awsSessionToken = namedProfileConfig.Token
+		region = namedProfileConfig.Region
+	} else {
+		awsAccessKeyId = s.S3Credentials.AccessKey
+		awsSecretAccessKey = s.S3Credentials.AccessSecret
+		region = s.S3Credentials.Region
+	}
 	env := []string{"JUPYTER_TOKEN=firefly",
 		fmt.Sprintf("NB_TOKEN=%s", jupyterOptions.APIKey),
-		fmt.Sprintf("AWS_ACCESS_KEY_ID=%s", s.S3Credentials.AccessKey),
-		fmt.Sprintf("AWS_SECRET_ACCESS_KEY=%s", s.S3Credentials.AccessSecret),
-		fmt.Sprintf("AWS_DEFAULT_REGION=%s", s.S3Credentials.Region),
+		fmt.Sprintf("AWS_ACCESS_KEY_ID=%s", awsAccessKeyId),
+		fmt.Sprintf("AWS_SECRET_ACCESS_KEY=%s", awsSecretAccessKey),
+		fmt.Sprintf("AWS_SESSION_TOKEN=%s", awsSessionToken),
+		fmt.Sprintf("AWS_DEFAULT_REGION=%s", region),
 		fmt.Sprintf("HYPER_PROJECT_NAME=%s", projectName),
 	}
 	for _, clientImage := range clientImages {
