@@ -30,13 +30,7 @@ type LocalNotebookService struct {
 	S3Credentials types.S3Credentials
 }
 
-<<<<<<< HEAD
-func (s LocalNotebookService) Start(flavor string, pullImage bool,
-	jupyterBrowser bool, requirements bool, ec2Options EC2StartOptions,
-	hostPort string, restartAlways bool, s3AwsProfile string) {
-=======
 func (s LocalNotebookService) Start(jupyterOptions types.JupyterLaunchOptions, _ types.EC2StartOptions) {
->>>>>>> stable
 
 	dockerClient := cli.NewDockerClient()
 	cwdPath, _ := os.Getwd()
@@ -52,9 +46,9 @@ func (s LocalNotebookService) Start(jupyterOptions types.JupyterLaunchOptions, _
 	awsSecretAccessKey := ""
 	awsSessionToken := ""
 	region := ""
-	if s3AwsProfile != "" {
-		fmt.Printf("Using AWS named profile '%s' to retrieve AWS creds\n", s3AwsProfile)
-		namedProfileConfig := config.GetNamedProfileConfig(s3AwsProfile)
+	if jupyterOptions.S3AwsProfile != "" {
+		fmt.Printf("Using AWS named profile '%s' to retrieve AWS creds\n", jupyterOptions.S3AwsProfile)
+		namedProfileConfig := config.GetNamedProfileConfig(jupyterOptions.S3AwsProfile)
 		awsAccessKeyId = namedProfileConfig.AccessKey
 		awsSecretAccessKey = namedProfileConfig.Secret
 		awsSessionToken = namedProfileConfig.Token
@@ -66,9 +60,10 @@ func (s LocalNotebookService) Start(jupyterOptions types.JupyterLaunchOptions, _
 	}
 	env := []string{"JUPYTER_TOKEN=firefly",
 		fmt.Sprintf("NB_TOKEN=%s", jupyterOptions.APIKey),
-		fmt.Sprintf("AWS_ACCESS_KEY_ID=%s", s.S3Credentials.AccessKey),
-		fmt.Sprintf("AWS_SECRET_ACCESS_KEY=%s", s.S3Credentials.AccessSecret),
-		fmt.Sprintf("AWS_DEFAULT_REGION=%s", s.S3Credentials.Region),
+		fmt.Sprintf("AWS_ACCESS_KEY_ID=%s", awsAccessKeyId),
+		fmt.Sprintf("AWS_SECRET_ACCESS_KEY=%s", awsSecretAccessKey),
+		fmt.Sprintf("AWS_SESSION_TOKEN=%s", awsSessionToken),
+		fmt.Sprintf("AWS_DEFAULT_REGION=%s", region),
 		fmt.Sprintf("HYPER_PROJECT_NAME=%s", projectName),
 	}
 	for _, clientImage := range clientImages {

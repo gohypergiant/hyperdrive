@@ -51,6 +51,7 @@ var jupyterCmd = &cobra.Command{
 			Requirements:  requirements,
 			RestartAlways: false,
 			APIKey:        jupyterApiKey,
+			S3AwsProfile:  s3AwsProfile,
 		}
 		notebook.NotebookService(
 			RemoteName,
@@ -98,6 +99,7 @@ var jupyterRemoteHost = &cobra.Command{
 			HostPort:      port,
 			RestartAlways: true,
 			APIKey:        jupyterApiKey,
+			S3AwsProfile:  s3AwsProfile,
 		}
 		notebook.NotebookService(
 			RemoteName,

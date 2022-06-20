@@ -30,6 +30,14 @@ func (s RemoteNotebookService) Start(jupyterOptions types.JupyterLaunchOptions, 
 	if s.RemoteConfiguration.Type == config.Firefly {
 		firefly.StartServer(s.RemoteConfiguration.FireflyConfiguration, name, imageOptions.Profile)
 	} else if s.RemoteConfiguration.Type == config.EC2 {
+		if jupyterOptions.S3AwsProfile != "" {
+			fmt.Printf("Using AWS named profile '%s' to retrieve AWS creds\n", jupyterOptions.S3AwsProfile)
+			namedProfileConfig := config.GetNamedProfileConfig(jupyterOptions.S3AwsProfile)
+			s.RemoteConfiguration.EC2Configuration.AccessKey = namedProfileConfig.AccessKey
+			s.RemoteConfiguration.EC2Configuration.Secret = namedProfileConfig.Secret
+			s.RemoteConfiguration.EC2Configuration.Region = namedProfileConfig.Region
+			s.RemoteConfiguration.EC2Configuration.Token = namedProfileConfig.Token
+		}
 		aws.StartJupyterEC2(s.ManifestPath, s.RemoteConfiguration.EC2Configuration, ec2Options.InstanceType, ec2Options.AmiId, jupyterOptions)
 	} else {
 		fmt.Println("Not Implemented")
