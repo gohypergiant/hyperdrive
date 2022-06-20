@@ -32,6 +32,7 @@ var (
 	s3AccessKey     string
 	s3AccessSecret  string
 	s3Region        string
+	s3AwsProfile    string
 	ec2InstanceType string
 	amiID           string
 	hostPort        string
@@ -123,6 +124,7 @@ func init() {
 	jupyterCmd.PersistentFlags().StringVar(&s3AccessKey, "s3AccessKey", "", "S3 Access Key to use")
 	jupyterCmd.PersistentFlags().StringVar(&s3AccessSecret, "s3AccessSecret", "", "S3 Secret to use")
 	jupyterCmd.PersistentFlags().StringVar(&s3Region, "s3Region", "", "S3 Region")
+	jupyterCmd.PersistentFlags().StringVar(&s3AwsProfile, "s3AwsProfile", "", "Named AWS profile")
 	jupyterCmd.PersistentFlags().StringVar(&ec2InstanceType, "ec2InstanceType", "", "The type of EC2 instance to be created")
 	jupyterCmd.PersistentFlags().StringVar(&amiID, "amiId", "", "The ID of the AMI")
 	jupyterCmd.PersistentFlags().StringVar(&jupyterApiKey, "apiKey", "", "API key to use for the jupyter instance")
