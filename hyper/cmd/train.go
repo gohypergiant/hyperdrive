@@ -18,10 +18,10 @@ package cmd
 
 import (
 	"fmt"
-	"os"
-	"os/exec"
 	"github.com/gohypergiant/hyperdrive/hyper/client/manifest"
 	"github.com/gohypergiant/hyperdrive/hyper/services/notebook"
+	"os"
+	"os/exec"
 
 	"github.com/spf13/cobra"
 )

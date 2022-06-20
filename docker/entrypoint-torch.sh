@@ -18,8 +18,8 @@
 # touch /home/jovyan/_jobs/low-code-demo/COMPLETED
 # touch /home/jovyan/_jobs/auto-ml-demo/COMPLETED
 #
-# # Launch Executor Daemon
-# ipython -m executor
+# Launch Executor Daemon
+ipython -m executor
 
 jupyterhub-singleuser \
   --ip=0.0.0.0 \

@@ -3,9 +3,11 @@ package notebook
 import (
 	"errors"
 	"fmt"
+	"github.com/gohypergiant/hyperdrive/hyper/types"
 	"io"
 	"os"
 	"path/filepath"
+	"strconv"
 	"strings"
 	"time"
 
@@ -19,24 +21,22 @@ import (
 )
 
 var (
-	id             string
-	image          string
-	jupyterBrowser bool
-	mountPoint     string
-	pullImage      bool
-	repoTag        string
-	requirements   bool
-	publicPort     uint16
+	id         string
+	publicPort uint16
 )
 
 type LocalNotebookService struct {
 	ManifestPath  string
-	S3Credentials S3Credentials
+	S3Credentials types.S3Credentials
 }
 
+<<<<<<< HEAD
 func (s LocalNotebookService) Start(flavor string, pullImage bool,
 	jupyterBrowser bool, requirements bool, ec2Options EC2StartOptions,
 	hostPort string, restartAlways bool, s3AwsProfile string) {
+=======
+func (s LocalNotebookService) Start(jupyterOptions types.JupyterLaunchOptions, _ types.EC2StartOptions) {
+>>>>>>> stable
 
 	dockerClient := cli.NewDockerClient()
 	cwdPath, _ := os.Getwd()
@@ -65,10 +65,10 @@ func (s LocalNotebookService) Start(flavor string, pullImage bool,
 		region = s.S3Credentials.Region
 	}
 	env := []string{"JUPYTER_TOKEN=firefly",
-		fmt.Sprintf("AWS_ACCESS_KEY_ID=%s", awsAccessKeyId),
-		fmt.Sprintf("AWS_SECRET_ACCESS_KEY=%s", awsSecretAccessKey),
-		fmt.Sprintf("AWS_SESSION_TOKEN=%s", awsSessionToken),
-		fmt.Sprintf("AWS_DEFAULT_REGION=%s", region),
+		fmt.Sprintf("NB_TOKEN=%s", jupyterOptions.APIKey),
+		fmt.Sprintf("AWS_ACCESS_KEY_ID=%s", s.S3Credentials.AccessKey),
+		fmt.Sprintf("AWS_SECRET_ACCESS_KEY=%s", s.S3Credentials.AccessSecret),
+		fmt.Sprintf("AWS_DEFAULT_REGION=%s", s.S3Credentials.Region),
 		fmt.Sprintf("HYPER_PROJECT_NAME=%s", projectName),
 	}
 	for _, clientImage := range clientImages {
@@ -80,13 +80,13 @@ func (s LocalNotebookService) Start(flavor string, pullImage bool,
 		}
 	}
 	if !inImageCache {
-		pullImage = true
+		jupyterOptions.PullImage = true
 	}
 
 	runningContainers, _ := dockerClient.ListContainers(name)
 
 	imageName := ""
-	if requirements {
+	if jupyterOptions.Requirements {
 		imageName = fmt.Sprintf("hyperdrive-jupyter-reqs:%s", name)
 	} else {
 		imageName = imageOptions.Image
@@ -100,9 +100,9 @@ func (s LocalNotebookService) Start(flavor string, pullImage bool,
 	}
 
 	restartPolicy := container.RestartPolicy{
-		Name:              "unless-stopped",
+		Name: "unless-stopped",
 	}
-	if restartAlways {
+	if jupyterOptions.RestartAlways {
 		restartPolicy = container.RestartPolicy{
 			Name: "always",
 		}
@@ -112,7 +112,7 @@ func (s LocalNotebookService) Start(flavor string, pullImage bool,
 			"8888/tcp": []nat.PortBinding{
 				{
 					HostIP:   hostIP,
-					HostPort: hostPort,
+					HostPort: strconv.Itoa(jupyterOptions.HostPort),
 				},
 			},
 		},
@@ -126,9 +126,13 @@ func (s LocalNotebookService) Start(flavor string, pullImage bool,
 		RestartPolicy: restartPolicy,
 	}
 
-	if requirements {
+	if jupyterOptions.Requirements {
 		if len(runningContainers) != 0 {
-			dockerClient.RemoveContainer(name)
+			err := dockerClient.RemoveContainer(name)
+			if err != nil {
+				fmt.Println(err)
+				os.Exit(1)
+			}
 		}
 		dockerClient.CreateDockerFile("", "Dockerfile.reqs", true)
 		dockerClient.BuildImage("Dockerfile.reqs", []string{imageName})
@@ -141,7 +145,7 @@ func (s LocalNotebookService) Start(flavor string, pullImage bool,
 		}
 		execute = true
 	} else if len(runningContainers) == 0 {
-		createdId, err := dockerClient.CreateContainer(imageOptions.Image, name, contConfig, hostConfig, pullImage)
+		createdId, err := dockerClient.CreateContainer(imageOptions.Image, name, contConfig, hostConfig, jupyterOptions.PullImage)
 		id = createdId
 		if err != nil {
 			fmt.Println(err)
@@ -155,6 +159,7 @@ func (s LocalNotebookService) Start(flavor string, pullImage bool,
 	if execute {
 		dockerClient.ExecuteContainer(id, false)
 	}
+	time.Sleep(1 * time.Second)
 
 	nowRunningContainers, _ := dockerClient.ListContainers(name)
 
@@ -164,7 +169,7 @@ func (s LocalNotebookService) Start(flavor string, pullImage bool,
 
 	}
 
-	if jupyterBrowser {
+	if jupyterOptions.LaunchBrowser {
 		url := fmt.Sprintf("http://%s:%d/lab?token=firefly", hostIP, publicPort)
 		fmt.Println("Launching Jupyter Lab")
 		fmt.Println("    Mount Point:", cwdPath)
@@ -251,28 +256,47 @@ func (s LocalNotebookService) UploadTrainingJobData() {
 }
 func (s LocalNotebookService) CopyFile(srcPath string, dstPath string) {
 
-	os.MkdirAll(filepath.Dir(dstPath), os.ModePerm)
+	err := os.MkdirAll(filepath.Dir(dstPath), os.ModePerm)
+	if err != nil {
+		fmt.Println(err)
+		os.Exit(1)
+	}
 
 	in, err := os.Open(srcPath)
 	if err != nil {
 		fmt.Println(err)
 		os.Exit(1)
 	}
-	defer in.Close()
+	defer func() {
+		closeErr := in.Close()
+		if closeErr != nil {
+			fmt.Println(closeErr)
+		}
+	}()
 
 	out, err := os.Create(dstPath)
 	if err != nil {
 		fmt.Println(err)
 		os.Exit(1)
 	}
-	defer out.Close()
+	defer func() {
+		closeErr := out.Close()
+		if closeErr != nil {
+			fmt.Println(closeErr)
+		}
+	}()
 
 	_, err = io.Copy(out, in)
 	if err != nil {
 		fmt.Println(err)
 		os.Exit(1)
 	}
-	out.Close()
+	defer func() {
+		closeErr := out.Close()
+		if closeErr != nil {
+			fmt.Println(closeErr)
+		}
+	}()
 }
 func (s LocalNotebookService) GetStudyRoot() string {
 
@@ -335,9 +359,9 @@ func (s LocalNotebookService) GetServerPath(rootPath string) string {
 	containerMount := ""
 
 	for _, runningContainer := range runningContainers {
-		container := dockerClient.InspectContainer(runningContainer.ID)
-		if strings.HasPrefix(container.Mounts[0].Source, rootPath) {
-			containerMount = container.Mounts[0].Source
+		c := dockerClient.InspectContainer(runningContainer.ID)
+		if strings.HasPrefix(c.Mounts[0].Source, rootPath) {
+			containerMount = c.Mounts[0].Source
 			break
 		}
 	}

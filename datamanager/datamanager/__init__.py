@@ -25,8 +25,14 @@ class DataManager(
 
     def __post_init__(self):
         if self.storage_provider == "aws":
-            self.access_key = os.environ.get("AWS_ACCESS_KEY_ID")
-            self.secret_access_key = os.environ.get("AWS_SECRET_ACCESS_KEY")
+            if self.access_key is None:
+                self.access_key = os.environ.get("AWS_ACCESS_KEY_ID", self.access_key)
+            if self.secret_access_key is None:
+                self.secret_access_key = os.environ.get(
+                    "AWS_SECRET_ACCESS_KEY", self.secret_access_key
+                )
+            if self.session_token is None:
+                self.session_token = os.environ.get("SESSION_TOKEN", self.session_token)
 
             if self.access_key in [None, ""] or self.secret_access_key in [None, ""]:
                 raise DataManagerError(

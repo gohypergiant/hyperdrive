@@ -79,7 +79,7 @@ func (s LocalHyperpackageService) Import(importModelFileName string, modelFlavor
 		fmt.Println("Error: Must specify filename of trained model to be imported with the --filename flag.")
 		os.Exit(1)
 	}
-	
+
 	if trainShape == "" {
 		fmt.Println("Error: Must specify the number of columns in the training data. Use the --shape flag.")
 		os.Exit(1)

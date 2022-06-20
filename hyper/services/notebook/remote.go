@@ -3,6 +3,7 @@ package notebook
 import (
 	"encoding/base64"
 	"fmt"
+	"github.com/gohypergiant/hyperdrive/hyper/types"
 	"os"
 	"path"
 	"time"
@@ -19,30 +20,17 @@ type RemoteNotebookService struct {
 	RemoteConfiguration config.RemoteConfiguration
 	ManifestPath        string
 }
-type EC2StartOptions struct {
-	InstanceType string
-	AmiId string
-}
 
-func (s RemoteNotebookService) Start(flavor string, pullImage bool,
-	jupyterBrowser bool, requirements bool, ec2Options EC2StartOptions,
-	hostPort string, restartAlways bool, s3AwsProfile string) {
+func (s RemoteNotebookService) Start(jupyterOptions types.JupyterLaunchOptions, ec2Options types.EC2StartOptions) {
 
-	imageOptions := GetNotebookImageOptions(flavor)
+	imageOptions := GetNotebookImageOptions(jupyterOptions.Flavor)
 	name := GetNotebookName(s.ManifestPath)
 	fmt.Println("Starting remote notebook instance")
+	jupyterOptions.APIKey = s.RemoteConfiguration.JupyterAPIKey
 	if s.RemoteConfiguration.Type == config.Firefly {
 		firefly.StartServer(s.RemoteConfiguration.FireflyConfiguration, name, imageOptions.Profile)
 	} else if s.RemoteConfiguration.Type == config.EC2 {
-		if s3AwsProfile != "" {
-			fmt.Printf("Using AWS named profile '%s' to retrieve AWS creds\n", s3AwsProfile)
-			namedProfileConfig := config.GetNamedProfileConfig(s3AwsProfile)
-			s.RemoteConfiguration.EC2Configuration.AccessKey = namedProfileConfig.AccessKey
-			s.RemoteConfiguration.EC2Configuration.Secret = namedProfileConfig.Secret
-			s.RemoteConfiguration.EC2Configuration.Region = namedProfileConfig.Region
-			s.RemoteConfiguration.EC2Configuration.Token = namedProfileConfig.Token
-		}
-		aws.StartServer(s.ManifestPath, s.RemoteConfiguration.EC2Configuration, ec2Options.InstanceType, ec2Options.AmiId )
+		aws.StartJupyterEC2(s.ManifestPath, s.RemoteConfiguration.EC2Configuration, ec2Options.InstanceType, ec2Options.AmiId, jupyterOptions)
 	} else {
 		fmt.Println("Not Implemented")
 	}
@@ -128,12 +116,12 @@ func (s RemoteNotebookService) GetRemoteHyperpackPath() string {
 
 	studyRoot := s.GetStudyRoot()
 	studyName := manifest.GetName(s.ManifestPath)
-	return path.Join( studyRoot, fmt.Sprintf("%s.hyperpack.zip", studyName))
+	return path.Join(studyRoot, fmt.Sprintf("%s.hyperpack.zip", studyName))
 }
 func (s RemoteNotebookService) GetHyperpackSavePath() string {
 
 	studyName := manifest.GetName(s.ManifestPath)
-	return path.Join( ".", fmt.Sprintf("%s.hyperpack.zip", studyName));
+	return path.Join(".", fmt.Sprintf("%s.hyperpack.zip", studyName))
 }
 func (s RemoteNotebookService) DownloadHyperpack() {
 

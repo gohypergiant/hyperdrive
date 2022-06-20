@@ -41,15 +41,6 @@ jobs:
         if: ${{ matrix.image  == 'gpu-base' }}
         run: ./docker/gpu/create-gpu-dockerfile.sh && ls -la docker/gpu
 
-#       -
-#         name: Check out Efficient AutoML
-#         uses: actions/checkout@v3
-#         with:
-#           repository: gohypergiant/research-EfficientAutoML
-#           token: ${{ secrets.GH_PAT }}
-#           path: research-EfficientAutoML
-#           ref: development
-
       -
         name: Set up QEMU
         uses: docker/setup-qemu-action@v1
@@ -142,4 +133,3 @@ jobs:
         if: ${{ inputs.test == 'true' }}
         run: |
           docker run ghcr.io/gohypergiant/jupyter:${{ matrix.image }}
-         
