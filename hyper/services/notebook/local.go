@@ -7,6 +7,7 @@ import (
 	"io"
 	"os"
 	"path/filepath"
+	"strconv"
 	"strings"
 	"time"
 
@@ -20,9 +21,6 @@ import (
 
 var (
 	id         string
-	image      string
-	mountPoint string
-	repoTag    string
 	publicPort uint16
 )
 
@@ -31,7 +29,7 @@ type LocalNotebookService struct {
 	S3Credentials types.S3Credentials
 }
 
-func (s LocalNotebookService) Start(jupyterOptions types.JupyterLaunchOptions, ec2Options types.EC2StartOptions) {
+func (s LocalNotebookService) Start(jupyterOptions types.JupyterLaunchOptions, _ types.EC2StartOptions) {
 
 	dockerClient := cli.NewDockerClient()
 	cwdPath, _ := os.Getwd()
@@ -91,7 +89,7 @@ func (s LocalNotebookService) Start(jupyterOptions types.JupyterLaunchOptions, e
 			"8888/tcp": []nat.PortBinding{
 				{
 					HostIP:   hostIP,
-					HostPort: jupyterOptions.HostPort,
+					HostPort: strconv.Itoa(jupyterOptions.HostPort),
 				},
 			},
 		},
@@ -107,7 +105,11 @@ func (s LocalNotebookService) Start(jupyterOptions types.JupyterLaunchOptions, e
 
 	if jupyterOptions.Requirements {
 		if len(runningContainers) != 0 {
-			dockerClient.RemoveContainer(name)
+			err := dockerClient.RemoveContainer(name)
+			if err != nil {
+				fmt.Println(err)
+				os.Exit(1)
+			}
 		}
 		dockerClient.CreateDockerFile("", "Dockerfile.reqs", true)
 		dockerClient.BuildImage("Dockerfile.reqs", []string{imageName})
@@ -231,28 +233,47 @@ func (s LocalNotebookService) UploadTrainingJobData() {
 }
 func (s LocalNotebookService) CopyFile(srcPath string, dstPath string) {
 
-	os.MkdirAll(filepath.Dir(dstPath), os.ModePerm)
+	err := os.MkdirAll(filepath.Dir(dstPath), os.ModePerm)
+	if err != nil {
+		fmt.Println(err)
+		os.Exit(1)
+	}
 
 	in, err := os.Open(srcPath)
 	if err != nil {
 		fmt.Println(err)
 		os.Exit(1)
 	}
-	defer in.Close()
+	defer func() {
+		closeErr := in.Close()
+		if closeErr != nil {
+			fmt.Println(closeErr)
+		}
+	}()
 
 	out, err := os.Create(dstPath)
 	if err != nil {
 		fmt.Println(err)
 		os.Exit(1)
 	}
-	defer out.Close()
+	defer func() {
+		closeErr := out.Close()
+		if closeErr != nil {
+			fmt.Println(closeErr)
+		}
+	}()
 
 	_, err = io.Copy(out, in)
 	if err != nil {
 		fmt.Println(err)
 		os.Exit(1)
 	}
-	out.Close()
+	defer func() {
+		closeErr := out.Close()
+		if closeErr != nil {
+			fmt.Println(closeErr)
+		}
+	}()
 }
 func (s LocalNotebookService) GetStudyRoot() string {
 
@@ -315,9 +336,9 @@ func (s LocalNotebookService) GetServerPath(rootPath string) string {
 	containerMount := ""
 
 	for _, runningContainer := range runningContainers {
-		container := dockerClient.InspectContainer(runningContainer.ID)
-		if strings.HasPrefix(container.Mounts[0].Source, rootPath) {
-			containerMount = container.Mounts[0].Source
+		c := dockerClient.InspectContainer(runningContainer.ID)
+		if strings.HasPrefix(c.Mounts[0].Source, rootPath) {
+			containerMount = c.Mounts[0].Source
 			break
 		}
 	}

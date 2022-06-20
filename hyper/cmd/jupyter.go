@@ -19,17 +19,16 @@ import (
 	"github.com/gohypergiant/hyperdrive/hyper/services/notebook"
 	"github.com/gohypergiant/hyperdrive/hyper/types"
 	"github.com/spf13/cobra"
+	"log"
+	"strconv"
 )
 
 var (
-	id              string
 	image           string
 	jupyterBrowser  bool
 	mountPoint      string
 	pullImage       bool
-	repoTag         string
 	requirements    bool
-	publicPort      uint16
 	s3AccessKey     string
 	s3AccessSecret  string
 	s3Region        string
@@ -37,7 +36,6 @@ var (
 	amiID           string
 	hostPort        string
 	jupyterApiKey   string
-	jupyterPassword string
 )
 
 // jupyterCmd represents the jupyter command
@@ -84,12 +82,19 @@ var jupyterRemoteHost = &cobra.Command{
 	Use:   "remoteHost",
 	Short: "start server on remote host",
 	Run: func(cmd *cobra.Command, args []string) {
+		if hostPort == "" {
+			hostPort = "8888"
+		}
+		port, err := strconv.Atoi(hostPort)
+		if err != nil {
+			log.Fatal("Couldn't parse port")
+		}
 		launchOptions := types.JupyterLaunchOptions{
 			Flavor:        image,
 			PullImage:     pullImage,
 			LaunchBrowser: jupyterBrowser,
 			Requirements:  requirements,
-			HostPort:      hostPort,
+			HostPort:      port,
 			RestartAlways: true,
 			APIKey:        jupyterApiKey,
 		}
