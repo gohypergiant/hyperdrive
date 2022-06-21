@@ -35,7 +35,7 @@ const version string = "0.0.16"
 func GetInstances(c context.Context, api hyperdriveTypes.EC2DescribeInstancesAPI, input *ec2.DescribeInstancesInput) (*ec2.DescribeInstancesOutput, error) {
 	return api.DescribeInstances(c, input)
 }
-func GetEC2Client(remoteCfg HyperConfig.EC2RemoteConfiguration) *ec2.Client {
+func GetEC2Client(remoteCfg hyperdriveTypes.EC2ComputeRemoteConfiguration) *ec2.Client {
 
 	cfg, err := config.LoadDefaultConfig(context.TODO(), config.WithSharedConfigProfile(remoteCfg.Profile))
 	cfg.Region = remoteCfg.Region
@@ -49,7 +49,7 @@ func GetEC2Client(remoteCfg HyperConfig.EC2RemoteConfiguration) *ec2.Client {
 	return ec2.NewFromConfig(cfg)
 
 }
-func ListServers(remoteCfg HyperConfig.EC2RemoteConfiguration) {
+func ListServers(remoteCfg hyperdriveTypes.EC2ComputeRemoteConfiguration) {
 
 	result, err := GetHyperdriveInstances(remoteCfg)
 	if err != nil {
@@ -64,7 +64,7 @@ func ListServers(remoteCfg HyperConfig.EC2RemoteConfiguration) {
 	}
 
 }
-func GetHyperdriveInstances(remoteCfg HyperConfig.EC2RemoteConfiguration) ([]types.Instance, error) {
+func GetHyperdriveInstances(remoteCfg hyperdriveTypes.EC2ComputeRemoteConfiguration) ([]types.Instance, error) {
 
 	client := GetEC2Client(remoteCfg)
 	input := &ec2.DescribeInstancesInput{}
@@ -488,12 +488,12 @@ func getOrCreateKeyPair(client *ec2.Client, projectName string) string {
 	return keyName
 }
 
-func StartJupyterEC2(manifestPath string, remoteCfg HyperConfig.EC2RemoteConfiguration, ec2Type string, amiID string, jupyterLaunchOptions hyperdriveTypes.JupyterLaunchOptions) {
+func StartJupyterEC2(manifestPath string, remoteCfg hyperdriveTypes.EC2ComputeRemoteConfiguration, ec2Type string, amiID string, jupyterLaunchOptions hyperdriveTypes.JupyterLaunchOptions) {
 	startupScript := getEc2StartScript(version, jupyterLaunchOptions)
 	StartServer(manifestPath, remoteCfg, ec2Type, amiID, startupScript, jupyterLaunchOptions.HostPort)
 }
 
-func StartServer(manifestPath string, remoteCfg HyperConfig.EC2RemoteConfiguration, ec2Type string, amiID string, startupScript string, hostPort int) {
+func StartServer(manifestPath string, remoteCfg hyperdriveTypes.EC2ComputeRemoteConfiguration, ec2Type string, amiID string, startupScript string, hostPort int) {
 
 	if ec2Type == "" {
 		fmt.Println("EC2InstanceTypeNotFound: please specify a EC2 instance type using the flag --ec2InstanceType")
@@ -578,7 +578,7 @@ sudo -u ec2-user bash -c 'hyper jupyter remoteHost --hostPort %d --apiKey %s &'
 `, version, version, jupyterLaunchOptions.HostPort, jupyterLaunchOptions.APIKey)
 	return startupScript
 }
-func getInstanceIpAddress(instanceId string, remoteCfg HyperConfig.EC2RemoteConfiguration) (*string, error) {
+func getInstanceIpAddress(instanceId string, remoteCfg hyperdriveTypes.EC2ComputeRemoteConfiguration) (*string, error) {
 
 	instances, err := GetHyperdriveInstances(remoteCfg)
 	if err != nil {
@@ -593,7 +593,7 @@ func getInstanceIpAddress(instanceId string, remoteCfg HyperConfig.EC2RemoteConf
 	return nil, errors.New("Could not find public IP for instance")
 
 }
-func StopServer(manifestPath string, remoteCfg HyperConfig.EC2RemoteConfiguration) {
+func StopServer(manifestPath string, remoteCfg hyperdriveTypes.EC2ComputeRemoteConfiguration) {
 	projectName := manifest.GetProjectName(manifestPath)
 	if projectName == "" {
 		fmt.Println("ProjectNameNotFound: please specify a project_name on the manifest (", manifestPath, ")")

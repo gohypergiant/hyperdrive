@@ -154,9 +154,3 @@ type EC2StartOptions struct {
 	InstanceType string
 	AmiId        string
 }
-type NamedProfileConfiguration struct {
-	AccessKey string
-	Secret string
-	Token string
-	Region string
-}
