@@ -3,6 +3,7 @@ package cmd
 import (
 	"errors"
 	"fmt"
+	"github.com/gohypergiant/hyperdrive/hyper/types"
 	"log"
 	"os"
 	"strings"
@@ -19,7 +20,7 @@ var remotesCmd = &cobra.Command{
 }
 var remotesListCmd = &cobra.Command{
 	Use:   "list",
-	Short: "List Remotes",
+	Short: "List ComputeRemotes",
 	Run: func(cmd *cobra.Command, args []string) {
 		remotesMap := config.GetRemotes()
 		for name, config := range remotesMap {
@@ -35,9 +36,9 @@ var configCmd = &cobra.Command{
 	Short: "config",
 }
 
-var remoteName string
-var remoteTypeInput string
-var remoteJupyterAPIKey string
+var computeRemoteName string
+var computeRemoteTypeInput string
+var computeRemoteJupyterAPIKey string
 var fireflyUrl string
 var fireflyUsername string
 var fireflyToken string
@@ -72,7 +73,7 @@ func getOptionalString(message string) string {
 	}
 	return result
 }
-func getFireflyConfig() config.RemoteConfiguration {
+func getFireflyConfig() types.ComputeRemoteConfiguration {
 
 	if fireflyUrl == "" {
 		fireflyUrl = getOptionalString("Enter the remote URL [default: Use Hypergiant hosted Hyperdrive]")
@@ -94,12 +95,12 @@ func getFireflyConfig() config.RemoteConfiguration {
 				return nil
 			})
 	}
-	return config.RemoteConfiguration{
-		Type:                 config.Firefly,
-		FireflyConfiguration: config.FireflyRemoteConfiguration{Url: fireflyUrl, Username: fireflyUsername, HubToken: fireflyToken},
+	return types.ComputeRemoteConfiguration{
+		Type:                 types.Firefly,
+		FireflyConfiguration: types.FireflyComputeRemoteConfiguration{Url: fireflyUrl, Username: fireflyUsername, HubToken: fireflyToken},
 	}
 }
-func getEC2Config() config.RemoteConfiguration {
+func getEC2Config() types.ComputeRemoteConfiguration {
 
 	if ec2Profile == "" {
 		ec2Profile = getOptionalString("Enter the name of the configured AWS profile (leave blank to enter a key pair)")
@@ -135,9 +136,9 @@ func getEC2Config() config.RemoteConfiguration {
 		})
 	}
 
-	return config.RemoteConfiguration{
-		Type: config.EC2,
-		EC2Configuration: config.EC2RemoteConfiguration{
+	return types.ComputeRemoteConfiguration{
+		Type: types.EC2,
+		EC2Configuration: types.EC2ComputeRemoteConfiguration{
 			Profile:   ec2Profile,
 			AccessKey: ec2AccessKey,
 			Secret:    ec2Secret,
@@ -145,78 +146,86 @@ func getEC2Config() config.RemoteConfiguration {
 		},
 	}
 }
-func getConfigType() config.RemoteType {
-	if remoteTypeInput == "" {
+func getComputeRemoteType() types.ComputeRemoteType {
+	if computeRemoteTypeInput == "" {
 		prompt := promptui.Select{
 			Label: "Choose a remote type",
-			Items: config.ValidRemoteTypes,
+			Items: types.ValidRemoteTypes,
 		}
 		_, remoteTypeInput, err := prompt.Run()
 		if err != nil {
 			fmt.Println(err)
 			os.Exit(1)
 		}
-		return config.RemoteType(remoteTypeInput)
+		return types.ComputeRemoteType(remoteTypeInput)
 	}
-	if remoteTypeInput == string(config.Firefly) {
-		return config.Firefly
+	if computeRemoteTypeInput == string(types.Firefly) {
+		return types.Firefly
 	}
-	if remoteTypeInput == string(config.EC2) {
-		return config.EC2
+	if computeRemoteTypeInput == string(types.EC2) {
+		return types.EC2
 	}
 
 	fmt.Println("Invalid or unsupported remote type")
 	os.Exit(1)
-	return config.RemoteType(remoteTypeInput)
+	return types.ComputeRemoteType(computeRemoteTypeInput)
 }
 
 var initCmd = &cobra.Command{
 	Use:   "init",
 	Short: "Initialize Config",
 	Run: func(cmd *cobra.Command, args []string) {
-		var remoteConfig config.RemoteConfiguration
-		if remoteName == "" {
-			remoteName = getValidatedString("Enter a name for this remote", func(input string) error {
-				if len(input) <= 0 {
-					return errors.New("must provide a name")
-				}
-				return nil
-			})
-		}
-		remoteType := getConfigType()
-		// if
-		switch remoteType {
-		case config.EC2:
-			remoteConfig = getEC2Config()
-		case config.Firefly:
-			fallthrough
-		default:
-			remoteConfig = getFireflyConfig()
-			fmt.Printf("Adding %s remote at %s", remoteName, fireflyUrl)
-			break
-		}
-
-		if remoteJupyterAPIKey == "" {
-			remoteJupyterAPIKey = getOptionalString("Enter a Jupyter token to use for remote instances [leave blank to generate one]")
-			if remoteJupyterAPIKey == "" {
-
-				pass, err := password.Generate(64, 10, 0, true, true)
-				if err != nil {
-					log.Fatal(err)
-				}
-				remoteJupyterAPIKey = strings.ToUpper(pass)
-				log.Printf("A Jupyter Token of %s has been generated. You will need it to access the UI on remote instances. If you need to find this later you can find it in your ~/.hyperdrive file", remoteJupyterAPIKey)
-			}
-		}
-		remoteConfig.JupyterAPIKey = remoteJupyterAPIKey
-		config.UpdateRemote(remoteName, remoteConfig)
+		initializeDeployRemoteConfig()
+		initializeWorkspacePersistenceRemoteConfig()
 	},
 }
 
+func initializeWorkspacePersistenceRemoteConfig() {
+
+}
+func initializeDeployRemoteConfig() {
+	var remoteConfig types.ComputeRemoteConfiguration
+	if computeRemoteName == "" {
+		computeRemoteName = getValidatedString("Enter a name for this remote", func(input string) error {
+			if len(input) <= 0 {
+				return errors.New("must provide a name")
+			}
+			return nil
+		})
+	}
+	remoteType := getComputeRemoteType()
+	// if
+	switch remoteType {
+	case types.EC2:
+		remoteConfig = getEC2Config()
+	case types.Firefly:
+		fallthrough
+	default:
+		remoteConfig = getFireflyConfig()
+		fmt.Printf("Adding %s remote at %s", computeRemoteName, fireflyUrl)
+		break
+	}
+
+	if computeRemoteJupyterAPIKey == "" {
+		computeRemoteJupyterAPIKey = getOptionalString("Enter a Jupyter token to use for remote instances [leave blank to generate one]")
+		if computeRemoteJupyterAPIKey == "" {
+
+			pass, err := password.Generate(64, 10, 0, true, true)
+			if err != nil {
+				log.Fatal(err)
+			}
+			computeRemoteJupyterAPIKey = strings.ToUpper(pass)
+			log.Printf("A Jupyter Token of %s has been generated. You will need it to access the UI on remote instances. If you need to find this later you can find it in your ~/.hyperdrive file", computeRemoteJupyterAPIKey)
+		}
+	}
+	remoteConfig.JupyterAPIKey = computeRemoteJupyterAPIKey
+	config.UpdateRemote(computeRemoteName, remoteConfig)
+}
+
 func init() {
-	initCmd.Flags().StringVar(&remoteName, "remoteName", "", "Name of the remote for the config")
-	initCmd.Flags().StringVarP(&remoteTypeInput, "remoteType", "r", "", "Remote type [firefly|ec2]")
-	initCmd.Flags().StringVar(&remoteJupyterAPIKey, "jupyterAPIKey", "", "API key to use on jupyter instances that get created")
+	initCmd.Flags().StringVar(&computeRemoteName, "computeRemoteName", "", "Name of the remote for the config")
+	initCmd.Flags().StringVar(&computeRemoteTypeInput, "computeRemoteType", "", "Remote type [firefly|ec2]")
+	initCmd.Flags().StringVar(&computeRemoteJupyterAPIKey, "computeRemoteJupyterAPIKey", "", "API key to use on jupyter instances that get created")
 	/*
 	* Firefly flags
 	 */
