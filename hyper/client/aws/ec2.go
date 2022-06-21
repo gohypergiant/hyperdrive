@@ -5,17 +5,18 @@ import (
 	"encoding/base64"
 	"errors"
 	"fmt"
-	hyperdriveTypes "github.com/gohypergiant/hyperdrive/hyper/types"
 	"os"
 	"path"
 	"time"
+
+	"github.com/docker/distribution/uuid"
+	hyperdriveTypes "github.com/gohypergiant/hyperdrive/hyper/types"
 
 	"github.com/aws/aws-sdk-go-v2/aws"
 	"github.com/aws/aws-sdk-go-v2/config"
 	"github.com/aws/aws-sdk-go-v2/credentials"
 	"github.com/aws/aws-sdk-go-v2/service/ec2"
 	"github.com/aws/aws-sdk-go-v2/service/ec2/types"
-	"github.com/docker/distribution/uuid"
 
 	"github.com/gohypergiant/hyperdrive/hyper/client/manifest"
 	HyperConfig "github.com/gohypergiant/hyperdrive/hyper/services/config"
@@ -454,6 +455,31 @@ func StartServer(manifestPath string, remoteCfg HyperConfig.EC2RemoteConfigurati
 	}
 	fmt.Println("Project name is:", projectName)
 	client := GetEC2Client(remoteCfg)
+
+	ec2DescribeInput := &ec2.DescribeInstancesInput{
+		Filters: []types.Filter{
+			{
+				Name:   aws.String("instance-state-code"),
+				Values: []string{"16"},
+			},
+		},
+	}
+
+	ec2DescribeResult, err := GetInstances(context.TODO(), client, ec2DescribeInput)
+	if err != nil {
+		fmt.Println(err)
+		os.Exit(1)
+		return
+	}
+
+	for _, r := range ec2DescribeResult.Reservations {
+		for _, i := range r.Instances {
+			if IsHyperdriveInstance(i) {
+				fmt.Println("Hyper instance already running. ID: " + *i.InstanceId)
+				return
+			}
+		}
+	}
 
 	vpcID, rtID := getOrCreateVPC(client, projectName)
 	fmt.Println("VPC ID:", vpcID)
