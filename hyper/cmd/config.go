@@ -4,6 +4,7 @@ import (
 	"errors"
 	"fmt"
 	"github.com/gohypergiant/hyperdrive/hyper/types"
+	"github.com/google/uuid"
 	"log"
 	"os"
 	"strings"
@@ -71,6 +72,7 @@ var workspaceS3Profile string
 var workspaceS3AccessKey string
 var workspaceS3Secret string
 var workspaceS3Region string
+var workspaceS3BucketName string
 
 func getValidatedString(message string, validate promptui.ValidateFunc) string {
 	prompt := promptui.Prompt{
@@ -164,10 +166,11 @@ func getS3Config() types.WorkspacePersistenceRemoteConfiguration {
 	return types.WorkspacePersistenceRemoteConfiguration{
 		Type: types.S3,
 		S3Configuration: types.S3WorkspacePersistenceRemoteConfiguration{
-			Profile:   workspaceS3Profile,
-			AccessKey: workspaceS3AccessKey,
-			Secret:    workspaceS3Secret,
-			Region:    workspaceS3Region,
+			Profile:    workspaceS3Profile,
+			AccessKey:  workspaceS3AccessKey,
+			Secret:     workspaceS3Secret,
+			Region:     workspaceS3Region,
+			BucketName: getWorkspaceBucketName(),
 		},
 	}
 }
@@ -278,6 +281,17 @@ func initializeWorkspacePersistenceRemoteConfig() {
 
 	config.UpdateWorkspaceRemote(workspacePersistenceRemoteName, remoteConfig)
 }
+func getWorkspaceBucketName() string {
+	if workspaceS3BucketName == "" {
+		workspaceS3BucketName = getOptionalString("Enter the name of the S3 bucket to use. Bucket names must be globally unique. If it doesn't exist we will attempt to create it the first time we sync. (Leave blank to let us generate one)")
+		if workspaceS3BucketName == "" {
+
+			workspaceS3BucketName = uuid.NewString()
+			log.Printf("A bucket named %s will be created on the first sync if it doesn't exist.", workspaceS3BucketName)
+		}
+	}
+	return workspaceS3BucketName
+}
 func initializeComputeRemoteConfig() {
 	var remoteConfig types.ComputeRemoteConfiguration
 	if computeRemoteName == "" {
@@ -301,6 +315,11 @@ func initializeComputeRemoteConfig() {
 		break
 	}
 
+	remoteConfig.JupyterAPIKey = getJupyterAPIKey()
+	config.UpdateComputeRemote(computeRemoteName, remoteConfig)
+}
+
+func getJupyterAPIKey() string {
 	if computeRemoteJupyterAPIKey == "" {
 		computeRemoteJupyterAPIKey = getOptionalString("Enter a Jupyter token to use for remote instances [leave blank to generate one]")
 		if computeRemoteJupyterAPIKey == "" {
@@ -313,8 +332,7 @@ func initializeComputeRemoteConfig() {
 			log.Printf("A Jupyter Token of %s has been generated. You will need it to access the UI on remote instances. If you need to find this later you can find it in your ~/.hyperdrive file", computeRemoteJupyterAPIKey)
 		}
 	}
-	remoteConfig.JupyterAPIKey = computeRemoteJupyterAPIKey
-	config.UpdateComputeRemote(computeRemoteName, remoteConfig)
+	return computeRemoteJupyterAPIKey
 }
 
 func init() {

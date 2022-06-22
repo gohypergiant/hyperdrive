@@ -44,11 +44,12 @@ type EC2ComputeRemoteConfiguration struct {
 	Token     string `mapstructure:"token" json:"token"`
 }
 type S3WorkspacePersistenceRemoteConfiguration struct {
-	Profile   string `mapstructure:"profile" json:"profile"`
-	AccessKey string `mapstructure:"access_key" json:"access_key"`
-	Secret    string `mapstructure:"secret" json:"secret"`
-	Region    string `mapstructure:"region" json:"region"`
-	Token     string `mapstructure:"token" json:"token"`
+	Profile    string `mapstructure:"profile" json:"profile"`
+	BucketName string `mapstructure:"bucket_name" json:"bucket_name"`
+	AccessKey  string `mapstructure:"access_key" json:"access_key"`
+	Secret     string `mapstructure:"secret" json:"secret"`
+	Region     string `mapstructure:"region" json:"region"`
+	Token      string `mapstructure:"token" json:"token"`
 }
 type Configuration struct {
 	SchemaVersion               string                                             `mapstructure:"schema_version" json:"schema_version"`
