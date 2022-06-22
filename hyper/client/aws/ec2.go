@@ -22,7 +22,6 @@ import (
 
 	"github.com/gohypergiant/hyperdrive/hyper/client/manifest"
 	"github.com/gohypergiant/hyperdrive/hyper/client/ssh"
-	HyperConfig "github.com/gohypergiant/hyperdrive/hyper/services/config"
 )
 
 const HYPERDRIVE_TYPE_TAG string = "hyperdrive-type"

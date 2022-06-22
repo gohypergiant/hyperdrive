@@ -24,6 +24,7 @@
       "type": "s3",
       "s3": {
         "profile": "hyperdrive",
+        "bucket_name": "hyperdrive",
         "access_key": "",
         "secret": "",
         "region": ""
