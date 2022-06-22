@@ -19,7 +19,7 @@ func NotebookService(remoteName string, manifestPath string, s3AccessKey string,
 		}
 	} else {
 		return RemoteNotebookService{
-			RemoteConfiguration: config.GetRemote(remoteName),
+			RemoteConfiguration: config.GetComputeRemote(remoteName),
 			ManifestPath:        manifestPath,
 		}
 	}

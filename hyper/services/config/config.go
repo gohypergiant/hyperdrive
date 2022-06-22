@@ -50,7 +50,7 @@ func GetNamedProfileConfig(s3AwsProfile string) types.NamedProfileConfiguration 
 	namedProfileConfig.Region = cfg.Region
 	return namedProfileConfig
 }
-func GetRemotes() map[string]types.ComputeRemoteConfiguration {
+func GetComputeRemotes() map[string]types.ComputeRemoteConfiguration {
 	var remotesMap map[string]types.ComputeRemoteConfiguration
 	err := viper.UnmarshalKey("remotes", &remotesMap)
 	if err != nil {
@@ -59,8 +59,8 @@ func GetRemotes() map[string]types.ComputeRemoteConfiguration {
 	}
 	return remotesMap
 }
-func GetRemote(name string) types.ComputeRemoteConfiguration {
-	remotes := GetRemotes()
+func GetComputeRemote(name string) types.ComputeRemoteConfiguration {
+	remotes := GetComputeRemotes()
 	return remotes[name]
 }
 func UpdateComputeRemote(name string, configuration types.ComputeRemoteConfiguration) {
@@ -74,7 +74,7 @@ func UpdateComputeRemote(name string, configuration types.ComputeRemoteConfigura
 		config.ComputeRemotes = make(map[string]types.ComputeRemoteConfiguration)
 	}
 	config.ComputeRemotes[name] = configuration
-	viper.Set("remotes", config.ComputeRemotes)
+	viper.Set("compute_remotes", config.ComputeRemotes)
 	viper.WriteConfig()
 
 }
@@ -89,7 +89,7 @@ func UpdateWorkspaceRemote(name string, configuration types.WorkspacePersistence
 		config.WorkspacePersistenceRemotes = make(map[string]types.WorkspacePersistenceRemoteConfiguration)
 	}
 	config.WorkspacePersistenceRemotes[name] = configuration
-	viper.Set("remotes", config.WorkspacePersistenceRemotes)
+	viper.Set("workspace_remotes", config.WorkspacePersistenceRemotes)
 	viper.WriteConfig()
 
 }

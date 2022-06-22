@@ -41,19 +41,19 @@ type EC2ComputeRemoteConfiguration struct {
 	AccessKey string `mapstructure:"access_key" json:"access_key"`
 	Secret    string `mapstructure:"secret" json:"secret"`
 	Region    string `mapstructure:"region" json:"region"`
-	Token     string
+	Token     string `mapstructure:"token" json:"token"`
 }
 type S3WorkspacePersistenceRemoteConfiguration struct {
 	Profile   string `mapstructure:"profile" json:"profile"`
 	AccessKey string `mapstructure:"access_key" json:"access_key"`
 	Secret    string `mapstructure:"secret" json:"secret"`
 	Region    string `mapstructure:"region" json:"region"`
-	Token     string
+	Token     string `mapstructure:"token" json:"token"`
 }
 type Configuration struct {
 	SchemaVersion               string                                             `mapstructure:"schema_version" json:"schema_version"`
 	ComputeRemotes              map[string]ComputeRemoteConfiguration              `mapstructure:"compute_remotes" json:"compute_remotes"`
-	WorkspacePersistenceRemotes map[string]WorkspacePersistenceRemoteConfiguration `mapstructure:"workspace_persistence_remotes" json:"workspace_persistence_remotes"`
+	WorkspacePersistenceRemotes map[string]WorkspacePersistenceRemoteConfiguration `mapstructure:"workspace_remotes" json:"workspace_remotes"`
 }
 type NamedProfileConfiguration struct {
 	AccessKey string
