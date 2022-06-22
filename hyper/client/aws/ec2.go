@@ -574,8 +574,8 @@ tar -xvf /tmp/hyperdrive/hyper.tar -C /tmp/hyperdrive
 mv /tmp/hyperdrive/hyper /usr/bin/hyper
 sudo chown ec2-user:ec2-user /tmp/hyperdrive/project
 cd /tmp/hyperdrive/project
-sudo -u ec2-user bash -c 'hyper jupyter remoteHost --hostPort %d --apiKey %s &'
-`, version, version, jupyterLaunchOptions.HostPort, jupyterLaunchOptions.APIKey)
+sudo -u ec2-user bash -c 'hyper jupyter remoteHost --hostPort %d --apiKey %s --s3AccessKey %s --s3AccessSecret %s --s3Region %s &'
+`, version, version, jupyterLaunchOptions.HostPort, jupyterLaunchOptions.APIKey, remoteCfg.AccessKey, remoteCfg.Secret, remoteCfg.Region)
 	return startupScript
 }
 func getInstanceIpAddress(instanceId string, remoteCfg HyperConfig.EC2RemoteConfiguration) (*string, error) {
