@@ -465,7 +465,7 @@ func getOrCreateKeyPair(client *ec2.Client, projectName string) string {
 
 			err = ssh.AddKeySshAgent(privateKeyPath)
 			if err != nil {
-				fmt.Println("Couldn't add key to ssh-agent")
+				fmt.Println("ssh-agent not available")
 
 				_, err = os.Stat(ssh.DEFAULT_KEY)
 				if err != nil {
