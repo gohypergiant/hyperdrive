@@ -5,8 +5,10 @@ import (
 	"encoding/base64"
 	"errors"
 	"fmt"
+	"io/fs"
 	"os"
 	"path"
+	"runtime"
 	"time"
 
 	"github.com/docker/distribution/uuid"
@@ -19,6 +21,7 @@ import (
 	"github.com/aws/aws-sdk-go-v2/service/ec2/types"
 
 	"github.com/gohypergiant/hyperdrive/hyper/client/manifest"
+	"github.com/gohypergiant/hyperdrive/hyper/client/ssh"
 	HyperConfig "github.com/gohypergiant/hyperdrive/hyper/services/config"
 )
 
@@ -399,9 +402,30 @@ func getKeyPairName(r *ec2.DescribeKeyPairsOutput, projectName string) string {
 	}
 	return ""
 }
-func WriteKey(fileName string, fileData *string) error {
-	err := os.WriteFile(fileName, []byte(*fileData), 0400)
-	return err
+func WritePublicKey(client *ec2.Client, keyName string, projectName string, publicKeyBytes []byte) error {
+
+	importKeyPairInput := &ec2.ImportKeyPairInput{
+		KeyName:           aws.String(keyName),
+		PublicKeyMaterial: publicKeyBytes,
+		TagSpecifications: getTagSpecification(projectName, types.ResourceTypeKeyPair),
+	}
+
+	_, err := ImportKeyPair(context.TODO(), client, importKeyPairInput)
+	if err != nil {
+		return err
+	}
+
+	return nil
+}
+func UserHomeDir() string {
+	if runtime.GOOS == "windows" {
+		home := os.Getenv("HOMEDRIVE") + os.Getenv("HOMEPATH")
+		if home == "" {
+			home = os.Getenv("USERPROFILE")
+		}
+		return home
+	}
+	return os.Getenv("HOME")
 }
 func getOrCreateKeyPair(client *ec2.Client, projectName string) string {
 
@@ -414,24 +438,51 @@ func getOrCreateKeyPair(client *ec2.Client, projectName string) string {
 		panic("error fetching Key Pairs: " + err.Error())
 	}
 	keyName := getKeyPairName(keyPairDescribeResult, projectName)
-	fmt.Printf("keyName: %s", keyName)
 
 	if keyName == "" {
 
-		keyName = projectName + "-hyperdrive"
-		keyPairMakeInput := &ec2.CreateKeyPairInput{
-			KeyName:           aws.String(keyName),
-			TagSpecifications: getTagSpecification(projectName, types.ResourceTypeKeyPair),
+		keyName = projectName
+		sshFolderPath := path.Join(UserHomeDir(), "/.ssh")
+		privateKeyPath := path.Join(sshFolderPath, fmt.Sprintf("/%s", keyName))
+
+		if _, err = os.Stat(sshFolderPath); os.IsNotExist(err) {
+			os.Mkdir(sshFolderPath, os.FileMode(ssh.SSH_FOLDER_FILE_MODE))
 		}
 
-		keyPairMakeResult, err := MakeKeyPair(context.TODO(), client, keyPairMakeInput)
+		var publicKeyBytes, privateKeyBytes []byte
+		originalDir, err := os.Getwd()
 		if err != nil {
-			panic("error creating Key Pair," + err.Error())
+			panic("error changing working directory: " + err.Error())
 		}
-		keyPath := path.Join(os.Getenv("HOME"), fmt.Sprintf("%s.pem", keyName))
-		err = WriteKey(keyPath, keyPairMakeResult.KeyMaterial) // todo fix path for windows
+		os.Chdir(sshFolderPath)
+
+		if _, err = os.Stat(privateKeyPath); os.IsNotExist(err) {
+			privateKeyBytes, publicKeyBytes = ssh.CreateRSAKeyPair(keyName)
+			err = ssh.WriteKey(privateKeyPath, privateKeyBytes, fs.FileMode(ssh.PRIVATE_KEY_FILE_MODE))
+			if err != nil {
+				panic("error writing private key " + err.Error())
+			}
+
+			err = ssh.AddKeySshAgent(privateKeyPath)
+			if err != nil {
+				fmt.Println("ssh-agent not available")
+
+				_, err = os.Stat(ssh.DEFAULT_KEY)
+				if err != nil {
+					fmt.Println("Writing key to default key value: id_rsa")
+					os.Rename(keyName, ssh.DEFAULT_KEY)
+					keyName = ssh.DEFAULT_KEY
+				}
+			}
+
+		} else {
+			_, publicKeyBytes = ssh.ParsePrivateKey(keyName)
+		}
+		os.Chdir(originalDir)
+
+		err = WritePublicKey(client, keyName, projectName, publicKeyBytes)
 		if err != nil {
-			fmt.Printf("Couldn't write key pair to file: %v", err)
+			panic("error importing Key Pair," + err.Error())
 		}
 	}
 	return keyName
@@ -527,7 +578,12 @@ func StartServer(manifestPath string, remoteCfg HyperConfig.EC2RemoteConfigurati
 	}
 	fmt.Println("")
 	fmt.Println("EC2 instance provisioned. You can access via ssh by running:")
-	fmt.Println("ssh -i " + keyName + ".pem ec2-user@" + *ip)
+
+	if keyName == ssh.DEFAULT_KEY {
+		fmt.Println("ssh ec2-user@" + *ip)
+	} else {
+		fmt.Println("ssh -i ~/.ssh/" + keyName + " ec2-user@" + *ip)
+	}
 	fmt.Println("")
 	fmt.Println("In a few minutes, you should be able to access jupyter lab at http://" + *ip + ":8888/lab")
 }
@@ -656,14 +712,23 @@ func StopServer(manifestPath string, remoteCfg HyperConfig.EC2RemoteConfiguratio
 		}
 		fmt.Println("Key Pair deleted:", keyName)
 
-		keyPath := path.Join(os.Getenv("HOME"), fmt.Sprintf("%s.pem", keyName))
-		_, err := os.Stat(keyPath)
-		if err == nil {
-			err = os.Remove(keyPath)
+		sshFolderPath := path.Join(UserHomeDir(), "/.ssh")
+
+		if keyName != ssh.DEFAULT_KEY {
+			originalDir, err := os.Getwd()
 			if err != nil {
-				panic("error deleting local pem file: " + err.Error())
+				panic("error changing working directory: " + err.Error())
 			}
+			os.Chdir(sshFolderPath)
+
+			_, err = os.Stat(keyName)
+			if err == nil {
+				_ = ssh.RemoveKeySshAgent(keyName)
+				fmt.Println("Delete your key ~/.ssh/" + keyName + " if it is no longer in use")
+			}
+			os.Chdir(originalDir)
 		}
+
 	}
 
 	securityGroupDescribeInput := &ec2.DescribeSecurityGroupsInput{
