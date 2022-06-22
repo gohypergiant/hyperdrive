@@ -46,6 +46,13 @@ var ec2Profile string
 var ec2AccessKey string
 var ec2Secret string
 var ec2Region string
+var workspacePersistenceRemoteName string
+var workspacePersistenceRemoteTypeInput string
+var workspacePersistenceRemoteJupyterAPIKey string
+var workspaceS3Profile string
+var workspaceS3AccessKey string
+var workspaceS3Secret string
+var workspaceS3Region string
 
 func getValidatedString(message string, validate promptui.ValidateFunc) string {
 	prompt := promptui.Prompt{
@@ -100,6 +107,52 @@ func getFireflyConfig() types.ComputeRemoteConfiguration {
 		FireflyConfiguration: types.FireflyComputeRemoteConfiguration{Url: fireflyUrl, Username: fireflyUsername, HubToken: fireflyToken},
 	}
 }
+func getS3Config() types.WorkspacePersistenceRemoteConfiguration {
+
+	if workspaceS3Profile == "" {
+		workspaceS3Profile = getOptionalString("Enter the name of the configured AWS profile (leave blank to enter a key pair)")
+	}
+
+	// If the user has left the profile blank, prompt for keypair
+	if workspaceS3Profile == "" {
+		if workspaceS3AccessKey == "" {
+			workspaceS3AccessKey = getValidatedString("Enter AWS Access Key for provisioning S3 buckets", func(input string) error {
+				if len(input) <= 0 {
+					return errors.New("must provide an Access Key")
+				}
+				return nil
+			})
+
+		}
+		if workspaceS3Secret == "" {
+			workspaceS3Secret = getValidatedString("Enter AWS Secret for provisioning S3 buckets", func(input string) error {
+				if len(input) <= 0 {
+					return errors.New("must provide an Access Secret")
+				}
+				return nil
+			})
+		}
+	}
+
+	if workspaceS3Region == "" {
+		workspaceS3Region = getValidatedString("Enter the region you wish to provision S3 buckets in", func(input string) error {
+			if len(input) <= 0 {
+				return errors.New("must provide a region")
+			}
+			return nil
+		})
+	}
+
+	return types.WorkspacePersistenceRemoteConfiguration{
+		Type: types.S3,
+		S3Configuration: types.S3WorkspacePersistenceRemoteConfiguration{
+			Profile:   workspaceS3Profile,
+			AccessKey: workspaceS3AccessKey,
+			Secret:    workspaceS3Secret,
+			Region:    workspaceS3Region,
+		},
+	}
+}
 func getEC2Config() types.ComputeRemoteConfiguration {
 
 	if ec2Profile == "" {
@@ -146,11 +199,15 @@ func getEC2Config() types.ComputeRemoteConfiguration {
 		},
 	}
 }
+func getWorkspacePersistenceRemoteType() types.WorkspacePersistenceRemoteType {
+	//For now we only support one persistence remote type, but in the future update this to add prompts to configure it
+	return types.S3
+}
 func getComputeRemoteType() types.ComputeRemoteType {
 	if computeRemoteTypeInput == "" {
 		prompt := promptui.Select{
 			Label: "Choose a remote type",
-			Items: types.ValidRemoteTypes,
+			Items: types.ValidComputeRemoteTypes,
 		}
 		_, remoteTypeInput, err := prompt.Run()
 		if err != nil {
@@ -182,6 +239,27 @@ var initCmd = &cobra.Command{
 
 func initializeWorkspacePersistenceRemoteConfig() {
 
+	var remoteConfig types.WorkspacePersistenceRemoteConfiguration
+	if workspacePersistenceRemoteName == "" {
+		workspacePersistenceRemoteName = getValidatedString("Enter a name for this remote", func(input string) error {
+			if len(input) <= 0 {
+				return errors.New("must provide a name")
+			}
+			return nil
+		})
+	}
+	remoteType := getWorkspacePersistenceRemoteType()
+	// if
+	switch remoteType {
+	case types.S3:
+		fallthrough
+	default:
+		remoteConfig = getS3Config()
+		fmt.Printf("Adding %s remote at %s", workspacePersistenceRemoteName, fireflyUrl)
+		break
+	}
+
+	config.UpdateWorkspaceRemote(workspacePersistenceRemoteName, remoteConfig)
 }
 func initializeDeployRemoteConfig() {
 	var remoteConfig types.ComputeRemoteConfiguration
@@ -219,7 +297,7 @@ func initializeDeployRemoteConfig() {
 		}
 	}
 	remoteConfig.JupyterAPIKey = computeRemoteJupyterAPIKey
-	config.UpdateRemote(computeRemoteName, remoteConfig)
+	config.UpdateComputeRemote(computeRemoteName, remoteConfig)
 }
 
 func init() {
@@ -235,11 +313,18 @@ func init() {
 	/*
 	* EC2 flags
 	 */
-	initCmd.Flags().StringVar(&ec2AccessKey, "ec2Profile", "", "Named AWS profile to use (from ~/.aws/config)")
+	initCmd.Flags().StringVar(&ec2Profile, "ec2Profile", "", "Named AWS profile to use (from ~/.aws/config)")
 	initCmd.Flags().StringVar(&ec2AccessKey, "ec2AccessKey", "", "AWS Access Key for provisioning EC2 instances")
 	initCmd.Flags().StringVar(&ec2Secret, "ec2Secret", "", "AWS Secret for provisioning EC2 instances")
 	initCmd.Flags().StringVar(&ec2Region, "ec2Region", "", "AWS Region for provisioning EC2 instances")
 
+	/*
+	* Workspace S3 flags
+	 */
+	initCmd.Flags().StringVar(&workspaceS3Profile, "workspaceS3Profile", "", "Named AWS profile to use (from ~/.aws/config)")
+	initCmd.Flags().StringVar(&workspaceS3AccessKey, "workspaceS3AccessKey", "", "AWS Access Key for provisioning S3 instances")
+	initCmd.Flags().StringVar(&workspaceS3Secret, "workspaceS3Secret", "", "AWS Secret for provisioning S3 instances")
+	initCmd.Flags().StringVar(&workspaceS3Region, "workspaceS3Region", "", "AWS Region for provisioning S3 instances")
 	rootCmd.AddCommand(configCmd)
 	configCmd.AddCommand(initCmd)
 	configCmd.AddCommand(remotesCmd)
