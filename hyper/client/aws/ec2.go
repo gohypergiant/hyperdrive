@@ -489,7 +489,7 @@ func getOrCreateKeyPair(client *ec2.Client, projectName string) string {
 }
 
 func StartJupyterEC2(manifestPath string, remoteCfg HyperConfig.EC2RemoteConfiguration, ec2Type string, amiID string, jupyterLaunchOptions hyperdriveTypes.JupyterLaunchOptions) {
-	startupScript := getEc2StartScript(version, jupyterLaunchOptions)
+	startupScript := getEc2StartScript(version, jupyterLaunchOptions, remoteCfg)
 	StartServer(manifestPath, remoteCfg, ec2Type, amiID, startupScript, jupyterLaunchOptions.HostPort)
 }
 
@@ -563,7 +563,7 @@ func StartServer(manifestPath string, remoteCfg HyperConfig.EC2RemoteConfigurati
 	fmt.Println("In a few minutes, you should be able to access jupyter lab at http://" + *ip + ":8888/lab")
 }
 
-func getEc2StartScript(version string, jupyterLaunchOptions hyperdriveTypes.JupyterLaunchOptions) string {
+func getEc2StartScript(version string, jupyterLaunchOptions hyperdriveTypes.JupyterLaunchOptions, remoteCfg HyperConfig.EC2RemoteConfiguration) string {
 	startupScript := fmt.Sprintf(`
 #!/bin/bash -xe
 #yum update -y
