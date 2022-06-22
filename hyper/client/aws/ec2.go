@@ -403,26 +403,11 @@ func getKeyPairName(r *ec2.DescribeKeyPairsOutput, projectName string) string {
 	return ""
 }
 func WritePublicKey(client *ec2.Client, keyName string, projectName string, publicKeyBytes []byte) error {
-	tagSpecification := []types.TagSpecification{
-		{
-			ResourceType: types.ResourceTypeKeyPair,
-			Tags: []types.Tag{
-				{
-					Key:   aws.String(HYPERDRIVE_TYPE_TAG),
-					Value: aws.String("true"),
-				},
-				{
-					Key:   aws.String(HYPERDRIVE_NAME_TAG),
-					Value: aws.String(projectName),
-				},
-			},
-		},
-	}
 
 	importKeyPairInput := &ec2.ImportKeyPairInput{
 		KeyName:           aws.String(keyName),
 		PublicKeyMaterial: publicKeyBytes,
-		TagSpecifications: tagSpecification,
+		TagSpecifications: getTagSpecification(projectName, types.ResourceTypeKeyPair),
 	}
 
 	_, err := ImportKeyPair(context.TODO(), client, importKeyPairInput)
