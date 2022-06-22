@@ -7,6 +7,7 @@ import (
 	"io"
 	"os"
 	"path/filepath"
+	"strconv"
 	"strings"
 	"time"
 
@@ -15,14 +16,12 @@ import (
 	"github.com/docker/go-connections/nat"
 	"github.com/gohypergiant/hyperdrive/hyper/client/cli"
 	"github.com/gohypergiant/hyperdrive/hyper/client/manifest"
+	"github.com/gohypergiant/hyperdrive/hyper/services/config"
 	"github.com/pkg/browser"
 )
 
 var (
 	id         string
-	image      string
-	mountPoint string
-	repoTag    string
 	publicPort uint16
 )
 
@@ -31,7 +30,7 @@ type LocalNotebookService struct {
 	S3Credentials types.S3Credentials
 }
 
-func (s LocalNotebookService) Start(jupyterOptions types.JupyterLaunchOptions, ec2Options types.EC2StartOptions) {
+func (s LocalNotebookService) Start(jupyterOptions types.JupyterLaunchOptions, _ types.EC2StartOptions) {
 
 	dockerClient := cli.NewDockerClient()
 	cwdPath, _ := os.Getwd()
@@ -40,14 +39,31 @@ func (s LocalNotebookService) Start(jupyterOptions types.JupyterLaunchOptions, e
 	execute := false
 	projectName := manifest.GetProjectName(s.ManifestPath)
 
-	imageOptions := GetNotebookImageOptions("local")
+	imageOptions := GetNotebookImageOptions("dev") // change to "local" later
 	clientImages, _ := dockerClient.ListImages()
 	inImageCache := false
+	awsAccessKeyId := ""
+	awsSecretAccessKey := ""
+	awsSessionToken := ""
+	region := ""
+	if jupyterOptions.S3AwsProfile != "" {
+		fmt.Printf("Using AWS named profile '%s' to retrieve AWS creds\n", jupyterOptions.S3AwsProfile)
+		namedProfileConfig := config.GetNamedProfileConfig(jupyterOptions.S3AwsProfile)
+		awsAccessKeyId = namedProfileConfig.AccessKey
+		awsSecretAccessKey = namedProfileConfig.Secret
+		awsSessionToken = namedProfileConfig.Token
+		region = namedProfileConfig.Region
+	} else {
+		awsAccessKeyId = s.S3Credentials.AccessKey
+		awsSecretAccessKey = s.S3Credentials.AccessSecret
+		region = s.S3Credentials.Region
+	}
 	env := []string{"JUPYTER_TOKEN=firefly",
 		fmt.Sprintf("NB_TOKEN=%s", jupyterOptions.APIKey),
-		fmt.Sprintf("AWS_ACCESS_KEY_ID=%s", s.S3Credentials.AccessKey),
-		fmt.Sprintf("AWS_SECRET_ACCESS_KEY=%s", s.S3Credentials.AccessSecret),
-		fmt.Sprintf("AWS_DEFAULT_REGION=%s", s.S3Credentials.Region),
+		fmt.Sprintf("AWS_ACCESS_KEY_ID=%s", awsAccessKeyId),
+		fmt.Sprintf("AWS_SECRET_ACCESS_KEY=%s", awsSecretAccessKey),
+		fmt.Sprintf("AWS_SESSION_TOKEN=%s", awsSessionToken),
+		fmt.Sprintf("AWS_DEFAULT_REGION=%s", region),
 		fmt.Sprintf("HYPER_PROJECT_NAME=%s", projectName),
 	}
 	for _, clientImage := range clientImages {
@@ -91,7 +107,7 @@ func (s LocalNotebookService) Start(jupyterOptions types.JupyterLaunchOptions, e
 			"8888/tcp": []nat.PortBinding{
 				{
 					HostIP:   hostIP,
-					HostPort: jupyterOptions.HostPort,
+					HostPort: strconv.Itoa(jupyterOptions.HostPort),
 				},
 			},
 		},
@@ -107,7 +123,11 @@ func (s LocalNotebookService) Start(jupyterOptions types.JupyterLaunchOptions, e
 
 	if jupyterOptions.Requirements {
 		if len(runningContainers) != 0 {
-			dockerClient.RemoveContainer(name)
+			err := dockerClient.RemoveContainer(name)
+			if err != nil {
+				fmt.Println(err)
+				os.Exit(1)
+			}
 		}
 		dockerClient.CreateDockerFile("", "Dockerfile.reqs", true)
 		dockerClient.BuildImage("Dockerfile.reqs", []string{imageName})
@@ -231,28 +251,47 @@ func (s LocalNotebookService) UploadTrainingJobData() {
 }
 func (s LocalNotebookService) CopyFile(srcPath string, dstPath string) {
 
-	os.MkdirAll(filepath.Dir(dstPath), os.ModePerm)
+	err := os.MkdirAll(filepath.Dir(dstPath), os.ModePerm)
+	if err != nil {
+		fmt.Println(err)
+		os.Exit(1)
+	}
 
 	in, err := os.Open(srcPath)
 	if err != nil {
 		fmt.Println(err)
 		os.Exit(1)
 	}
-	defer in.Close()
+	defer func() {
+		closeErr := in.Close()
+		if closeErr != nil {
+			fmt.Println(closeErr)
+		}
+	}()
 
 	out, err := os.Create(dstPath)
 	if err != nil {
 		fmt.Println(err)
 		os.Exit(1)
 	}
-	defer out.Close()
+	defer func() {
+		closeErr := out.Close()
+		if closeErr != nil {
+			fmt.Println(closeErr)
+		}
+	}()
 
 	_, err = io.Copy(out, in)
 	if err != nil {
 		fmt.Println(err)
 		os.Exit(1)
 	}
-	out.Close()
+	defer func() {
+		closeErr := out.Close()
+		if closeErr != nil {
+			fmt.Println(closeErr)
+		}
+	}()
 }
 func (s LocalNotebookService) GetStudyRoot() string {
 
@@ -315,9 +354,9 @@ func (s LocalNotebookService) GetServerPath(rootPath string) string {
 	containerMount := ""
 
 	for _, runningContainer := range runningContainers {
-		container := dockerClient.InspectContainer(runningContainer.ID)
-		if strings.HasPrefix(container.Mounts[0].Source, rootPath) {
-			containerMount = container.Mounts[0].Source
+		c := dockerClient.InspectContainer(runningContainer.ID)
+		if strings.HasPrefix(c.Mounts[0].Source, rootPath) {
+			containerMount = c.Mounts[0].Source
 			break
 		}
 	}

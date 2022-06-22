@@ -3,11 +3,12 @@ package types
 type JupyterLaunchOptions struct {
 	Flavor        string
 	APIKey        string
-	HostPort      string
+	HostPort      int
 	PullImage     bool
 	LaunchBrowser bool
 	Requirements  bool
 	RestartAlways bool
+	S3AwsProfile  string
 }
 type INotebookService interface {
 	Start(jupyterOptions JupyterLaunchOptions, ec2Options EC2StartOptions)

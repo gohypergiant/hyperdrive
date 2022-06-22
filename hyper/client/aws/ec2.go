@@ -3,6 +3,7 @@ package aws
 import (
 	"context"
 	"encoding/base64"
+	"errors"
 	"fmt"
 	"io/fs"
 	"os"
@@ -27,6 +28,9 @@ import (
 const HYPERDRIVE_TYPE_TAG string = "hyperdrive-type"
 const HYPERDRIVE_NAME_TAG string = "hyperdrive-name"
 const HYPERDRIVE_SECURITY_GROUP_NAME string = "-SecurityGroup"
+
+// TODO, we should get this dynamically
+const version string = "0.0.16"
 
 func GetInstances(c context.Context, api hyperdriveTypes.EC2DescribeInstancesAPI, input *ec2.DescribeInstancesInput) (*ec2.DescribeInstancesOutput, error) {
 	return api.DescribeInstances(c, input)
@@ -104,23 +108,8 @@ func GetHyperName(i types.Instance) string {
 	return ""
 }
 func CreateInternetGateway(client *ec2.Client, projectName string) string {
-	tagSpecification := []types.TagSpecification{
-		{
-			ResourceType: types.ResourceTypeInternetGateway,
-			Tags: []types.Tag{
-				{
-					Key:   aws.String(HYPERDRIVE_TYPE_TAG),
-					Value: aws.String("true"),
-				},
-				{
-					Key:   aws.String(HYPERDRIVE_NAME_TAG),
-					Value: aws.String(projectName),
-				},
-			},
-		},
-	}
 	input := &ec2.CreateInternetGatewayInput{
-		TagSpecifications: tagSpecification,
+		TagSpecifications: getTagSpecification(projectName, types.ResourceTypeInternetGateway),
 	}
 
 	result, err := MakeInternetGateway(context.TODO(), client, input)
@@ -179,27 +168,6 @@ func GetSecurityGroupId(r *ec2.DescribeSecurityGroupsOutput, projectName string)
 	return ""
 }
 
-func GetRouteTableID(r *ec2.DescribeRouteTablesOutput, projectName string) string {
-
-	for _, r := range r.RouteTables {
-		for _, t := range r.Tags {
-			if *t.Key == HYPERDRIVE_NAME_TAG && *t.Value == projectName {
-				return *r.RouteTableId
-			}
-		}
-	}
-	return ""
-}
-func GetAssociationID(r *ec2.DescribeRouteTablesOutput, subnetID string) string {
-	for _, rt := range r.RouteTables {
-		for _, a := range rt.Associations {
-			if a.SubnetId == &subnetID {
-				return *a.RouteTableAssociationId
-			}
-		}
-	}
-	return ""
-}
 func GetInternetGatewayID(r *ec2.DescribeInternetGatewaysOutput, projectName string) string {
 	for _, i := range r.InternetGateways {
 		for _, t := range i.Tags {
@@ -223,27 +191,12 @@ func getOrCreateVPC(client *ec2.Client, projectName string) (string, string) {
 	vpcID := GetVpcId(result, projectName)
 
 	if vpcID == "" {
-		fmt.Println("Creating VPC")
 
-		tagSpecification := []types.TagSpecification{
-			{
-				ResourceType: types.ResourceTypeVpc,
-				Tags: []types.Tag{
-					{
-						Key:   aws.String(HYPERDRIVE_TYPE_TAG),
-						Value: aws.String("true"),
-					},
-					{
-						Key:   aws.String(HYPERDRIVE_NAME_TAG),
-						Value: aws.String(projectName),
-					},
-				},
-			},
-		}
+		fmt.Println("Creating VPC")
 
 		inputMakeVPC := &ec2.CreateVpcInput{
 			CidrBlock:         aws.String("10.0.0.0/16"),
-			TagSpecifications: tagSpecification,
+			TagSpecifications: getTagSpecification(projectName, types.ResourceTypeVpc),
 		}
 
 		resultMakeVPC, err := MakeVpc(context.TODO(), client, inputMakeVPC)
@@ -257,25 +210,9 @@ func getOrCreateVPC(client *ec2.Client, projectName string) (string, string) {
 
 		AddInternetGateway(client, vpcID, internetGatewayID)
 
-		tagSpecification = []types.TagSpecification{
-			{
-				ResourceType: types.ResourceTypeRouteTable,
-				Tags: []types.Tag{
-					{
-						Key:   aws.String(HYPERDRIVE_TYPE_TAG),
-						Value: aws.String("true"),
-					},
-					{
-						Key:   aws.String(HYPERDRIVE_NAME_TAG),
-						Value: aws.String(projectName),
-					},
-				},
-			},
-		}
-
 		inputMakeRouteTable := &ec2.CreateRouteTableInput{
 			VpcId:             aws.String(vpcID),
-			TagSpecifications: tagSpecification,
+			TagSpecifications: getTagSpecification(projectName, types.ResourceTypeRouteTable),
 		}
 
 		resultMakeRouteTable, err := MakeRouteTable(context.TODO(), client, inputMakeRouteTable)
@@ -297,6 +234,25 @@ func getOrCreateVPC(client *ec2.Client, projectName string) (string, string) {
 		}
 	}
 	return vpcID, routeTableID
+}
+
+func getTagSpecification(projectName string, resourceType types.ResourceType) []types.TagSpecification {
+	tagSpecification := []types.TagSpecification{
+		{
+			ResourceType: resourceType,
+			Tags: []types.Tag{
+				{
+					Key:   aws.String(HYPERDRIVE_TYPE_TAG),
+					Value: aws.String("true"),
+				},
+				{
+					Key:   aws.String(HYPERDRIVE_NAME_TAG),
+					Value: aws.String(projectName),
+				},
+			},
+		},
+	}
+	return tagSpecification
 }
 
 func setSubnetToProvisionPublicIP(subnetID string, client *ec2.Client) {
@@ -337,27 +293,11 @@ func getOrCreateSubnet(client *ec2.Client, vID string, region string, projectNam
 	fmt.Println("No Subnet found for VPC", vID)
 	fmt.Println("Creating Subnet")
 
-	tagSpecification := []types.TagSpecification{
-		{
-			ResourceType: types.ResourceTypeSubnet,
-			Tags: []types.Tag{
-				{
-					Key:   aws.String(HYPERDRIVE_TYPE_TAG),
-					Value: aws.String("true"),
-				},
-				{
-					Key:   aws.String(HYPERDRIVE_NAME_TAG),
-					Value: aws.String(projectName),
-				},
-			},
-		},
-	}
-
 	subnetMakeInput := &ec2.CreateSubnetInput{
 		CidrBlock:         aws.String("10.0.1.0/24"),
 		VpcId:             aws.String(vID),
 		AvailabilityZone:  aws.String(region + "a"),
-		TagSpecifications: tagSpecification,
+		TagSpecifications: getTagSpecification(projectName, types.ResourceTypeSubnet),
 	}
 
 	subnetMakeResult, err := MakeSubnet(context.TODO(), client, subnetMakeInput)
@@ -381,7 +321,7 @@ func getOrCreateSubnet(client *ec2.Client, vID string, region string, projectNam
 	return subnetID
 }
 
-func getOrCreateSecurityGroup(client *ec2.Client, vID string, projectName string) string {
+func getOrCreateSecurityGroup(client *ec2.Client, vID string, projectName string, httpPort int) string {
 	var securityGroupID string
 
 	securityGroupDescribeInput := &ec2.DescribeSecurityGroupsInput{
@@ -405,27 +345,11 @@ func getOrCreateSecurityGroup(client *ec2.Client, vID string, projectName string
 	fmt.Println("No Security Group found on VPC", vID)
 	fmt.Println("Creating Security Group for project", projectName)
 
-	tagSpecification := []types.TagSpecification{
-		{
-			ResourceType: types.ResourceTypeSecurityGroup,
-			Tags: []types.Tag{
-				{
-					Key:   aws.String(HYPERDRIVE_TYPE_TAG),
-					Value: aws.String("true"),
-				},
-				{
-					Key:   aws.String(HYPERDRIVE_NAME_TAG),
-					Value: aws.String(projectName),
-				},
-			},
-		},
-	}
-
 	scInput := &ec2.CreateSecurityGroupInput{
 		GroupName:         aws.String(projectName + HYPERDRIVE_SECURITY_GROUP_NAME),
 		Description:       aws.String("Security group for EC2 instances provisioned by hyper"),
 		VpcId:             aws.String(vID),
-		TagSpecifications: tagSpecification,
+		TagSpecifications: getTagSpecification(projectName, types.ResourceTypeSecurityGroup),
 	}
 
 	securityGroupMakeResult, err := MakeSecurityGroup(context.TODO(), client, scInput)
@@ -450,8 +374,8 @@ func getOrCreateSecurityGroup(client *ec2.Client, vID string, projectName string
 			},
 			{
 				IpProtocol: aws.String("tcp"),
-				FromPort:   aws.Int32(8888),
-				ToPort:     aws.Int32(8888),
+				FromPort:   aws.Int32(int32(httpPort)),
+				ToPort:     aws.Int32(int32(httpPort)),
 				IpRanges: []types.IpRange{
 					{
 						CidrIp: aws.String("0.0.0.0/0"),
@@ -579,7 +503,12 @@ func getOrCreateKeyPair(client *ec2.Client, projectName string) string {
 	return keyName
 }
 
-func StartServer(manifestPath string, remoteCfg HyperConfig.EC2RemoteConfiguration, ec2Type string, amiID string, jupyterLaunchOptions hyperdriveTypes.JupyterLaunchOptions) {
+func StartJupyterEC2(manifestPath string, remoteCfg HyperConfig.EC2RemoteConfiguration, ec2Type string, amiID string, jupyterLaunchOptions hyperdriveTypes.JupyterLaunchOptions) {
+	startupScript := getEc2StartScript(version, jupyterLaunchOptions)
+	StartServer(manifestPath, remoteCfg, ec2Type, amiID, startupScript, jupyterLaunchOptions.HostPort)
+}
+
+func StartServer(manifestPath string, remoteCfg HyperConfig.EC2RemoteConfiguration, ec2Type string, amiID string, startupScript string, hostPort int) {
 
 	if ec2Type == "" {
 		fmt.Println("EC2InstanceTypeNotFound: please specify a EC2 instance type using the flag --ec2InstanceType")
@@ -600,42 +529,13 @@ func StartServer(manifestPath string, remoteCfg HyperConfig.EC2RemoteConfigurati
 	subnetID := getOrCreateSubnet(client, vpcID, remoteCfg.Region, projectName, rtID)
 	fmt.Println("Subnet ID:", subnetID)
 
-	securityGroupID := getOrCreateSecurityGroup(client, vpcID, projectName)
+	securityGroupID := getOrCreateSecurityGroup(client, vpcID, projectName, hostPort)
 	fmt.Println("Security group ID:", securityGroupID)
 
 	keyName := getOrCreateKeyPair(client, projectName)
 	fmt.Println("Key name:", keyName)
 
-	tagSpecification := []types.TagSpecification{
-		{
-			ResourceType: types.ResourceTypeInstance,
-			Tags: []types.Tag{
-				{
-					Key:   aws.String(HYPERDRIVE_TYPE_TAG),
-					Value: aws.String("true"),
-				},
-				{
-					Key:   aws.String(HYPERDRIVE_NAME_TAG),
-					Value: aws.String(projectName),
-				},
-			},
-		},
-	}
-
-	version := "0.0.16"
 	minMaxCount := int32(1)
-	startupScript := fmt.Sprintf(`
-#!/bin/bash -xe
-#yum update -y
-service docker start
-mkdir -p /tmp/hyperdrive/project
-curl -fsSL https://github.com/gohypergiant/hyperdrive/releases/download/%s/hyperdrive_%s_Linux_x86_64.tar.gz -o /tmp/hyperdrive/hyper.tar
-tar -xvf /tmp/hyperdrive/hyper.tar -C /tmp/hyperdrive
-mv /tmp/hyperdrive/hyper /usr/bin/hyper
-sudo chown ec2-user:ec2-user /tmp/hyperdrive/project
-cd /tmp/hyperdrive/project
-sudo -u ec2-user bash -c 'hyper jupyter remoteHost --hostPort 8888 --apiKey %s &'
-`, version, version, jupyterLaunchOptions.APIKey)
 	ec2Input := &ec2.RunInstancesInput{
 		ImageId:           aws.String(amiID),
 		InstanceType:      types.InstanceType(*aws.String(ec2Type)),
@@ -644,7 +544,7 @@ sudo -u ec2-user bash -c 'hyper jupyter remoteHost --hostPort 8888 --apiKey %s &
 		SecurityGroupIds:  []string{securityGroupID},
 		SubnetId:          aws.String(subnetID),
 		KeyName:           aws.String(keyName),
-		TagSpecifications: tagSpecification,
+		TagSpecifications: getTagSpecification(projectName, types.ResourceTypeInstance),
 		UserData:          aws.String(base64.StdEncoding.EncodeToString([]byte(startupScript))),
 	}
 
@@ -657,25 +557,14 @@ sudo -u ec2-user bash -c 'hyper jupyter remoteHost --hostPort 8888 --apiKey %s &
 
 	ip := result.Instances[0].PublicIpAddress
 	if ip == nil {
-
-		instances, err := GetHyperdriveInstances(remoteCfg)
+		ip, err = getInstanceIpAddress(*result.Instances[0].InstanceId, remoteCfg)
 		if err != nil {
 
 			fmt.Println("Provisioned instance but cannot get publicIP")
+			os.Exit(1)
 			return
 		}
-		for _, i := range instances {
-			if *i.InstanceId == *result.Instances[0].InstanceId {
-				ip = i.PublicIpAddress
-				break
-			}
-		}
 
-	}
-	if ip == nil {
-
-		fmt.Println("Provisioned instance but cannot get publicIP")
-		return
 	}
 	fmt.Println("")
 	fmt.Println("EC2 instance provisioned. You can access via ssh by running:")
@@ -687,6 +576,37 @@ sudo -u ec2-user bash -c 'hyper jupyter remoteHost --hostPort 8888 --apiKey %s &
 	}
 	fmt.Println("")
 	fmt.Println("In a few minutes, you should be able to access jupyter lab at http://" + *ip + ":8888/lab")
+}
+
+func getEc2StartScript(version string, jupyterLaunchOptions hyperdriveTypes.JupyterLaunchOptions) string {
+	startupScript := fmt.Sprintf(`
+#!/bin/bash -xe
+#yum update -y
+service docker start
+mkdir -p /tmp/hyperdrive/project
+curl -fsSL https://github.com/gohypergiant/hyperdrive/releases/download/%s/hyperdrive_%s_Linux_x86_64.tar.gz -o /tmp/hyperdrive/hyper.tar
+tar -xvf /tmp/hyperdrive/hyper.tar -C /tmp/hyperdrive
+mv /tmp/hyperdrive/hyper /usr/bin/hyper
+sudo chown ec2-user:ec2-user /tmp/hyperdrive/project
+cd /tmp/hyperdrive/project
+sudo -u ec2-user bash -c 'hyper jupyter remoteHost --hostPort %d --apiKey %s &'
+`, version, version, jupyterLaunchOptions.HostPort, jupyterLaunchOptions.APIKey)
+	return startupScript
+}
+func getInstanceIpAddress(instanceId string, remoteCfg HyperConfig.EC2RemoteConfiguration) (*string, error) {
+
+	instances, err := GetHyperdriveInstances(remoteCfg)
+	if err != nil {
+		return nil, err
+	}
+
+	for _, i := range instances {
+		if *i.InstanceId == instanceId {
+			return i.PublicIpAddress, nil
+		}
+	}
+	return nil, errors.New("Could not find public IP for instance")
+
 }
 func StopServer(manifestPath string, remoteCfg HyperConfig.EC2RemoteConfiguration) {
 	projectName := manifest.GetProjectName(manifestPath)
@@ -873,7 +793,7 @@ func StopServer(manifestPath string, remoteCfg HyperConfig.EC2RemoteConfiguratio
 				}
 				_, err = DisassociateRouteTable(context.TODO(), client, routeTableDisassociateInput)
 				if err != nil {
-					panic("error disassociationg Route Table," + err.Error())
+					panic("error disassociating Route Table," + err.Error())
 				}
 			}
 			routeTableDeleteInput := &ec2.DeleteRouteTableInput{
