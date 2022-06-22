@@ -79,6 +79,9 @@ func GetKeyPairs(c context.Context, api types.DescribeKeyPairsAPI, input *ec2.De
 func MakeKeyPair(c context.Context, api types.CreateKeyPairAPI, input *ec2.CreateKeyPairInput) (*ec2.CreateKeyPairOutput, error) {
 	return api.CreateKeyPair(c, input)
 }
+func ImportKeyPair(c context.Context, api types.ImportKeyPairAPI, input *ec2.ImportKeyPairInput) (*ec2.ImportKeyPairOutput, error) {
+	return api.ImportKeyPair(c, input)
+}
 func DeleteKeyPair(c context.Context, api types.DeleteKeyPairAPI, input *ec2.DeleteKeyPairInput) (*ec2.DeleteKeyPairOutput, error) {
 	return api.DeleteKeyPair(c, input)
 }
