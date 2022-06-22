@@ -16,7 +16,7 @@ const (
 	Firefly ComputeRemoteType = "firefly"
 )
 
-var ValidRemoteTypes = []ComputeRemoteType{
+var ValidComputeRemoteTypes = []ComputeRemoteType{
 	Firefly,
 	EC2,
 }
@@ -28,8 +28,8 @@ type ComputeRemoteConfiguration struct {
 	JupyterAPIKey        string                            `mapstructure:"jupyter_api_key" json:"jupyter_api_key"`
 }
 type WorkspacePersistenceRemoteConfiguration struct {
-	Type      WorkspacePersistenceRemoteType `mapstructure:"type" json:"type"`
-	IsDefault bool                           `mapstructure:"default" json:"default"`
+	Type            WorkspacePersistenceRemoteType            `mapstructure:"type" json:"type"`
+	S3Configuration S3WorkspacePersistenceRemoteConfiguration `mapstructure:"s3" json:"s3"`
 }
 type FireflyComputeRemoteConfiguration struct {
 	Url      string `mapstructure:"url" json:"url"`
@@ -37,6 +37,13 @@ type FireflyComputeRemoteConfiguration struct {
 	Username string `mapstructure:"username" json:"username"`
 }
 type EC2ComputeRemoteConfiguration struct {
+	Profile   string `mapstructure:"profile" json:"profile"`
+	AccessKey string `mapstructure:"access_key" json:"access_key"`
+	Secret    string `mapstructure:"secret" json:"secret"`
+	Region    string `mapstructure:"region" json:"region"`
+	Token     string
+}
+type S3WorkspacePersistenceRemoteConfiguration struct {
 	Profile   string `mapstructure:"profile" json:"profile"`
 	AccessKey string `mapstructure:"access_key" json:"access_key"`
 	Secret    string `mapstructure:"secret" json:"secret"`

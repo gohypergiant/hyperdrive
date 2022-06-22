@@ -63,7 +63,7 @@ func GetRemote(name string) types.ComputeRemoteConfiguration {
 	remotes := GetRemotes()
 	return remotes[name]
 }
-func UpdateRemote(name string, configuration types.ComputeRemoteConfiguration) {
+func UpdateComputeRemote(name string, configuration types.ComputeRemoteConfiguration) {
 	var config types.Configuration
 	err := viper.Unmarshal(&config)
 	if err != nil {
@@ -75,6 +75,21 @@ func UpdateRemote(name string, configuration types.ComputeRemoteConfiguration) {
 	}
 	config.ComputeRemotes[name] = configuration
 	viper.Set("remotes", config.ComputeRemotes)
+	viper.WriteConfig()
+
+}
+func UpdateWorkspaceRemote(name string, configuration types.WorkspacePersistenceRemoteConfiguration) {
+	var config types.Configuration
+	err := viper.Unmarshal(&config)
+	if err != nil {
+		fmt.Println(err)
+		os.Exit(1)
+	}
+	if config.WorkspacePersistenceRemotes == nil {
+		config.WorkspacePersistenceRemotes = make(map[string]types.WorkspacePersistenceRemoteConfiguration)
+	}
+	config.WorkspacePersistenceRemotes[name] = configuration
+	viper.Set("remotes", config.WorkspacePersistenceRemotes)
 	viper.WriteConfig()
 
 }
