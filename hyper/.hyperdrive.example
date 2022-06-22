@@ -19,10 +19,9 @@
       }
     }
   },
-  "workspace_persistence_remotes": {
+  "workspace_remotes": {
     "dev": {
       "type": "s3",
-      "default": true,
       "s3": {
         "profile": "hyperdrive",
         "access_key": "",
