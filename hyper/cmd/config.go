@@ -14,19 +14,37 @@ import (
 	"github.com/spf13/cobra"
 )
 
-var remotesCmd = &cobra.Command{
+var computeRemotesCmd = &cobra.Command{
 	Short: "Interact with firefly remotes",
-	Use:   "remote",
+	Use:   "computeRemote",
 }
-var remotesListCmd = &cobra.Command{
+var computeRemotesListCmd = &cobra.Command{
 	Use:   "list",
-	Short: "List ComputeRemotes",
+	Short: "List Compute Remotes",
 	Run: func(cmd *cobra.Command, args []string) {
-		remotesMap := config.GetRemotes()
+		remotesMap := config.GetComputeRemotes()
 		for name, config := range remotesMap {
 			fmt.Println("remote: ", name)
 			fmt.Println("    url: ", config.FireflyConfiguration.Url)
 		}
+	},
+}
+var computeRemotesAddCmd = &cobra.Command{
+	Use:   "add",
+	Short: "Add Workspace Remote",
+	Run: func(cmd *cobra.Command, args []string) {
+		initializeComputeRemoteConfig()
+	},
+}
+var workspaceRemotesCmd = &cobra.Command{
+	Short: "Interact with firefly remotes",
+	Use:   "workspaceRemote",
+}
+var workspaceRemotesAddCmd = &cobra.Command{
+	Use:   "add",
+	Short: "Add Workspace Remote",
+	Run: func(cmd *cobra.Command, args []string) {
+		initializeWorkspacePersistenceRemoteConfig()
 	},
 }
 
@@ -232,7 +250,7 @@ var initCmd = &cobra.Command{
 	Use:   "init",
 	Short: "Initialize Config",
 	Run: func(cmd *cobra.Command, args []string) {
-		initializeDeployRemoteConfig()
+		initializeComputeRemoteConfig()
 		initializeWorkspacePersistenceRemoteConfig()
 	},
 }
@@ -249,19 +267,18 @@ func initializeWorkspacePersistenceRemoteConfig() {
 		})
 	}
 	remoteType := getWorkspacePersistenceRemoteType()
-	// if
 	switch remoteType {
 	case types.S3:
 		fallthrough
 	default:
 		remoteConfig = getS3Config()
-		fmt.Printf("Adding %s remote at %s", workspacePersistenceRemoteName, fireflyUrl)
+		fmt.Printf("Adding %s workspace remote", workspacePersistenceRemoteName)
 		break
 	}
 
 	config.UpdateWorkspaceRemote(workspacePersistenceRemoteName, remoteConfig)
 }
-func initializeDeployRemoteConfig() {
+func initializeComputeRemoteConfig() {
 	var remoteConfig types.ComputeRemoteConfiguration
 	if computeRemoteName == "" {
 		computeRemoteName = getValidatedString("Enter a name for this remote", func(input string) error {
@@ -327,8 +344,14 @@ func init() {
 	initCmd.Flags().StringVar(&workspaceS3Region, "workspaceS3Region", "", "AWS Region for provisioning S3 instances")
 	rootCmd.AddCommand(configCmd)
 	configCmd.AddCommand(initCmd)
-	configCmd.AddCommand(remotesCmd)
+	configCmd.AddCommand(computeRemotesCmd)
+	configCmd.AddCommand(workspaceRemotesCmd)
 
 	//remote subcommands
-	remotesCmd.AddCommand(remotesListCmd)
+	computeRemotesCmd.AddCommand(computeRemotesListCmd)
+	computeRemotesCmd.AddCommand(computeRemotesAddCmd)
+
+	//
+	//workspaceRemotesCmd.AddCommand(workspaceRemotesListCmd)
+	workspaceRemotesCmd.AddCommand(workspaceRemotesAddCmd)
 }
