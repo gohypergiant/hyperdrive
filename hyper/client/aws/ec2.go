@@ -8,6 +8,7 @@ import (
 	"io/fs"
 	"os"
 	"path"
+	"reflect"
 	"runtime"
 	"time"
 
@@ -487,7 +488,43 @@ func getOrCreateKeyPair(client *ec2.Client, projectName string) string {
 	}
 	return keyName
 }
+func IsStudyInstance(i types.Instance, studyName string) bool {
+	for _, t := range i.Tags {
+		if *t.Key == HYPERDRIVE_NAME_TAG && *t.Value == studyName {
+			return true
+		}
+	}
+	return false
+}
+func GetInstanceForStudy(studyName string, remoteCfg HyperConfig.EC2RemoteConfiguration) (types.Instance, error) {
+	client := GetEC2Client(remoteCfg)
 
+	ec2DescribeInput := &ec2.DescribeInstancesInput{
+		Filters: []types.Filter{
+			{
+				Name:   aws.String("instance-state-code"),
+				Values: []string{"16"},
+			},
+		},
+	}
+
+	ec2DescribeResult, err := GetInstances(context.TODO(), client, ec2DescribeInput)
+	if err != nil {
+		return types.Instance{}, err
+	}
+
+	for _, r := range ec2DescribeResult.Reservations {
+		for _, i := range r.Instances {
+			if IsHyperdriveInstance(i) && IsStudyInstance(i, studyName) {
+				return i, nil
+			}
+		}
+	}
+	return types.Instance{}, nil
+}
+func IsStructureEmpty(i types.Instance) bool {
+	return reflect.DeepEqual(i, types.Instance{})
+}
 func StartJupyterEC2(manifestPath string, remoteCfg HyperConfig.EC2RemoteConfiguration, ec2Type string, amiID string, jupyterLaunchOptions hyperdriveTypes.JupyterLaunchOptions) {
 	startupScript := getEc2StartScript(version, jupyterLaunchOptions)
 	StartServer(manifestPath, remoteCfg, ec2Type, amiID, startupScript, jupyterLaunchOptions.HostPort)
@@ -507,29 +544,22 @@ func StartServer(manifestPath string, remoteCfg HyperConfig.EC2RemoteConfigurati
 	fmt.Println("Project name is:", projectName)
 	client := GetEC2Client(remoteCfg)
 
-	ec2DescribeInput := &ec2.DescribeInstancesInput{
-		Filters: []types.Filter{
-			{
-				Name:   aws.String("instance-state-code"),
-				Values: []string{"16"},
-			},
-		},
-	}
-
-	ec2DescribeResult, err := GetInstances(context.TODO(), client, ec2DescribeInput)
+	hyperInstance, err := GetInstanceForStudy(projectName, remoteCfg)
 	if err != nil {
 		fmt.Println(err)
-		os.Exit(1)
 		return
 	}
 
-	for _, r := range ec2DescribeResult.Reservations {
-		for _, i := range r.Instances {
-			if IsHyperdriveInstance(i) {
-				fmt.Println("Hyper instance already running. ID: " + *i.InstanceId)
-				return
-			}
-		}
+	if !IsStructureEmpty(hyperInstance) {
+		message := fmt.Sprintf(`Hyper instance already running.
+Instance size: %s
+You can access jupyter lab at http://%s:8888/lab
+If you want to change the instance size, stop the current running instance:
+
+	hyper jupyter stop --remote=<REMOTE_PROFILE_NAME>
+`, hyperInstance.InstanceType, *hyperInstance.PublicIpAddress)
+		fmt.Println(message)
+		return
 	}
 
 	vpcID, rtID := getOrCreateVPC(client, projectName)
