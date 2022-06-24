@@ -52,7 +52,7 @@ func GetNamedProfileConfig(s3AwsProfile string) types.NamedProfileConfiguration 
 }
 func GetComputeRemotes() map[string]types.ComputeRemoteConfiguration {
 	var remotesMap map[string]types.ComputeRemoteConfiguration
-	err := viper.UnmarshalKey("remotes", &remotesMap)
+	err := viper.UnmarshalKey("compute_remotes", &remotesMap)
 	if err != nil {
 		fmt.Println(err)
 		os.Exit(1)
@@ -61,6 +61,19 @@ func GetComputeRemotes() map[string]types.ComputeRemoteConfiguration {
 }
 func GetComputeRemote(name string) types.ComputeRemoteConfiguration {
 	remotes := GetComputeRemotes()
+	return remotes[name]
+}
+func GetWorkspacePersistenceRemotes() map[string]types.WorkspacePersistenceRemoteConfiguration {
+	var remotesMap map[string]types.WorkspacePersistenceRemoteConfiguration
+	err := viper.UnmarshalKey("workspace_remotes", &remotesMap)
+	if err != nil {
+		fmt.Println(err)
+		os.Exit(1)
+	}
+	return remotesMap
+}
+func GetWorkspacePersistenceRemote(name string) types.WorkspacePersistenceRemoteConfiguration {
+	remotes := GetWorkspacePersistenceRemotes()
 	return remotes[name]
 }
 func UpdateComputeRemote(name string, configuration types.ComputeRemoteConfiguration) {

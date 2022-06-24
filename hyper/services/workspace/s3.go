@@ -1,0 +1,36 @@
+package workspace
+
+import (
+	"fmt"
+	"github.com/gohypergiant/hyperdrive/hyper/client/aws"
+	"github.com/gohypergiant/hyperdrive/hyper/services/notebook"
+	"github.com/gohypergiant/hyperdrive/hyper/types"
+	"os"
+)
+
+type S3WorkspaceService struct {
+	ManifestPath    string
+	S3Configuration types.S3WorkspacePersistenceRemoteConfiguration
+}
+
+func (s S3WorkspaceService) Sync(localPath string) {
+	if localPath == "" {
+		cwd, err := os.Getwd()
+		if err != nil {
+			fmt.Println(err)
+			os.Exit(1)
+			return
+		}
+		localPath = cwd
+	}
+	remotePath := s.GetS3Url()
+	fmt.Println(remotePath)
+	aws.SyncDirectory(s.S3Configuration, localPath, remotePath)
+	aws.SyncDirectory(s.S3Configuration, remotePath, localPath)
+}
+
+func (s S3WorkspaceService) GetS3Url() string {
+
+	name := notebook.GetNotebookName(s.ManifestPath)
+	return fmt.Sprintf("s3://%s/%s", s.S3Configuration.BucketName, name)
+}
