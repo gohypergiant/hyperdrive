@@ -42,6 +42,7 @@ func (s S3WorkspaceService) syncOnce(localPath string) {
 
 }
 func (s S3WorkspaceService) watchSync(localPath string) {
+	s.syncOnce(localPath)
 	for range time.Tick(time.Second * 10) {
 		s.syncOnce(localPath)
 	}

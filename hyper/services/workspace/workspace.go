@@ -7,11 +7,17 @@ import (
 	"os"
 )
 
-func WorkspaceService(remoteName string, manifestPath string) types.IWorkspaceService {
-	config := config2.GetWorkspacePersistenceRemote(remoteName)
-	if config.Type == types.S3 {
+func WorkspaceService(remoteName string, manifestPath string, workspaceS3Configuration types.S3WorkspacePersistenceRemoteConfiguration) types.IWorkspaceService {
+
+	workspaceRemoteType := types.S3
+
+	if (types.S3WorkspacePersistenceRemoteConfiguration{}) == workspaceS3Configuration {
+		workspaceS3Configuration = config2.GetWorkspacePersistenceRemote(remoteName).S3Configuration
+	}
+
+	if workspaceRemoteType == types.S3 {
 		return S3WorkspaceService{
-			S3Configuration: config.S3Configuration,
+			S3Configuration: workspaceS3Configuration,
 			ManifestPath:    manifestPath,
 		}
 	}
