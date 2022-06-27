@@ -11,18 +11,23 @@ import (
 	"os"
 )
 
+var sess *session.Session
+var syncManager *s3sync.Manager
+
 func SyncDirectory(s3Config types.S3WorkspacePersistenceRemoteConfiguration, srcPath string, destPath string) {
 	syncManager := GetSyncManger(s3Config)
 	err := syncManager.Sync(srcPath, destPath)
 	if err != nil {
 		fmt.Println(err)
-		os.Exit(1)
+		//os.Exit(1)
 	}
 }
 func GetSyncManger(s3Config types.S3WorkspacePersistenceRemoteConfiguration) *s3sync.Manager {
-	var sess *session.Session
-	sess = getSession(s3Config, sess)
-	return s3sync.New(sess)
+	if syncManager == nil {
+		sess = getSession(s3Config, sess)
+		syncManager = s3sync.New(sess)
+	}
+	return syncManager
 }
 
 func getSession(s3Config types.S3WorkspacePersistenceRemoteConfiguration, sess *session.Session) *session.Session {
@@ -41,7 +46,7 @@ func getSession(s3Config types.S3WorkspacePersistenceRemoteConfiguration, sess *
 	sess, err := session.NewSession(awsConfig.WithCredentials(creds))
 	if err != nil {
 		fmt.Println(err)
-		os.Exit(0)
+		os.Exit(1)
 	}
 	return sess
 
