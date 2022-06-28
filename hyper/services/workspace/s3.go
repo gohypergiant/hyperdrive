@@ -14,7 +14,11 @@ type S3WorkspaceService struct {
 	S3Configuration types.S3WorkspacePersistenceRemoteConfiguration
 }
 
-func (s S3WorkspaceService) Sync(localPath string, watch bool) {
+func (s S3WorkspaceService) Sync(localPath string, watch bool, studyName string) {
+
+	if studyName == "" {
+		studyName = notebook.GetNotebookName(s.ManifestPath)
+	}
 	if localPath == "" {
 		cwd, err := os.Getwd()
 		if err != nil {
@@ -25,14 +29,14 @@ func (s S3WorkspaceService) Sync(localPath string, watch bool) {
 		localPath = cwd
 	}
 	if watch {
-		s.watchSync(localPath)
+		s.watchSync(localPath, studyName)
 
 	} else {
-		s.syncOnce(localPath)
+		s.syncOnce(localPath, studyName)
 	}
 }
-func (s S3WorkspaceService) syncOnce(localPath string) {
-	remotePath := s.GetS3Url()
+func (s S3WorkspaceService) syncOnce(localPath string, studyName string) {
+	remotePath := s.GetS3Url(studyName)
 	fmt.Println(remotePath)
 
 	fmt.Println("syncing local to remote")
@@ -41,16 +45,14 @@ func (s S3WorkspaceService) syncOnce(localPath string) {
 	aws.SyncDirectory(s.S3Configuration, remotePath, localPath)
 
 }
-func (s S3WorkspaceService) watchSync(localPath string) {
-	s.syncOnce(localPath)
+func (s S3WorkspaceService) watchSync(localPath string, studyName string) {
+	s.syncOnce(localPath, studyName)
 	for range time.Tick(time.Second * 10) {
-		s.syncOnce(localPath)
+		s.syncOnce(localPath, studyName)
 	}
-
 }
 
-func (s S3WorkspaceService) GetS3Url() string {
+func (s S3WorkspaceService) GetS3Url(studyName string) string {
 
-	name := notebook.GetNotebookName(s.ManifestPath)
-	return fmt.Sprintf("s3://%s/%s", s.S3Configuration.BucketName, name)
+	return fmt.Sprintf("s3://%s/%s", s.S3Configuration.BucketName, studyName)
 }

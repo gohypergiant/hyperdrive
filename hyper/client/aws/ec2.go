@@ -30,7 +30,7 @@ const HYPERDRIVE_NAME_TAG string = "hyperdrive-name"
 const HYPERDRIVE_SECURITY_GROUP_NAME string = "-SecurityGroup"
 
 // TODO, we should get this dynamically
-const version string = "0.0.16"
+const version string = "0.0.25"
 
 func GetInstances(c context.Context, api hyperdriveTypes.EC2DescribeInstancesAPI, input *ec2.DescribeInstancesInput) (*ec2.DescribeInstancesOutput, error) {
 	return api.DescribeInstances(c, input)
@@ -647,6 +647,8 @@ func getInstanceIpAddress(instanceId string, remoteCfg hyperdriveTypes.EC2Comput
 	return nil, errors.New("Could not find public IP for instance")
 
 }
+
+//TODO: Refactor this in to a series of smaller, well-named functions for readability
 func StopServer(manifestPath string, remoteCfg hyperdriveTypes.EC2ComputeRemoteConfiguration) {
 	projectName := manifest.GetProjectName(manifestPath)
 	if projectName == "" {

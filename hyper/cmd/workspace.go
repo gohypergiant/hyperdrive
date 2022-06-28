@@ -11,6 +11,7 @@ var (
 	watchSync           = false
 	localWorkspacePath  string
 	workspaceRemoteName string
+	studyName           string
 )
 
 var workspaceCmd = &cobra.Command{
@@ -34,7 +35,7 @@ var workspaceSyncCmd = &cobra.Command{
 
 			fmt.Printf("Using configured remote %s for workspace sync \n")
 		}
-		workspace.WorkspaceService(workspaceRemoteName, manifestPath, s3Config).Sync(localWorkspacePath, watchSync)
+		workspace.WorkspaceService(workspaceRemoteName, manifestPath, s3Config).Sync(localWorkspacePath, watchSync, studyName)
 	},
 }
 
@@ -70,4 +71,5 @@ func init() {
 	workspaceCmd.PersistentFlags().StringVar(&workspaceS3Secret, "s3Secret", "", "AWS Secret for accessing S3 buckets [Overrides workspaceRemote]")
 	workspaceCmd.PersistentFlags().StringVar(&workspaceS3Region, "s3Region", "", "AWS Region for accessing S3 buckets [Overrides workspaceRemote]")
 	workspaceCmd.PersistentFlags().StringVar(&workspaceS3BucketName, "s3BucketName", "", "Bucket name for accessing S3 buckets [Overrides workspaceRemote]")
+	workspaceCmd.PersistentFlags().StringVarP(&studyName, "studyName", "n", "", "Bucket name for accessing S3 buckets [Overrides workspaceRemote]")
 }
