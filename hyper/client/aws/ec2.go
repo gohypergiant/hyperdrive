@@ -31,7 +31,7 @@ const HYPERDRIVE_NAME_TAG string = "hyperdrive-name"
 const HYPERDRIVE_SECURITY_GROUP_NAME string = "-SecurityGroup"
 
 // TODO, we should get this dynamically
-const version string = "0.0.28"
+const version string = "0.0.29"
 
 func GetInstances(c context.Context, api hyperdriveTypes.EC2DescribeInstancesAPI, input *ec2.DescribeInstancesInput) (*ec2.DescribeInstancesOutput, error) {
 	return api.DescribeInstances(c, input)

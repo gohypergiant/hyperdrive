@@ -29,7 +29,7 @@ func GetNotebookImageOptions(flavor string) types.ImageOptions {
 		}
 	default:
 		return types.ImageOptions{
-			Image:   "ghcr.io/gohypergiant/hyperdrive-jupyter:cpu-basestable",
+			Image:   "ghcr.io/gohypergiant/hyperdrive-jupyter:cpu-localstable",
 			RepoTag: "hyperdrive-jupyter-cpu-local",
 			Profile: "minimal",
 		}
