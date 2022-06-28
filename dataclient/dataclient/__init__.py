@@ -7,12 +7,12 @@ from .controllers.file import FileController
 from .filesystem import FileSystem
 
 
-class DataManagerError(Exception):
+class DataClientError(Exception):
     pass
 
 
 @dataclass
-class DataManager(
+class DataClient(
     DatasetController,
     FileController,
 ):
@@ -37,7 +37,7 @@ class DataManager(
                 self.session_token = os.environ.get("SESSION_TOKEN", self.session_token)
 
             if self.access_key in [None, ""] or self.secret_access_key in [None, ""]:
-                raise DataManagerError(
+                raise DataClientError(
                     "No valid credential profile configured for storage provider: "
                     f"{self.storage_provider}"
                 )

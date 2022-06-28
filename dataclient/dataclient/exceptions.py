@@ -2,7 +2,7 @@ class DatasetError(Exception):
     pass
 
 
-class DataManagerError(Exception):
+class DataClientError(Exception):
     pass
 
 

@@ -11,11 +11,11 @@ def get_version(rel_path):
 
 
 setuptools.setup(
-    name="datamanager",
-    version=get_version("datamanager/__init__.py"),
+    name="dataclient",
+    version=get_version("dataclient/__init__.py"),
     author="@hypergiant",
-    description="Data Manager for Various Cloud Data Services",
-    long_description="Data Manager for Various Cloud Data Services",
+    description="Data Client for Various Cloud Data Services",
+    long_description="Data Client for Various Cloud Data Services",
     long_description_content_type="text/markdown",
     url="https://github.com/gohypergiant",
     project_urls={
