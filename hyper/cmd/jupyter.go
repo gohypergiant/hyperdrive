@@ -61,6 +61,7 @@ var jupyterCmd = &cobra.Command{
 			s3Region).Start(
 			launchOptions,
 			types.EC2StartOptions{InstanceType: ec2InstanceType, AmiId: amiID},
+			getWorkspaceSyncOptions(),
 		)
 	},
 }
@@ -109,6 +110,7 @@ var jupyterRemoteHost = &cobra.Command{
 			s3Region).Start(
 			launchOptions,
 			types.EC2StartOptions{InstanceType: ec2InstanceType, AmiId: amiID},
+			getWorkspaceSyncOptions(),
 		)
 	},
 }
@@ -131,5 +133,12 @@ func init() {
 	jupyterCmd.PersistentFlags().StringVar(&amiID, "amiId", "", "The ID of the AMI")
 	jupyterCmd.PersistentFlags().StringVar(&jupyterApiKey, "apiKey", "", "API key to use for the jupyter instance")
 	jupyterCmd.PersistentFlags().StringVar(&hostPort, "hostPort", "", "Host port for container")
+	jupyterCmd.PersistentFlags().StringVarP(&workspaceRemoteName, "workspaceRemote", "r", "", "name of the jupyter remote to use for syncing")
+	jupyterCmd.PersistentFlags().StringVar(&workspaceS3Profile, "workspaceS3Profile", "", "Named AWS profile to use (from ~/.aws/config) [Overrides workspaceRemote]")
+	jupyterCmd.PersistentFlags().StringVar(&workspaceS3AccessKey, "workspaceS3AccessKey", "", "AWS Access Key for accessing S3 buckets [Overrides workspaceRemote]")
+	jupyterCmd.PersistentFlags().StringVar(&workspaceS3Secret, "workspaceS3Secret", "", "AWS Secret for accessing S3 buckets [Overrides workspaceRemote]")
+	jupyterCmd.PersistentFlags().StringVar(&workspaceS3Token, "workspaceS3Token", "", "AWS Token for accessing S3 buckets [Overrides workspaceRemote]")
+	jupyterCmd.PersistentFlags().StringVar(&workspaceS3Region, "workspaceS3Region", "", "AWS Region for accessing S3 buckets [Overrides workspaceRemote]")
+	jupyterCmd.PersistentFlags().StringVar(&workspaceS3BucketName, "workspaceS3BucketName", "", "Bucket name for accessing S3 buckets [Overrides workspaceRemote]")
 	jupyterStopCmd.Flags().StringVar(&mountPoint, "mountPoint", "", "Mount Point of Jupyter Server to be stopped")
 }

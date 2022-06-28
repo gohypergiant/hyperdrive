@@ -2,6 +2,8 @@ package cmd
 
 import (
 	"fmt"
+	"github.com/gohypergiant/hyperdrive/hyper/services/config"
+	"github.com/gohypergiant/hyperdrive/hyper/services/notebook"
 	"github.com/gohypergiant/hyperdrive/hyper/services/workspace"
 	"github.com/gohypergiant/hyperdrive/hyper/types"
 	"github.com/spf13/cobra"
@@ -11,6 +13,7 @@ var (
 	watchSync           = false
 	localWorkspacePath  string
 	workspaceRemoteName string
+	workspaceS3Token    string
 	studyName           string
 )
 
@@ -23,19 +26,8 @@ var workspaceSyncCmd = &cobra.Command{
 	Short: "sync",
 	Run: func(cmd *cobra.Command, args []string) {
 		//notebook.NotebookService(RemoteName, manifestPath, s3AccessKey, s3AccessSecret, s3Region).List()
-		s3Config := types.S3WorkspacePersistenceRemoteConfiguration{}
-		if workspaceS3IsManuallySpecified() {
-			fmt.Println("Using s3 credentials provided as arguments for workspace sync")
-			s3Config.Secret = workspaceS3Secret
-			s3Config.AccessKey = workspaceS3AccessKey
-			s3Config.Profile = workspaceS3Profile
-			s3Config.BucketName = workspaceS3BucketName
-			s3Config.Region = workspaceS3Region
-		} else {
-
-			fmt.Printf("Using configured remote %s for workspace sync \n")
-		}
-		workspace.WorkspaceService(workspaceRemoteName, manifestPath, s3Config).Sync(localWorkspacePath, watchSync, studyName)
+		workspaceSyncOptions := getWorkspaceSyncOptions()
+		workspace.WorkspaceService(workspaceRemoteName, manifestPath, workspaceSyncOptions.S3Config).Sync(localWorkspacePath, watchSync, studyName)
 	},
 }
 
@@ -58,6 +50,34 @@ func workspaceS3IsManuallySpecified() bool {
 	return false
 }
 
+func getWorkspaceSyncOptions() types.WorkspaceSyncOptions {
+	workpaceSyncOptions := types.WorkspaceSyncOptions{}
+	if studyName == "" {
+		studyName = notebook.GetNotebookName(manifestPath)
+	}
+	workpaceSyncOptions.StudyName = studyName
+
+	if workspaceRemoteName != "" {
+		remoteConfig := config.GetWorkspacePersistenceRemote(workspaceRemoteName)
+		workpaceSyncOptions.S3Config = remoteConfig.S3Configuration
+	}
+
+	if workspaceS3IsManuallySpecified() {
+
+		workpaceSyncOptions.S3Config = types.S3WorkspacePersistenceRemoteConfiguration{
+			Secret:     workspaceS3Secret,
+			AccessKey:  workspaceS3AccessKey,
+			Token:      workspaceS3Token,
+			Profile:    workspaceS3Profile,
+			BucketName: workspaceS3BucketName,
+			Region:     workspaceS3Region,
+		}
+
+	} else {
+		fmt.Println("Warning: workspace sync not configured")
+	}
+	return workpaceSyncOptions
+}
 func init() {
 	rootCmd.AddCommand(workspaceCmd)
 	workspaceCmd.AddCommand(workspaceSyncCmd)
@@ -69,6 +89,7 @@ func init() {
 	workspaceCmd.PersistentFlags().StringVar(&workspaceS3Profile, "s3Profile", "", "Named AWS profile to use (from ~/.aws/config) [Overrides workspaceRemote]")
 	workspaceCmd.PersistentFlags().StringVar(&workspaceS3AccessKey, "s3AccessKey", "", "AWS Access Key for accessing S3 buckets [Overrides workspaceRemote]")
 	workspaceCmd.PersistentFlags().StringVar(&workspaceS3Secret, "s3Secret", "", "AWS Secret for accessing S3 buckets [Overrides workspaceRemote]")
+	workspaceCmd.PersistentFlags().StringVar(&workspaceS3Token, "s3Token", "", "AWS Token for accessing S3 buckets [Overrides workspaceRemote]")
 	workspaceCmd.PersistentFlags().StringVar(&workspaceS3Region, "s3Region", "", "AWS Region for accessing S3 buckets [Overrides workspaceRemote]")
 	workspaceCmd.PersistentFlags().StringVar(&workspaceS3BucketName, "s3BucketName", "", "Bucket name for accessing S3 buckets [Overrides workspaceRemote]")
 	workspaceCmd.PersistentFlags().StringVarP(&studyName, "studyName", "n", "", "Bucket name for accessing S3 buckets [Overrides workspaceRemote]")
