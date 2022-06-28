@@ -39,7 +39,7 @@ func (s LocalNotebookService) Start(jupyterOptions types.JupyterLaunchOptions, _
 	execute := false
 	projectName := manifest.GetProjectName(s.ManifestPath)
 
-	imageOptions := GetNotebookImageOptions("dev") // change to "local" later
+	imageOptions := GetNotebookImageOptions("local")
 	clientImages, _ := dockerClient.ListImages()
 	inImageCache := false
 	awsAccessKeyId := ""
