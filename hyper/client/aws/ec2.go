@@ -5,6 +5,7 @@ import (
 	"encoding/base64"
 	"errors"
 	"fmt"
+	config2 "github.com/gohypergiant/hyperdrive/hyper/services/config"
 	"io/fs"
 	"os"
 	"path"
@@ -30,7 +31,7 @@ const HYPERDRIVE_NAME_TAG string = "hyperdrive-name"
 const HYPERDRIVE_SECURITY_GROUP_NAME string = "-SecurityGroup"
 
 // TODO, we should get this dynamically
-const version string = "0.0.25"
+const version string = "0.0.26"
 
 func GetInstances(c context.Context, api hyperdriveTypes.EC2DescribeInstancesAPI, input *ec2.DescribeInstancesInput) (*ec2.DescribeInstancesOutput, error) {
 	return api.DescribeInstances(c, input)
@@ -524,8 +525,8 @@ func GetInstanceForStudy(studyName string, remoteCfg hyperdriveTypes.EC2ComputeR
 func IsStructureEmpty(i types.Instance) bool {
 	return reflect.DeepEqual(i, types.Instance{})
 }
-func StartJupyterEC2(manifestPath string, remoteCfg hyperdriveTypes.EC2ComputeRemoteConfiguration, ec2Type string, amiID string, jupyterLaunchOptions hyperdriveTypes.JupyterLaunchOptions) {
-	startupScript := getEc2StartScript(version, jupyterLaunchOptions)
+func StartJupyterEC2(manifestPath string, remoteCfg hyperdriveTypes.EC2ComputeRemoteConfiguration, ec2Type string, amiID string, jupyterLaunchOptions hyperdriveTypes.JupyterLaunchOptions, syncOptions hyperdriveTypes.WorkspaceSyncOptions) {
+	startupScript := getEc2StartScript(version, jupyterLaunchOptions, syncOptions)
 	StartServer(manifestPath, remoteCfg, ec2Type, amiID, startupScript, jupyterLaunchOptions.HostPort)
 }
 
@@ -617,7 +618,17 @@ If you want to change the instance size, stop the current running instance:
 	fmt.Println("In a few minutes, you should be able to access jupyter lab at http://" + *ip + ":8888/lab")
 }
 
-func getEc2StartScript(version string, jupyterLaunchOptions hyperdriveTypes.JupyterLaunchOptions) string {
+func getEc2StartScript(version string, jupyterLaunchOptions hyperdriveTypes.JupyterLaunchOptions, syncOptions hyperdriveTypes.WorkspaceSyncOptions) string {
+
+	if syncOptions.S3Config.Profile != "" {
+
+		namedProfileConfig := config2.GetNamedProfileConfig(syncOptions.S3Config.Profile)
+		syncOptions.S3Config.AccessKey = namedProfileConfig.AccessKey
+		syncOptions.S3Config.Secret = namedProfileConfig.Secret
+		syncOptions.S3Config.Token = namedProfileConfig.Token
+	}
+	syncCommand := fmt.Sprintf("hyper workspace sync --s3AccessKey %s --s3Secret %s --s3Region %s --s3Token %s --s3BucketName %s -n %s", syncOptions.S3Config.AccessKey, syncOptions.S3Config.Secret, syncOptions.S3Config.Token, syncOptions.S3Config.Region, syncOptions.S3Config.BucketName, syncOptions.StudyName)
+
 	startupScript := fmt.Sprintf(`
 #!/bin/bash -xe
 #yum update -y
@@ -628,8 +639,9 @@ tar -xvf /tmp/hyperdrive/hyper.tar -C /tmp/hyperdrive
 mv /tmp/hyperdrive/hyper /usr/bin/hyper
 sudo chown ec2-user:ec2-user /tmp/hyperdrive/project
 cd /tmp/hyperdrive/project
+%s &
 sudo -u ec2-user bash -c 'hyper jupyter remoteHost --hostPort %d --apiKey %s &'
-`, version, version, jupyterLaunchOptions.HostPort, jupyterLaunchOptions.APIKey)
+`, version, version, syncCommand, jupyterLaunchOptions.HostPort, jupyterLaunchOptions.APIKey)
 	return startupScript
 }
 func getInstanceIpAddress(instanceId string, remoteCfg hyperdriveTypes.EC2ComputeRemoteConfiguration) (*string, error) {

@@ -11,7 +11,7 @@ type JupyterLaunchOptions struct {
 	S3AwsProfile  string
 }
 type INotebookService interface {
-	Start(jupyterOptions JupyterLaunchOptions, ec2Options EC2StartOptions)
+	Start(jupyterOptions JupyterLaunchOptions, ec2Options EC2StartOptions, syncOptions WorkspaceSyncOptions)
 	List()
 	Stop(mountPointOrIdentifier string)
 	UploadTrainingJobData()

@@ -21,7 +21,7 @@ type RemoteNotebookService struct {
 	ManifestPath        string
 }
 
-func (s RemoteNotebookService) Start(jupyterOptions types.JupyterLaunchOptions, ec2Options types.EC2StartOptions) {
+func (s RemoteNotebookService) Start(jupyterOptions types.JupyterLaunchOptions, ec2Options types.EC2StartOptions, syncOptions types.WorkspaceSyncOptions) {
 
 	imageOptions := GetNotebookImageOptions(jupyterOptions.Flavor)
 	name := GetNotebookName(s.ManifestPath)
@@ -38,7 +38,7 @@ func (s RemoteNotebookService) Start(jupyterOptions types.JupyterLaunchOptions, 
 			s.RemoteConfiguration.EC2Configuration.Region = namedProfileConfig.Region
 			s.RemoteConfiguration.EC2Configuration.Token = namedProfileConfig.Token
 		}
-		aws.StartJupyterEC2(s.ManifestPath, s.RemoteConfiguration.EC2Configuration, ec2Options.InstanceType, ec2Options.AmiId, jupyterOptions)
+		aws.StartJupyterEC2(s.ManifestPath, s.RemoteConfiguration.EC2Configuration, ec2Options.InstanceType, ec2Options.AmiId, jupyterOptions, syncOptions)
 	} else {
 		fmt.Println("Not Implemented")
 	}

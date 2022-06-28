@@ -30,7 +30,7 @@ type LocalNotebookService struct {
 	S3Credentials types.S3Credentials
 }
 
-func (s LocalNotebookService) Start(jupyterOptions types.JupyterLaunchOptions, _ types.EC2StartOptions) {
+func (s LocalNotebookService) Start(jupyterOptions types.JupyterLaunchOptions, _ types.EC2StartOptions, _ types.WorkspaceSyncOptions) {
 
 	dockerClient := cli.NewDockerClient()
 	cwdPath, _ := os.Getwd()
