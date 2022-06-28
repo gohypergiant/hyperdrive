@@ -3,6 +3,6 @@
 ################################################################################
 
 ############################## CPU BASE IMAGE ##################################
-FROM dkr.tools.hg-prototypes.com/dockerhub-proxy/jupyter/scipy-notebook AS cpu-base
+FROM dkr.tools.hg-prototypes.com/dockerhub-proxy/jupyter/pyspark-notebook:spark-3.1.2 AS cpu-base
 
 RUN pip install --no-cache-dir torch torchvision torchaudio torchviz
