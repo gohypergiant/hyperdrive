@@ -14,8 +14,17 @@ type S3WorkspaceService struct {
 	S3Configuration types.S3WorkspacePersistenceRemoteConfiguration
 }
 
-func (s S3WorkspaceService) Sync(localPath string, watch bool, studyName string) {
+func (s S3WorkspaceService) Pull(localPath string, studyName string) {
 
+	studyName, localPath, err := s.determinePathAndName(localPath, studyName)
+	if err != nil {
+		fmt.Println(err)
+		return
+	}
+	s.pull(localPath, studyName)
+}
+
+func (s S3WorkspaceService) determinePathAndName(localPath string, studyName string) (string, string, error) {
 	if studyName == "" {
 		studyName = notebook.GetNotebookName(s.ManifestPath)
 	}
@@ -23,10 +32,18 @@ func (s S3WorkspaceService) Sync(localPath string, watch bool, studyName string)
 		cwd, err := os.Getwd()
 		if err != nil {
 			fmt.Println(err)
-			os.Exit(1)
-			return
+			return "", "", err
 		}
 		localPath = cwd
+	}
+	return studyName, localPath, nil
+}
+func (s S3WorkspaceService) Sync(localPath string, watch bool, studyName string) {
+
+	studyName, localPath, err := s.determinePathAndName(localPath, studyName)
+	if err != nil {
+		fmt.Println(err)
+		return
 	}
 	if watch {
 		s.watchSync(localPath, studyName)
@@ -34,6 +51,13 @@ func (s S3WorkspaceService) Sync(localPath string, watch bool, studyName string)
 	} else {
 		s.syncOnce(localPath, studyName)
 	}
+}
+func (s S3WorkspaceService) pull(localPath string, studyName string) {
+	remotePath := s.GetS3Url(studyName)
+	fmt.Println(remotePath)
+
+	fmt.Println("Pulling from remote")
+	aws.SyncDirectory(s.S3Configuration, remotePath, localPath)
 }
 func (s S3WorkspaceService) syncOnce(localPath string, studyName string) {
 	remotePath := s.GetS3Url(studyName)

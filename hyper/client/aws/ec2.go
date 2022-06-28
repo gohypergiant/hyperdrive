@@ -31,7 +31,7 @@ const HYPERDRIVE_NAME_TAG string = "hyperdrive-name"
 const HYPERDRIVE_SECURITY_GROUP_NAME string = "-SecurityGroup"
 
 // TODO, we should get this dynamically
-const version string = "0.0.26"
+const version string = "0.0.27"
 
 func GetInstances(c context.Context, api hyperdriveTypes.EC2DescribeInstancesAPI, input *ec2.DescribeInstancesInput) (*ec2.DescribeInstancesOutput, error) {
 	return api.DescribeInstances(c, input)
@@ -627,7 +627,9 @@ func getEc2StartScript(version string, jupyterLaunchOptions hyperdriveTypes.Jupy
 		syncOptions.S3Config.Secret = namedProfileConfig.Secret
 		syncOptions.S3Config.Token = namedProfileConfig.Token
 	}
-	syncCommand := fmt.Sprintf("hyper workspace sync --s3AccessKey %s --s3Secret %s --s3Region %s --s3Token %s --s3BucketName %s -n %s", syncOptions.S3Config.AccessKey, syncOptions.S3Config.Secret, syncOptions.S3Config.Token, syncOptions.S3Config.Region, syncOptions.S3Config.BucketName, syncOptions.StudyName)
+	syncParameters := fmt.Sprintf("--s3AccessKey %s --s3Secret %s --s3Token %s --s3Region %s --s3BucketName %s -n %s", syncOptions.S3Config.AccessKey, syncOptions.S3Config.Secret, syncOptions.S3Config.Token, syncOptions.S3Config.Region, syncOptions.S3Config.BucketName, syncOptions.StudyName)
+	syncCommand := fmt.Sprintf("hyper workspace sync %s", syncParameters)
+	pullCommand := fmt.Sprintf("hyper workspace pull %s", syncParameters)
 
 	startupScript := fmt.Sprintf(`
 #!/bin/bash -xe
@@ -639,9 +641,10 @@ tar -xvf /tmp/hyperdrive/hyper.tar -C /tmp/hyperdrive
 mv /tmp/hyperdrive/hyper /usr/bin/hyper
 sudo chown ec2-user:ec2-user /tmp/hyperdrive/project
 cd /tmp/hyperdrive/project
+%s
 %s &
 sudo -u ec2-user bash -c 'hyper jupyter remoteHost --hostPort %d --apiKey %s &'
-`, version, version, syncCommand, jupyterLaunchOptions.HostPort, jupyterLaunchOptions.APIKey)
+`, version, version, pullCommand, syncCommand, jupyterLaunchOptions.HostPort, jupyterLaunchOptions.APIKey)
 	return startupScript
 }
 func getInstanceIpAddress(instanceId string, remoteCfg hyperdriveTypes.EC2ComputeRemoteConfiguration) (*string, error) {

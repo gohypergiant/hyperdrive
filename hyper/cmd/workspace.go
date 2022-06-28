@@ -30,6 +30,15 @@ var workspaceSyncCmd = &cobra.Command{
 		workspace.WorkspaceService(workspaceRemoteName, manifestPath, workspaceSyncOptions.S3Config).Sync(localWorkspacePath, watchSync, studyName)
 	},
 }
+var workspacePullCmd = &cobra.Command{
+	Use:   "pull",
+	Short: "pull",
+	Run: func(cmd *cobra.Command, args []string) {
+		//notebook.NotebookService(RemoteName, manifestPath, s3AccessKey, s3AccessSecret, s3Region).List()
+		workspaceSyncOptions := getWorkspaceSyncOptions()
+		workspace.WorkspaceService(workspaceRemoteName, manifestPath, workspaceSyncOptions.S3Config).Pull(localWorkspacePath, studyName)
+	},
+}
 
 func workspaceS3IsManuallySpecified() bool {
 	if workspaceRemoteName != "" {
@@ -81,9 +90,11 @@ func getWorkspaceSyncOptions() types.WorkspaceSyncOptions {
 func init() {
 	rootCmd.AddCommand(workspaceCmd)
 	workspaceCmd.AddCommand(workspaceSyncCmd)
+	workspaceCmd.AddCommand(workspacePullCmd)
 
 	workspaceSyncCmd.Flags().BoolVarP(&watchSync, "watch", "w", false, "Run sync in watch mode")
 	workspaceSyncCmd.Flags().StringVarP(&localWorkspacePath, "localWorkspacePath", "l", "", "Local workspace path to sync")
+	workspacePullCmd.Flags().StringVarP(&localWorkspacePath, "localWorkspacePath", "l", "", "Local workspace path to sync")
 
 	workspaceCmd.PersistentFlags().StringVarP(&workspaceRemoteName, "remote", "r", "", "name of the workspace remote to use for syncing")
 	workspaceCmd.PersistentFlags().StringVar(&workspaceS3Profile, "s3Profile", "", "Named AWS profile to use (from ~/.aws/config) [Overrides workspaceRemote]")
