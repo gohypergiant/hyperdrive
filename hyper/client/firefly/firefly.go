@@ -6,7 +6,6 @@ import (
 	"encoding/base64"
 	"encoding/json"
 	"fmt"
-	"github.com/gohypergiant/hyperdrive/hyper/services/config"
 	"github.com/gohypergiant/hyperdrive/hyper/types"
 	"io"
 	"io/ioutil"
@@ -15,7 +14,7 @@ import (
 	"strings"
 )
 
-func ListServers(configuration config.FireflyRemoteConfiguration) types.ListServersResponse {
+func ListServers(configuration types.FireflyComputeRemoteConfiguration) types.ListServersResponse {
 	rootUrl := GetHubAPIRoot(configuration)
 	endpoint := fmt.Sprintf("%s/users/%s", rootUrl, configuration.Username)
 	token := fmt.Sprintf("token %s", configuration.HubToken)
@@ -42,7 +41,7 @@ func ListServers(configuration config.FireflyRemoteConfiguration) types.ListServ
 	return listServerResponse
 }
 
-func StartServer(configuration config.FireflyRemoteConfiguration, name string, profile string) {
+func StartServer(configuration types.FireflyComputeRemoteConfiguration, name string, profile string) {
 
 	rootUrl := GetHubAPIRoot(configuration)
 	endpoint := fmt.Sprintf("%s/users/%s/servers/%s", rootUrl, configuration.Username, name)
@@ -79,7 +78,7 @@ func StartServer(configuration config.FireflyRemoteConfiguration, name string, p
 	notebookUrl := fmt.Sprintf("%s/user/%s/%s", rootUrl, configuration.Username, name)
 	fmt.Println(fmt.Sprintf("Your notebook should be available at %s shortly", notebookUrl))
 }
-func StopServer(configuration config.FireflyRemoteConfiguration, name string) {
+func StopServer(configuration types.FireflyComputeRemoteConfiguration, name string) {
 
 	rootUrl := GetHubAPIRoot(configuration)
 	endpoint := fmt.Sprintf("%s/users/%s/servers/%s", rootUrl, configuration.Username, name)
@@ -127,13 +126,13 @@ func GetEncodedFile(path string) string {
 	//fmt.Println("ENCODED: " + encoded)
 	return encoded
 }
-func GetHubAPIRoot(configuration config.FireflyRemoteConfiguration) string {
+func GetHubAPIRoot(configuration types.FireflyComputeRemoteConfiguration) string {
 	return fmt.Sprintf("%s/hub/api", configuration.Url)
 }
-func GetNotebookAPIRoot(configuration config.FireflyRemoteConfiguration, notebookName string) string {
+func GetNotebookAPIRoot(configuration types.FireflyComputeRemoteConfiguration, notebookName string) string {
 	return fmt.Sprintf("%s/user/%s/%s/api", configuration.Url, configuration.Username, notebookName)
 }
-func MkDir(configuration config.FireflyRemoteConfiguration, notebookName string, remotePath string) {
+func MkDir(configuration types.FireflyComputeRemoteConfiguration, notebookName string, remotePath string) {
 
 	// Recursively create parents directories first
 	splitPath := strings.Split(remotePath, "/")
@@ -166,7 +165,7 @@ func MkDir(configuration config.FireflyRemoteConfiguration, notebookName string,
 	//fmt.Println(string(body))
 }
 
-func UploadData(configuration config.FireflyRemoteConfiguration, notebookName string, localPath string, remotePath string) {
+func UploadData(configuration types.FireflyComputeRemoteConfiguration, notebookName string, localPath string, remotePath string) {
 
 	//Create parent directory
 	splitPath := strings.Split(remotePath, "/")
@@ -207,7 +206,7 @@ const (
 	TrainingComplete types.TrainingStatus = "completed"
 )
 
-func GetTrainingStatus(configuration config.FireflyRemoteConfiguration, notebookName string, studyDir string) types.TrainingStatus {
+func GetTrainingStatus(configuration types.FireflyComputeRemoteConfiguration, notebookName string, studyDir string) types.TrainingStatus {
 	startedPath := fmt.Sprintf("%s/STARTED", studyDir)
 	completedPath := fmt.Sprintf("%s/COMPLETED", studyDir)
 	if FileExists(configuration, notebookName, startedPath) {
@@ -218,7 +217,7 @@ func GetTrainingStatus(configuration config.FireflyRemoteConfiguration, notebook
 	return TrainingPending
 }
 
-func FileExists(configuration config.FireflyRemoteConfiguration, notebookName string, filepath string) bool {
+func FileExists(configuration types.FireflyComputeRemoteConfiguration, notebookName string, filepath string) bool {
 	rootUrl := GetNotebookAPIRoot(configuration, notebookName)
 	endpoint := fmt.Sprintf("%s/contents%s?content=0", rootUrl, filepath)
 	token := fmt.Sprintf("token %s", configuration.HubToken)
@@ -240,7 +239,7 @@ func FileExists(configuration config.FireflyRemoteConfiguration, notebookName st
 	return false
 }
 
-func DownloadFile(configuration config.FireflyRemoteConfiguration, notebookName string, filepath string) string {
+func DownloadFile(configuration types.FireflyComputeRemoteConfiguration, notebookName string, filepath string) string {
 	rootUrl := GetNotebookAPIRoot(configuration, notebookName)
 	endpoint := fmt.Sprintf("%s/contents%s?content=1&format=base64", rootUrl, filepath)
 	token := fmt.Sprintf("token %s", configuration.HubToken)
