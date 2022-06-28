@@ -27,7 +27,7 @@ hyperdrive
 ├──LICENSE
 ├──Makefile
 ├──README.md
-├──datamanager
+├──dataclient
 ├──docker
 ├──executor
 ├──hyper        # NAVIGATE TO THIS DIRECTORY

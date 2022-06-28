@@ -39,11 +39,11 @@ def spark_decorator(func, spark):
 
 @dataclass
 class SparkController:
-    def __init__(self, datamanager, decorate=True):
+    def __init__(self, dataclient, decorate=True):
         if decorate:
             self.decorate_spark_methods(pyspark.sql.readwriter.DataFrameReader)
             self.decorate_spark_methods(pyspark.sql.readwriter.DataFrameWriter)
-        self.datamanager = datamanager
+        self.dataclient = dataclient
         self.configure_spark()
 
     def decorate_spark_methods(self, spark_class):
@@ -70,9 +70,9 @@ class SparkController:
     def configure_spark(self):
         self.root_path = "s3a://" + volume_name + "/"
 
-        access_key = self.datamanager.access_key
-        secret_key = self.datamanager.secret_access_key
-        volume_region = "s3-" + self.datamanager.volume_region + ".amazonaws.com"
+        access_key = self.dataclient.access_key
+        secret_key = self.dataclient.secret_access_key
+        volume_region = "s3-" + self.dataclient.volume_region + ".amazonaws.com"
 
         self.dataclient.spark._sc._jsc.hadoopConfiguration().set(
             "fs.s3a.access.key", access_key
