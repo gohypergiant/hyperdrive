@@ -1,8 +1,8 @@
 {
   "schema_version": "pre-alpha",
-  "remotes": {
+  "compute_remotes": {
     "dev": {
-      "remote_type": "firefly",
+      "type": "firefly",
       "firefly": {
         "url": "http://localhost:8000",
         "hub_token": "foo",
@@ -10,9 +10,21 @@
       }
     },
     "personal-aws": {
-      "remote_type": "ec2",
+      "type": "ec2",
       "ec2": {
         "profile": "hyperdrive",
+        "access_key": "",
+        "secret": "",
+        "region": ""
+      }
+    }
+  },
+  "workspace_remotes": {
+    "dev": {
+      "type": "s3",
+      "s3": {
+        "profile": "hyperdrive",
+        "bucket_name": "hyperdrive",
         "access_key": "",
         "secret": "",
         "region": ""
