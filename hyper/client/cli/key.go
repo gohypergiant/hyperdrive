@@ -14,5 +14,5 @@ func generateFastAppAPIKey() string {
 		os.Exit(1)
     }
 
-	return fastAppApiKey
+    return fastAppApiKey
 }
