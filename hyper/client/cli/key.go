@@ -7,7 +7,7 @@ import (
     "github.com/sethvargo/go-password/password"
 )
 
-func getFastAppAPIKey() string {
+func generateFastAppAPIKey() string {
     fastAppApiKey, err := password.Generate(64, 10, 0, true, true)
     if err != nil {
         fmt.Println(err)
