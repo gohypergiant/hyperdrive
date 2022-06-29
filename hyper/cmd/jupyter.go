@@ -39,11 +39,25 @@ var (
 	jupyterApiKey   string
 )
 
+func getPort(isRemote bool) int {
+
+	if hostPort == "" && isRemote {
+
+		hostPort = "8888"
+	}
+	port, err := strconv.Atoi(hostPort)
+	if err != nil {
+		log.Fatal("Couldn't parse port")
+	}
+	return port
+}
+
 // jupyterCmd represents the jupyter command
 var jupyterCmd = &cobra.Command{
 	Use:   "jupyter",
 	Short: "Run a local jupyter server",
 	Run: func(cmd *cobra.Command, args []string) {
+
 		launchOptions := types.JupyterLaunchOptions{
 			Flavor:        image,
 			PullImage:     pullImage,
@@ -52,6 +66,7 @@ var jupyterCmd = &cobra.Command{
 			RestartAlways: false,
 			APIKey:        jupyterApiKey,
 			S3AwsProfile:  s3AwsProfile,
+			HostPort:      getPort(RemoteName != ""),
 		}
 		notebook.NotebookService(
 			RemoteName,
@@ -85,19 +100,12 @@ var jupyterRemoteHost = &cobra.Command{
 	Use:   "remoteHost",
 	Short: "start server on remote host",
 	Run: func(cmd *cobra.Command, args []string) {
-		if hostPort == "" {
-			hostPort = "8888"
-		}
-		port, err := strconv.Atoi(hostPort)
-		if err != nil {
-			log.Fatal("Couldn't parse port")
-		}
 		launchOptions := types.JupyterLaunchOptions{
 			Flavor:        image,
 			PullImage:     pullImage,
 			LaunchBrowser: jupyterBrowser,
 			Requirements:  requirements,
-			HostPort:      port,
+			HostPort:      getPort(true),
 			RestartAlways: true,
 			APIKey:        jupyterApiKey,
 			S3AwsProfile:  s3AwsProfile,
