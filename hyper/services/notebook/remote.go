@@ -17,19 +17,19 @@ import (
 const jobsDir string = "_jobs"
 
 type RemoteNotebookService struct {
-	RemoteConfiguration config.RemoteConfiguration
+	RemoteConfiguration types.ComputeRemoteConfiguration
 	ManifestPath        string
 }
 
-func (s RemoteNotebookService) Start(jupyterOptions types.JupyterLaunchOptions, ec2Options types.EC2StartOptions) {
+func (s RemoteNotebookService) Start(jupyterOptions types.JupyterLaunchOptions, ec2Options types.EC2StartOptions, syncOptions types.WorkspaceSyncOptions) {
 
 	imageOptions := GetNotebookImageOptions(jupyterOptions.Flavor)
 	name := GetNotebookName(s.ManifestPath)
 	fmt.Println("Starting remote notebook instance")
 	jupyterOptions.APIKey = s.RemoteConfiguration.JupyterAPIKey
-	if s.RemoteConfiguration.Type == config.Firefly {
+	if s.RemoteConfiguration.Type == types.Firefly {
 		firefly.StartServer(s.RemoteConfiguration.FireflyConfiguration, name, imageOptions.Profile)
-	} else if s.RemoteConfiguration.Type == config.EC2 {
+	} else if s.RemoteConfiguration.Type == types.EC2 {
 		if jupyterOptions.S3AwsProfile != "" {
 			fmt.Printf("Using AWS named profile '%s' to retrieve AWS creds\n", jupyterOptions.S3AwsProfile)
 			namedProfileConfig := config.GetNamedProfileConfig(jupyterOptions.S3AwsProfile)
@@ -38,21 +38,21 @@ func (s RemoteNotebookService) Start(jupyterOptions types.JupyterLaunchOptions, 
 			s.RemoteConfiguration.EC2Configuration.Region = namedProfileConfig.Region
 			s.RemoteConfiguration.EC2Configuration.Token = namedProfileConfig.Token
 		}
-		aws.StartJupyterEC2(s.ManifestPath, s.RemoteConfiguration.EC2Configuration, ec2Options.InstanceType, ec2Options.AmiId, jupyterOptions)
+		aws.StartJupyterEC2(s.ManifestPath, s.RemoteConfiguration.EC2Configuration, ec2Options.InstanceType, ec2Options.AmiId, jupyterOptions, syncOptions)
 	} else {
 		fmt.Println("Not Implemented")
 	}
 }
 func (s RemoteNotebookService) List() {
 
-	if s.RemoteConfiguration.Type == config.Firefly {
+	if s.RemoteConfiguration.Type == types.Firefly {
 		resp := firefly.ListServers(s.RemoteConfiguration.FireflyConfiguration)
 
 		for name, info := range resp.Servers {
 			fmt.Println(fmt.Sprintf("%s:", name))
 			fmt.Println("URL: ", info.URL)
 		}
-	} else if s.RemoteConfiguration.Type == config.EC2 {
+	} else if s.RemoteConfiguration.Type == types.EC2 {
 		aws.ListServers(s.RemoteConfiguration.EC2Configuration)
 	} else {
 		fmt.Println("Not Implemented")
@@ -60,9 +60,9 @@ func (s RemoteNotebookService) List() {
 }
 func (s RemoteNotebookService) Stop(identifier string) {
 	name := GetNotebookName(s.ManifestPath)
-	if s.RemoteConfiguration.Type == config.Firefly {
+	if s.RemoteConfiguration.Type == types.Firefly {
 		firefly.StopServer(s.RemoteConfiguration.FireflyConfiguration, name)
-	} else if s.RemoteConfiguration.Type == config.EC2 {
+	} else if s.RemoteConfiguration.Type == types.EC2 {
 		aws.StopServer(s.ManifestPath, s.RemoteConfiguration.EC2Configuration)
 	} else {
 		fmt.Println("Not Implemented")
