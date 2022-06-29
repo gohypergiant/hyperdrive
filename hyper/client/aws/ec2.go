@@ -526,7 +526,7 @@ func IsStructureEmpty(i types.Instance) bool {
 	return reflect.DeepEqual(i, types.Instance{})
 }
 func StartJupyterEC2(manifestPath string, remoteCfg hyperdriveTypes.EC2ComputeRemoteConfiguration, ec2Type string, amiID string, jupyterLaunchOptions hyperdriveTypes.JupyterLaunchOptions, syncOptions hyperdriveTypes.WorkspaceSyncOptions) {
-	startupScript := getEc2StartScript(version, jupyterLaunchOptions, syncOptions)
+	startupScript := getEc2StartScript(version, jupyterLaunchOptions, syncOptions, remoteCfg)
 	StartServer(manifestPath, remoteCfg, ec2Type, amiID, startupScript, jupyterLaunchOptions.HostPort)
 }
 
@@ -618,7 +618,7 @@ If you want to change the instance size, stop the current running instance:
 	fmt.Println("In a few minutes, you should be able to access jupyter lab at http://" + *ip + ":8888/lab")
 }
 
-func getEc2StartScript(version string, jupyterLaunchOptions hyperdriveTypes.JupyterLaunchOptions, syncOptions hyperdriveTypes.WorkspaceSyncOptions) string {
+func getEc2StartScript(version string, jupyterLaunchOptions hyperdriveTypes.JupyterLaunchOptions, syncOptions hyperdriveTypes.WorkspaceSyncOptions, remoteCfg hyperdriveTypes.EC2ComputeRemoteConfiguration) string {
 
 	if syncOptions.S3Config.Profile != "" {
 
@@ -630,6 +630,7 @@ func getEc2StartScript(version string, jupyterLaunchOptions hyperdriveTypes.Jupy
 	syncParameters := fmt.Sprintf("--s3AccessKey %s --s3Secret %s --s3Token %s --s3Region %s --s3BucketName %s -n %s", syncOptions.S3Config.AccessKey, syncOptions.S3Config.Secret, syncOptions.S3Config.Token, syncOptions.S3Config.Region, syncOptions.S3Config.BucketName, syncOptions.StudyName)
 	syncCommand := fmt.Sprintf("hyper workspace sync %s", syncParameters)
 	pullCommand := fmt.Sprintf("hyper workspace pull %s", syncParameters)
+	s3Parameters := fmt.Sprintf("--s3AccessKey %s --s3AccessSecret %s --s3Region %s", remoteCfg.AccessKey, remoteCfg.Secret, remoteCfg.Region)
 
 	startupScript := fmt.Sprintf(`
 #!/bin/bash -xe
@@ -643,8 +644,8 @@ sudo chown ec2-user:ec2-user /tmp/hyperdrive/project
 cd /tmp/hyperdrive/project
 %s
 %s &
-sudo -u ec2-user bash -c 'hyper jupyter remoteHost --hostPort %d --apiKey %s &'
-`, version, version, pullCommand, syncCommand, jupyterLaunchOptions.HostPort, jupyterLaunchOptions.APIKey)
+sudo -u ec2-user bash -c 'hyper jupyter remoteHost --hostPort %d --apiKey %s %s &'
+`, version, version, pullCommand, syncCommand, jupyterLaunchOptions.HostPort, jupyterLaunchOptions.APIKey, s3Parameters)
 	return startupScript
 }
 func getInstanceIpAddress(instanceId string, remoteCfg hyperdriveTypes.EC2ComputeRemoteConfiguration) (*string, error) {
