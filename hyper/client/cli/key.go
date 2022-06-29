@@ -13,6 +13,5 @@ func generateFastAppAPIKey() string {
         fmt.Println(err)
 		os.Exit(1)
     }
-
     return fastAppApiKey
 }
