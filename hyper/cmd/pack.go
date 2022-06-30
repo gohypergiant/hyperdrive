@@ -85,23 +85,23 @@ var stopCmd = &cobra.Command{
 		hyperpackage.HyperpackageService(hyperpackagePath, manifestPath).Stop(hyperpackageContainerName)
 	},
 }
-var hyperpackageCmd = &cobra.Command{
+var packCmd = &cobra.Command{
 	Use:   "pack",
 	Short: "",
 }
 
 func init() {
-	rootCmd.AddCommand(hyperpackageCmd)
-	hyperpackageCmd.AddCommand(runCmd)
-	hyperpackageCmd.AddCommand(buildCmd)
+	rootCmd.AddCommand(packCmd)
+	packCmd.AddCommand(runCmd)
+	packCmd.AddCommand(buildCmd)
 	importCmd.Flags().StringVar(&importModelFileName, "filename", "", "import model filename")
 	importCmd.Flags().StringVar(&modelFlavor, "modelFlavor", "sklearn", "model flavor")
 	importCmd.Flags().StringVar(&trainShape, "shape", "", "Training shape of data, specifically the number of columns.")
-	hyperpackageCmd.AddCommand(importCmd)
-	hyperpackageCmd.AddCommand(listCmd)
+	packCmd.AddCommand(importCmd)
+	packCmd.AddCommand(listCmd)
 	stopCmd.Flags().StringVar(&hyperpackageContainerName, "hyperpackagePath", "", "name of container to stop")
-	hyperpackageCmd.AddCommand(stopCmd)
-	hyperpackageCmd.PersistentFlags().StringVarP(&hyperpackagePath, "hyperpackagePath", "p", "", "path to hyperpackage.zip")
-	hyperpackageCmd.PersistentFlags().StringVarP(&dockerfileSavePath, "dockerfileSavePath", "o", "", "path to save Dockerfile")
-	hyperpackageCmd.PersistentFlags().StringArrayVarP(&imageTags, "imageTags", "t", []string{}, "tag for resulting docker image")
+	packCmd.AddCommand(stopCmd)
+	packCmd.PersistentFlags().StringVarP(&hyperpackagePath, "hyperpackagePath", "p", "", "path to hyperpackage.zip")
+	packCmd.PersistentFlags().StringVarP(&dockerfileSavePath, "dockerfileSavePath", "o", "", "path to save Dockerfile")
+	packCmd.PersistentFlags().StringArrayVarP(&imageTags, "imageTags", "t", []string{}, "tag for resulting docker image")
 }
