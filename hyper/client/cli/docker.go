@@ -181,8 +181,8 @@ RUN unzip ./study.hyperpackage.zip -d /hyperpackage
 
 FROM ghcr.io/gohypergiant/gohypergiant/mlsdk-fast-app:stable
 COPY --from=builder /hyperpackage /hyperpackage
-ENV fastkey=%s
-RUN echo "*** Fast App API key is: $fastkey ***"
+ENV FASTKEY=%s
+RUN echo "*** Fast App API key is: $FASTKEY ***"
 `, fastAppApiKey)
 	}
 
