@@ -9,10 +9,18 @@ type IHyperpackageService interface {
 	Stop(name string)
 }
 
-func HyperpackageService(hyperpackagePath string, manifestPath string) IHyperpackageService {
-	return LocalHyperpackageService{
-		HyperpackagePath: hyperpackagePath,
-		ManifestPath:     manifestPath,
+func HyperpackageService(hyperpackagePath string, manifestPath string, remoteName string) IHyperpackageService {
+
+	if remoteName == "" {
+		return LocalHyperpackageService{
+			HyperpackagePath: hyperpackagePath,
+			ManifestPath:     manifestPath,
+		}
+	} else {
+		return RemoteHyperpackageService{
+			HyperpackagePath: hyperpackagePath,
+			ManifestPath:     manifestPath,
+		}
 	}
 }
 

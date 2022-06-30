@@ -32,7 +32,7 @@ var runCmd = &cobra.Command{
 			dockerfileSavePath = fmt.Sprintf("./%s.Dockerfile", studyName)
 		}
 		fmt.Println("🚀 Building and Running Hyperpack")
-		hyperpackage.HyperpackageService(hyperpackagePath, manifestPath).BuildAndRun(dockerfileSavePath, imageTags)
+		hyperpackage.HyperpackageService(hyperpackagePath, manifestPath, computeRemoteName).BuildAndRun(dockerfileSavePath, imageTags)
 	},
 }
 
@@ -49,7 +49,7 @@ var buildCmd = &cobra.Command{
 			dockerfileSavePath = fmt.Sprintf("./%s.Dockerfile", studyName)
 		}
 		fmt.Println("🚀 Building hyperpackage %s. Dockerfile will be saved to ", dockerfileSavePath)
-		hyperpackage.HyperpackageService(hyperpackagePath, manifestPath).Build(dockerfileSavePath, imageTags)
+		hyperpackage.HyperpackageService(hyperpackagePath, manifestPath, computeRemoteName).Build(dockerfileSavePath, imageTags)
 	},
 }
 
@@ -59,7 +59,7 @@ var importCmd = &cobra.Command{
 	Short: "imports a trained model",
 	Run: func(cmd *cobra.Command, args []string) {
 		fmt.Println("🚀 Importing a trained model...")
-		hyperpackage.HyperpackageService(hyperpackagePath, manifestPath).Import(importModelFileName, modelFlavor, trainShape)
+		hyperpackage.HyperpackageService(hyperpackagePath, manifestPath, computeRemoteName).Import(importModelFileName, modelFlavor, trainShape)
 		fmt.Println("Importing complete.")
 	},
 }
@@ -69,7 +69,7 @@ var listCmd = &cobra.Command{
 	Use:   "list",
 	Short: "lists hyperpackage containers that are currently running",
 	Run: func(cmd *cobra.Command, args []string) {
-		hyperpackage.HyperpackageService(hyperpackagePath, manifestPath).List()
+		hyperpackage.HyperpackageService(hyperpackagePath, manifestPath, computeRemoteName).List()
 	},
 }
 
@@ -82,7 +82,7 @@ var stopCmd = &cobra.Command{
 		if hyperpackageContainerName == "" {
 			hyperpackageContainerName = studyName
 		}
-		hyperpackage.HyperpackageService(hyperpackagePath, manifestPath).Stop(hyperpackageContainerName)
+		hyperpackage.HyperpackageService(hyperpackagePath, manifestPath, computeRemoteName).Stop(hyperpackageContainerName)
 	},
 }
 var hyperpackageCmd = &cobra.Command{
