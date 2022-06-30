@@ -86,7 +86,7 @@ var stopCmd = &cobra.Command{
 	},
 }
 var hyperpackageCmd = &cobra.Command{
-	Use:   "hyperpackage",
+	Use:   "pack",
 	Short: "",
 }
 
