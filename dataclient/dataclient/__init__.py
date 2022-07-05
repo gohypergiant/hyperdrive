@@ -6,6 +6,8 @@ from .controllers.dataset import DatasetController
 from .controllers.file import FileController
 from .filesystem import FileSystem
 
+CWD = os.getcwd()
+
 
 class DataClientError(Exception):
     pass
@@ -17,7 +19,7 @@ class DataClient(
     FileController,
 ):
     storage_provider: str = "local"
-    volume_name: str = "/tmp"
+    volume_name: str = CWD
     volume_region: str = None
     access_key: str = field(repr=False, default=None)
     secret_access_key: str = field(repr=False, default=None)
