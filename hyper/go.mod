@@ -34,6 +34,7 @@ require (
 	github.com/aws/aws-sdk-go-v2/service/sso v1.11.10 // indirect
 	github.com/aws/aws-sdk-go-v2/service/sts v1.16.8 // indirect
 	github.com/aws/smithy-go v1.12.0 // indirect
+	github.com/bramvdbogaerde/go-scp v1.2.0 // indirect
 	github.com/chzyer/readline v0.0.0-20180603132655-2972be24d48e // indirect
 	github.com/containerd/cgroups v1.0.3 // indirect
 	github.com/docker/go-units v0.4.0 // indirect
