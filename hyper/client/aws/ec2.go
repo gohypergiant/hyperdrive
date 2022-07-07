@@ -477,7 +477,7 @@ func getOrCreateKeyPair(client *ec2.Client, projectName string) string {
 			}
 
 		} else {
-			_, publicKeyBytes = ssh.ParsePrivateKey(keyName)
+			publicKeyBytes = ssh.GetPublicKeyBytes(keyName)
 		}
 		os.Chdir(originalDir)
 

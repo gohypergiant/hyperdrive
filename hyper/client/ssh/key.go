@@ -51,7 +51,7 @@ func CreateRSAKeyPair(keyName string) ([]byte, []byte) {
 
 	return privateKeyBytes, publicKeyBytes
 }
-func ParsePrivateKey(keyName string) ([]byte, []byte) {
+func ParsePrivateKey(keyName string) *rsa.PrivateKey {
 
 	privateKeyBytes, err := ioutil.ReadFile(keyName)
 	if err != nil {
@@ -68,7 +68,22 @@ func ParsePrivateKey(keyName string) ([]byte, []byte) {
 		panic("error parsing private key " + err.Error())
 	}
 
+	return privateKey
+}
+
+func GetPublicKeyBytes(privateKeyName string) (, []byte) {
+	privateKey := ParsePrivateKey(privateKeyName)
+
 	publicKeyBytes := GetPublicKeyBytes(&privateKey.PublicKey)
 
-	return privateKeyBytes, publicKeyBytes
+	return publicKeyBytes
+}
+func GetPublicKeyFromPrivateKey(privateKeyName string) ssh.PublicKey {
+	privateKey := ParsePrivateKey(privateKeyName)
+
+	publicKey, err := ssh.NewPublicKey(&privateKey.PublicKey)
+	if err != nil {
+		panic("error getting public key " + err.Error())
+	}
+	return publicKey
 }
