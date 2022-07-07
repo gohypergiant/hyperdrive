@@ -71,7 +71,7 @@ func ParsePrivateKey(keyName string) *rsa.PrivateKey {
 	return privateKey
 }
 
-func GetPublicKeyBytes(privateKeyName string) (, []byte) {
+func GetPublicKeyBytes(privateKeyName string) []byte {
 	privateKey := ParsePrivateKey(privateKeyName)
 
 	publicKeyBytes := MarshalPublicKey(&privateKey.PublicKey)
