@@ -47,7 +47,7 @@ func CreateRSAKeyPair(keyName string) ([]byte, []byte) {
 	}
 
 	privateKeyBytes := GetPrivateKeyBytes(privateKey)
-	publicKeyBytes := GetPublicKeyBytes(&privateKey.PublicKey)
+	publicKeyBytes := MarshalPublicKey(&privateKey.PublicKey)
 
 	return privateKeyBytes, publicKeyBytes
 }
