@@ -9,11 +9,11 @@ import (
 	"golang.org/x/crypto/ssh"
 )
 
-func CopyToRemote(username string, privateKeyPath string, server string, filePath string, saveFolderPath string) error {
+func CopyToRemote(username string, privateKeyPath string, remoteServerIP string, filePath string, saveFolderPath string) error {
 	publickKey := GetPublicKeyFromPrivateKey(privateKeyPath)
 	clientConfig, _ := auth.PrivateKey(username, privateKeyPath, ssh.FixedHostKey(publickKey))
 
-	client := scp.NewClient(server, &clientConfig)
+	client := scp.NewClient(remoteServerIP, &clientConfig)
 	err := client.Connect()
 	if err != nil {
 		return err
