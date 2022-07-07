@@ -28,4 +28,5 @@ func CopyToRemote(username string, privateKeyPath string, remoteServerIP string,
 	if err != nil {
 		return err
 	}
+	return nil
 }
