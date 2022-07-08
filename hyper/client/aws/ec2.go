@@ -5,13 +5,14 @@ import (
 	"encoding/base64"
 	"errors"
 	"fmt"
-	config2 "github.com/gohypergiant/hyperdrive/hyper/services/config"
 	"io/fs"
 	"os"
 	"path"
 	"reflect"
 	"runtime"
 	"time"
+
+	config2 "github.com/gohypergiant/hyperdrive/hyper/services/config"
 
 	"github.com/docker/distribution/uuid"
 	hyperdriveTypes "github.com/gohypergiant/hyperdrive/hyper/types"
@@ -477,7 +478,7 @@ func getOrCreateKeyPair(client *ec2.Client, projectName string) string {
 			}
 
 		} else {
-			_, publicKeyBytes = ssh.ParsePrivateKey(keyName)
+			publicKeyBytes = ssh.GetPublicKeyBytes(keyName)
 		}
 		os.Chdir(originalDir)
 
@@ -920,5 +921,23 @@ func StopServer(manifestPath string, remoteCfg hyperdriveTypes.EC2ComputeRemoteC
 			panic("error deleting VPC," + err.Error())
 		}
 		fmt.Println("VPC deleted:", vpcID)
+	}
+}
+
+func WriteFileToEC2(instanceIp string, remoteCfg hyperdriveTypes.EC2ComputeRemoteConfiguration, projectName string, filePath string) {
+
+	keyName := projectName
+	sshFolderPath := path.Join(UserHomeDir(), "/.ssh")
+	privateKeyPath := path.Join(sshFolderPath, fmt.Sprintf("/%s", keyName))
+
+	err := ssh.CopyToRemote("ec2-user", privateKeyPath, instanceIp, filePath, "./")
+	if err != nil {
+		privateKeyPath = path.Join(sshFolderPath, fmt.Sprintf("/%s", ssh.DEFAULT_KEY))
+		err = ssh.CopyToRemote("ec2-user", privateKeyPath, instanceIp, filePath, "./")
+		if err != nil {
+			fmt.Println("Cannot copy file to EC2 server")
+			os.Exit(1)
+			return
+		}
 	}
 }
