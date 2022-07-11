@@ -530,7 +530,10 @@ func StartJupyterEC2(manifestPath string, remoteCfg hyperdriveTypes.EC2ComputeRe
 	startupScript := getEc2StartScript(version, jupyterLaunchOptions, syncOptions, remoteCfg)
 	StartServer(manifestPath, remoteCfg, ec2Type, amiID, startupScript, jupyterLaunchOptions.HostPort)
 }
-
+func StartHyperpackEC2(manifestPath string, remoteCfg hyperdriveTypes.EC2ComputeRemoteConfiguration, ec2Type string, amiID string, jupyterLaunchOptions hyperdriveTypes.JupyterLaunchOptions) {
+	//startupScript := getEc2StartScript(version, jupyterLaunchOptions)
+	//StartServer(manifestPath, remoteCfg, ec2Type, amiID, startupScript, jupyterLaunchOptions.HostPort)
+}
 func StartServer(manifestPath string, remoteCfg hyperdriveTypes.EC2ComputeRemoteConfiguration, ec2Type string, amiID string, startupScript string, hostPort int) {
 
 	if ec2Type == "" {
