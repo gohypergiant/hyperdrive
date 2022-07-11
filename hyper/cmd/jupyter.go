@@ -39,11 +39,25 @@ var (
 	jupyterApiKey   string
 )
 
+func getPort(isRemote bool) int {
+
+	if hostPort == "" && isRemote {
+
+		hostPort = "8888"
+	}
+	port, err := strconv.Atoi(hostPort)
+	if err != nil {
+		log.Fatal("Couldn't parse port")
+	}
+	return port
+}
+
 // jupyterCmd represents the jupyter command
 var jupyterCmd = &cobra.Command{
 	Use:   "jupyter",
 	Short: "Run a local jupyter server",
 	Run: func(cmd *cobra.Command, args []string) {
+
 		launchOptions := types.JupyterLaunchOptions{
 			Flavor:        image,
 			PullImage:     pullImage,
@@ -52,6 +66,7 @@ var jupyterCmd = &cobra.Command{
 			RestartAlways: false,
 			APIKey:        jupyterApiKey,
 			S3AwsProfile:  s3AwsProfile,
+			HostPort:      getPort(RemoteName != ""),
 		}
 		notebook.NotebookService(
 			RemoteName,
@@ -61,6 +76,7 @@ var jupyterCmd = &cobra.Command{
 			s3Region).Start(
 			launchOptions,
 			types.EC2StartOptions{InstanceType: ec2InstanceType, AmiId: amiID},
+			getWorkspaceSyncOptions(),
 		)
 	},
 }
@@ -84,19 +100,12 @@ var jupyterRemoteHost = &cobra.Command{
 	Use:   "remoteHost",
 	Short: "start server on remote host",
 	Run: func(cmd *cobra.Command, args []string) {
-		if hostPort == "" {
-			hostPort = "8888"
-		}
-		port, err := strconv.Atoi(hostPort)
-		if err != nil {
-			log.Fatal("Couldn't parse port")
-		}
 		launchOptions := types.JupyterLaunchOptions{
 			Flavor:        image,
 			PullImage:     pullImage,
 			LaunchBrowser: jupyterBrowser,
 			Requirements:  requirements,
-			HostPort:      port,
+			HostPort:      getPort(true),
 			RestartAlways: true,
 			APIKey:        jupyterApiKey,
 			S3AwsProfile:  s3AwsProfile,
@@ -109,6 +118,7 @@ var jupyterRemoteHost = &cobra.Command{
 			s3Region).Start(
 			launchOptions,
 			types.EC2StartOptions{InstanceType: ec2InstanceType, AmiId: amiID},
+			getWorkspaceSyncOptions(),
 		)
 	},
 }
@@ -131,5 +141,12 @@ func init() {
 	jupyterCmd.PersistentFlags().StringVar(&amiID, "amiId", "", "The ID of the AMI")
 	jupyterCmd.PersistentFlags().StringVar(&jupyterApiKey, "apiKey", "", "API key to use for the jupyter instance")
 	jupyterCmd.PersistentFlags().StringVar(&hostPort, "hostPort", "", "Host port for container")
+	jupyterCmd.PersistentFlags().StringVarP(&workspaceRemoteName, "workspaceRemote", "r", "", "name of the jupyter remote to use for syncing")
+	jupyterCmd.PersistentFlags().StringVar(&workspaceS3Profile, "workspaceS3Profile", "", "Named AWS profile to use (from ~/.aws/config) [Overrides workspaceRemote]")
+	jupyterCmd.PersistentFlags().StringVar(&workspaceS3AccessKey, "workspaceS3AccessKey", "", "AWS Access Key for accessing S3 buckets [Overrides workspaceRemote]")
+	jupyterCmd.PersistentFlags().StringVar(&workspaceS3Secret, "workspaceS3Secret", "", "AWS Secret for accessing S3 buckets [Overrides workspaceRemote]")
+	jupyterCmd.PersistentFlags().StringVar(&workspaceS3Token, "workspaceS3Token", "", "AWS Token for accessing S3 buckets [Overrides workspaceRemote]")
+	jupyterCmd.PersistentFlags().StringVar(&workspaceS3Region, "workspaceS3Region", "", "AWS Region for accessing S3 buckets [Overrides workspaceRemote]")
+	jupyterCmd.PersistentFlags().StringVar(&workspaceS3BucketName, "workspaceS3BucketName", "", "Bucket name for accessing S3 buckets [Overrides workspaceRemote]")
 	jupyterStopCmd.Flags().StringVar(&mountPoint, "mountPoint", "", "Mount Point of Jupyter Server to be stopped")
 }

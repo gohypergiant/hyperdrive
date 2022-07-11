@@ -4,7 +4,7 @@ from pandas import read_json as pd_read_json
 from pandas import read_excel as pd_read_excel
 from pandas import ExcelFile
 from pyarrow.lib import ArrowInvalid
-from ..exceptions import DatasetError, DataManagerError
+from ..exceptions import DatasetError, DataClientError
 
 
 class DatasetController:
@@ -88,7 +88,7 @@ class DatasetController:
         """
         if path_or_paths is not None:
             if source_format is not None and source_format != "parquet":
-                raise DataManagerError(
+                raise DataClientError(
                     "Data Repos currently only support reading "
                     "from a directory of parquet files."
                 )
@@ -108,7 +108,7 @@ class DatasetController:
                 source_format = self.get_file_info(key)["extension"]
 
             if source_format not in ("csv", "json", "parquet", "xlsx"):
-                raise DataManagerError(
+                raise DataClientError(
                     "Data Repos currently only support reading "
                     "from csv, json, parquet, or xlsx."
                 )
@@ -164,7 +164,7 @@ class DatasetController:
 
                 return tensor(df.values)
             except ImportError:
-                raise DataManagerError("Loading PyTorch tensors requires PyTorch.")
+                raise DataClientError("Loading PyTorch tensors requires PyTorch.")
 
     def write_dataset(
         self,
@@ -193,7 +193,7 @@ class DatasetController:
 
         Raises
         ------
-        DataManagerError
+        DataClientError
             If a default Data Repo is not set.
         """
         # TODO: the overwrite method here is not working properly
@@ -243,7 +243,7 @@ class DatasetController:
 
         Raises
         ------
-        DataManagerError
+        DataClientError
             If a default Data Repo is not set.
         """
 

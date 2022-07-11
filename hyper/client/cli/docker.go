@@ -172,7 +172,8 @@ COPY requirements.txt /home/jovyan/requirements.txt
 RUN pip install -r requirements.txt
 `
 	} else {
-		dockerFileTemplate = `
+		fastAppApiKey := generateFastAppAPIKey()
+		dockerFileTemplate = fmt.Sprintf(`
 FROM ubuntu:latest as builder
 RUN apt update -y && apt install unzip -y
 ADD {{.StudyPath}} study.hyperpackage.zip
@@ -180,7 +181,9 @@ RUN unzip ./study.hyperpackage.zip -d /hyperpackage
 
 FROM ghcr.io/gohypergiant/gohypergiant/mlsdk-fast-app:stable
 COPY --from=builder /hyperpackage /hyperpackage
-`
+ENV FASTKEY=%s
+RUN echo "*** Fast App API key is: $FASTKEY ***"
+`, fastAppApiKey)
 	}
 
 	file, err := os.OpenFile(savePath, os.O_WRONLY|os.O_CREATE|os.O_TRUNC, 0600)

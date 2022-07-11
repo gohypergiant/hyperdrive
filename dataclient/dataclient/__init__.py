@@ -6,18 +6,20 @@ from .controllers.dataset import DatasetController
 from .controllers.file import FileController
 from .filesystem import FileSystem
 
+CWD = os.getcwd()
 
-class DataManagerError(Exception):
+
+class DataClientError(Exception):
     pass
 
 
 @dataclass
-class DataManager(
+class DataClient(
     DatasetController,
     FileController,
 ):
     storage_provider: str = "local"
-    volume_name: str = "/tmp"
+    volume_name: str = CWD
     volume_region: str = None
     access_key: str = field(repr=False, default=None)
     secret_access_key: str = field(repr=False, default=None)
@@ -37,7 +39,7 @@ class DataManager(
                 self.session_token = os.environ.get("SESSION_TOKEN", self.session_token)
 
             if self.access_key in [None, ""] or self.secret_access_key in [None, ""]:
-                raise DataManagerError(
+                raise DataClientError(
                     "No valid credential profile configured for storage provider: "
                     f"{self.storage_provider}"
                 )

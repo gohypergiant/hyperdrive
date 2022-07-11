@@ -12,6 +12,8 @@ import (
 	"runtime"
 	"time"
 
+	config2 "github.com/gohypergiant/hyperdrive/hyper/services/config"
+
 	"github.com/docker/distribution/uuid"
 	hyperdriveTypes "github.com/gohypergiant/hyperdrive/hyper/types"
 
@@ -30,7 +32,7 @@ const HYPERDRIVE_NAME_TAG string = "hyperdrive-name"
 const HYPERDRIVE_SECURITY_GROUP_NAME string = "-SecurityGroup"
 
 // TODO, we should get this dynamically
-const version string = "0.0.16"
+const version string = "0.0.32"
 
 func GetInstances(c context.Context, api hyperdriveTypes.EC2DescribeInstancesAPI, input *ec2.DescribeInstancesInput) (*ec2.DescribeInstancesOutput, error) {
 	return api.DescribeInstances(c, input)
@@ -476,7 +478,7 @@ func getOrCreateKeyPair(client *ec2.Client, projectName string) string {
 			}
 
 		} else {
-			_, publicKeyBytes = ssh.ParsePrivateKey(keyName)
+			publicKeyBytes = ssh.GetPublicKeyBytes(keyName)
 		}
 		os.Chdir(originalDir)
 
@@ -524,8 +526,8 @@ func GetInstanceForStudy(studyName string, remoteCfg hyperdriveTypes.EC2ComputeR
 func IsStructureEmpty(i types.Instance) bool {
 	return reflect.DeepEqual(i, types.Instance{})
 }
-func StartJupyterEC2(manifestPath string, remoteCfg hyperdriveTypes.EC2ComputeRemoteConfiguration, ec2Type string, amiID string, jupyterLaunchOptions hyperdriveTypes.JupyterLaunchOptions) {
-	startupScript := getEc2StartScript(version, jupyterLaunchOptions)
+func StartJupyterEC2(manifestPath string, remoteCfg hyperdriveTypes.EC2ComputeRemoteConfiguration, ec2Type string, amiID string, jupyterLaunchOptions hyperdriveTypes.JupyterLaunchOptions, syncOptions hyperdriveTypes.WorkspaceSyncOptions) {
+	startupScript := getEc2StartScript(version, jupyterLaunchOptions, syncOptions, remoteCfg)
 	StartServer(manifestPath, remoteCfg, ec2Type, amiID, startupScript, jupyterLaunchOptions.HostPort)
 }
 
@@ -617,7 +619,20 @@ If you want to change the instance size, stop the current running instance:
 	fmt.Println("In a few minutes, you should be able to access jupyter lab at http://" + *ip + ":8888/lab")
 }
 
-func getEc2StartScript(version string, jupyterLaunchOptions hyperdriveTypes.JupyterLaunchOptions) string {
+func getEc2StartScript(version string, jupyterLaunchOptions hyperdriveTypes.JupyterLaunchOptions, syncOptions hyperdriveTypes.WorkspaceSyncOptions, remoteCfg hyperdriveTypes.EC2ComputeRemoteConfiguration) string {
+
+	if syncOptions.S3Config.Profile != "" {
+
+		namedProfileConfig := config2.GetNamedProfileConfig(syncOptions.S3Config.Profile)
+		syncOptions.S3Config.AccessKey = namedProfileConfig.AccessKey
+		syncOptions.S3Config.Secret = namedProfileConfig.Secret
+		syncOptions.S3Config.Token = namedProfileConfig.Token
+	}
+	syncParameters := fmt.Sprintf("--s3AccessKey %s --s3Secret %s --s3Token %s --s3Region %s --s3BucketName %s -n %s", syncOptions.S3Config.AccessKey, syncOptions.S3Config.Secret, syncOptions.S3Config.Token, syncOptions.S3Config.Region, syncOptions.S3Config.BucketName, syncOptions.StudyName)
+	syncCommand := fmt.Sprintf("hyper workspace sync %s -w", syncParameters)
+	pullCommand := fmt.Sprintf("hyper workspace pull %s", syncParameters)
+	s3Parameters := fmt.Sprintf("--s3AccessKey %s --s3AccessSecret %s --s3Region %s", remoteCfg.AccessKey, remoteCfg.Secret, remoteCfg.Region)
+
 	startupScript := fmt.Sprintf(`
 #!/bin/bash -xe
 #yum update -y
@@ -628,8 +643,11 @@ tar -xvf /tmp/hyperdrive/hyper.tar -C /tmp/hyperdrive
 mv /tmp/hyperdrive/hyper /usr/bin/hyper
 sudo chown ec2-user:ec2-user /tmp/hyperdrive/project
 cd /tmp/hyperdrive/project
-sudo -u ec2-user bash -c 'hyper jupyter remoteHost --hostPort %d --apiKey %s &'
-`, version, version, jupyterLaunchOptions.HostPort, jupyterLaunchOptions.APIKey)
+sudo -u ec2-user %s
+sudo -u ec2-user nohup %s &
+chown -R ec2-user:ec2-user .
+sudo -u ec2-user bash -c 'hyper jupyter remoteHost --hostPort %d --apiKey %s %s &'
+`, version, version, pullCommand, syncCommand, jupyterLaunchOptions.HostPort, jupyterLaunchOptions.APIKey, s3Parameters)
 	return startupScript
 }
 func getInstanceIpAddress(instanceId string, remoteCfg hyperdriveTypes.EC2ComputeRemoteConfiguration) (*string, error) {
@@ -647,6 +665,8 @@ func getInstanceIpAddress(instanceId string, remoteCfg hyperdriveTypes.EC2Comput
 	return nil, errors.New("Could not find public IP for instance")
 
 }
+
+//TODO: Refactor this in to a series of smaller, well-named functions for readability
 func StopServer(manifestPath string, remoteCfg hyperdriveTypes.EC2ComputeRemoteConfiguration) {
 	projectName := manifest.GetProjectName(manifestPath)
 	if projectName == "" {
@@ -901,5 +921,23 @@ func StopServer(manifestPath string, remoteCfg hyperdriveTypes.EC2ComputeRemoteC
 			panic("error deleting VPC," + err.Error())
 		}
 		fmt.Println("VPC deleted:", vpcID)
+	}
+}
+
+func WriteFileToEC2(instanceIp string, remoteCfg hyperdriveTypes.EC2ComputeRemoteConfiguration, projectName string, filePath string) {
+
+	keyName := projectName
+	sshFolderPath := path.Join(UserHomeDir(), "/.ssh")
+	privateKeyPath := path.Join(sshFolderPath, fmt.Sprintf("/%s", keyName))
+
+	err := ssh.CopyToRemote("ec2-user", privateKeyPath, instanceIp, filePath, "./")
+	if err != nil {
+		privateKeyPath = path.Join(sshFolderPath, fmt.Sprintf("/%s", ssh.DEFAULT_KEY))
+		err = ssh.CopyToRemote("ec2-user", privateKeyPath, instanceIp, filePath, "./")
+		if err != nil {
+			fmt.Println("Cannot copy file to EC2 server")
+			os.Exit(1)
+			return
+		}
 	}
 }
