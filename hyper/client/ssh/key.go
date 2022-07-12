@@ -21,7 +21,7 @@ func WriteKey(fileName string, keyBytes []byte, permissions fs.FileMode) error {
 	err := os.WriteFile(fileName, keyBytes, permissions)
 	return err
 }
-func GetPublicKeyBytes(publicKey interface{}) []byte {
+func MarshalPublicKey(publicKey interface{}) []byte {
 	publicRsaKey, err := ssh.NewPublicKey(publicKey)
 	if err != nil {
 		panic("error getting public key " + err.Error())
@@ -47,11 +47,11 @@ func CreateRSAKeyPair(keyName string) ([]byte, []byte) {
 	}
 
 	privateKeyBytes := GetPrivateKeyBytes(privateKey)
-	publicKeyBytes := GetPublicKeyBytes(&privateKey.PublicKey)
+	publicKeyBytes := MarshalPublicKey(&privateKey.PublicKey)
 
 	return privateKeyBytes, publicKeyBytes
 }
-func ParsePrivateKey(keyName string) ([]byte, []byte) {
+func ParsePrivateKey(keyName string) *rsa.PrivateKey {
 
 	privateKeyBytes, err := ioutil.ReadFile(keyName)
 	if err != nil {
@@ -68,7 +68,22 @@ func ParsePrivateKey(keyName string) ([]byte, []byte) {
 		panic("error parsing private key " + err.Error())
 	}
 
-	publicKeyBytes := GetPublicKeyBytes(&privateKey.PublicKey)
+	return privateKey
+}
 
-	return privateKeyBytes, publicKeyBytes
+func GetPublicKeyBytes(privateKeyName string) []byte {
+	privateKey := ParsePrivateKey(privateKeyName)
+
+	publicKeyBytes := MarshalPublicKey(&privateKey.PublicKey)
+
+	return publicKeyBytes
+}
+func GetPublicKeyFromPrivateKey(privateKeyName string) ssh.PublicKey {
+	privateKey := ParsePrivateKey(privateKeyName)
+
+	publicKey, err := ssh.NewPublicKey(&privateKey.PublicKey)
+	if err != nil {
+		panic("error getting public key " + err.Error())
+	}
+	return publicKey
 }
