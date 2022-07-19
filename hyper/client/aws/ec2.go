@@ -10,6 +10,7 @@ import (
 	"path"
 	"reflect"
 	"runtime"
+	"strconv"
 	"time"
 
 	config2 "github.com/gohypergiant/hyperdrive/hyper/services/config"
@@ -30,6 +31,13 @@ import (
 const HYPERDRIVE_TYPE_TAG string = "hyperdrive-type"
 const HYPERDRIVE_NAME_TAG string = "hyperdrive-name"
 const HYPERDRIVE_SECURITY_GROUP_NAME string = "-SecurityGroup"
+
+type EC2Type int64
+
+const (
+	NotebookEC2 EC2Type = iota
+	DeployEC2
+)
 
 // TODO, we should get this dynamically
 const version string = "0.0.32"
@@ -526,15 +534,11 @@ func GetInstanceForStudy(studyName string, remoteCfg hyperdriveTypes.EC2ComputeR
 func IsStructureEmpty(i types.Instance) bool {
 	return reflect.DeepEqual(i, types.Instance{})
 }
-func StartJupyterEC2(manifestPath string, remoteCfg hyperdriveTypes.EC2ComputeRemoteConfiguration, ec2Type string, amiID string, jupyterLaunchOptions hyperdriveTypes.JupyterLaunchOptions, syncOptions hyperdriveTypes.WorkspaceSyncOptions) {
-	startupScript := getEc2StartScript(version, jupyterLaunchOptions, syncOptions, remoteCfg)
-	StartServer(manifestPath, remoteCfg, ec2Type, amiID, startupScript, jupyterLaunchOptions.HostPort)
+func StartJupyterEC2(manifestPath string, remoteCfg hyperdriveTypes.EC2ComputeRemoteConfiguration, ec2Type string, amiID string, jupyterLaunchOptions hyperdriveTypes.JupyterLaunchOptions, syncOptions hyperdriveTypes.WorkspaceSyncOptions, serverType EC2Type) {
+	startupScript := getEc2StartScript(version, jupyterLaunchOptions, syncOptions, remoteCfg, serverType)
+	StartServer(manifestPath, remoteCfg, ec2Type, amiID, startupScript, jupyterLaunchOptions.HostPort, serverType)
 }
-func StartHyperpackEC2(manifestPath string, remoteCfg hyperdriveTypes.EC2ComputeRemoteConfiguration, ec2Type string, amiID string, jupyterLaunchOptions hyperdriveTypes.JupyterLaunchOptions) {
-	//startupScript := getEc2StartScript(version, jupyterLaunchOptions)
-	//StartServer(manifestPath, remoteCfg, ec2Type, amiID, startupScript, jupyterLaunchOptions.HostPort)
-}
-func StartServer(manifestPath string, remoteCfg hyperdriveTypes.EC2ComputeRemoteConfiguration, ec2Type string, amiID string, startupScript string, hostPort int) {
+func StartServer(manifestPath string, remoteCfg hyperdriveTypes.EC2ComputeRemoteConfiguration, ec2Type string, amiID string, startupScript string, hostPort int, serverType EC2Type) {
 
 	if ec2Type == "" {
 		fmt.Println("EC2InstanceTypeNotFound: please specify a EC2 instance type using the flag --ec2InstanceType")
@@ -619,10 +623,16 @@ If you want to change the instance size, stop the current running instance:
 		fmt.Println("ssh -i ~/.ssh/" + keyName + " ec2-user@" + *ip)
 	}
 	fmt.Println("")
-	fmt.Println("In a few minutes, you should be able to access jupyter lab at http://" + *ip + ":8888/lab")
+
+	if serverType == NotebookEC2 {
+		fmt.Println("In a few minutes, you should be able to access jupyter lab at http://" + *ip + ":8888/lab")
+	} else if serverType == DeployEC2 {
+		fmt.Println("Deploy completed, preditions avaliable at http://" + *ip + ":" + strconv.Itoa(hostPort))
+	}
+
 }
 
-func getEc2StartScript(version string, jupyterLaunchOptions hyperdriveTypes.JupyterLaunchOptions, syncOptions hyperdriveTypes.WorkspaceSyncOptions, remoteCfg hyperdriveTypes.EC2ComputeRemoteConfiguration) string {
+func getEc2StartScript(version string, jupyterLaunchOptions hyperdriveTypes.JupyterLaunchOptions, syncOptions hyperdriveTypes.WorkspaceSyncOptions, remoteCfg hyperdriveTypes.EC2ComputeRemoteConfiguration, serverType EC2Type) string {
 
 	if syncOptions.S3Config.Profile != "" {
 
@@ -631,12 +641,14 @@ func getEc2StartScript(version string, jupyterLaunchOptions hyperdriveTypes.Jupy
 		syncOptions.S3Config.Secret = namedProfileConfig.Secret
 		syncOptions.S3Config.Token = namedProfileConfig.Token
 	}
-	syncParameters := fmt.Sprintf("--s3AccessKey %s --s3Secret %s --s3Token %s --s3Region %s --s3BucketName %s -n %s", syncOptions.S3Config.AccessKey, syncOptions.S3Config.Secret, syncOptions.S3Config.Token, syncOptions.S3Config.Region, syncOptions.S3Config.BucketName, syncOptions.StudyName)
-	syncCommand := fmt.Sprintf("hyper workspace sync %s -w", syncParameters)
-	pullCommand := fmt.Sprintf("hyper workspace pull %s", syncParameters)
-	s3Parameters := fmt.Sprintf("--s3AccessKey %s --s3AccessSecret %s --s3Region %s", remoteCfg.AccessKey, remoteCfg.Secret, remoteCfg.Region)
 
-	startupScript := fmt.Sprintf(`
+	if serverType == NotebookEC2 {
+		syncParameters := fmt.Sprintf("--s3AccessKey %s --s3Secret %s --s3Token %s --s3Region %s --s3BucketName %s -n %s", syncOptions.S3Config.AccessKey, syncOptions.S3Config.Secret, syncOptions.S3Config.Token, syncOptions.S3Config.Region, syncOptions.S3Config.BucketName, syncOptions.StudyName)
+		syncCommand := fmt.Sprintf("hyper workspace sync %s -w", syncParameters)
+		pullCommand := fmt.Sprintf("hyper workspace pull %s", syncParameters)
+		s3Parameters := fmt.Sprintf("--s3AccessKey %s --s3AccessSecret %s --s3Region %s", remoteCfg.AccessKey, remoteCfg.Secret, remoteCfg.Region)
+
+		startupScript := fmt.Sprintf(`
 #!/bin/bash -xe
 #yum update -y
 service docker start
@@ -651,7 +663,33 @@ sudo -u ec2-user nohup %s &
 chown -R ec2-user:ec2-user .
 sudo -u ec2-user bash -c 'hyper jupyter remoteHost --hostPort %d --apiKey %s %s &'
 `, version, version, pullCommand, syncCommand, jupyterLaunchOptions.HostPort, jupyterLaunchOptions.APIKey, s3Parameters)
-	return startupScript
+
+		return startupScript
+
+	} else if serverType == DeployEC2 {
+		syncParameters := fmt.Sprintf("--s3AccessKey %s --s3Secret %s --s3Token %s --s3Region %s --s3BucketName %s -n %s", syncOptions.S3Config.AccessKey, syncOptions.S3Config.Secret, syncOptions.S3Config.Token, syncOptions.S3Config.Region, syncOptions.S3Config.BucketName, syncOptions.StudyName)
+		packCommand := fmt.Sprintf("hyper workspace pack %s", syncParameters)
+		runParameters := fmt.Sprintf("--hyperpackagePath %s.hyperpack.zip --hostPort %d", syncOptions.StudyName, jupyterLaunchOptions.HostPort)
+		startupScript := fmt.Sprintf(`
+#!/bin/bash -xe
+#yum update -y
+service docker start
+mkdir -p /tmp/hyperdrive/project
+curl -fsSL https://github.com/gohypergiant/hyperdrive/releases/download/%s/hyperdrive_%s_Linux_x86_64.tar.gz -o /tmp/hyperdrive/hyper.tar
+tar -xvf /tmp/hyperdrive/hyper.tar -C /tmp/hyperdrive
+mv /tmp/hyperdrive/hyper /usr/bin/hyper
+sudo chown ec2-user:ec2-user /tmp/hyperdrive/project
+cd /tmp/hyperdrive/project
+sudo -u ec2-user %s
+chown -R ec2-user:ec2-user .
+sudo -u ec2-user bash -c 'hyper hyperpackage run %s &'
+`, version, version, packCommand, runParameters)
+
+		return startupScript
+	} else {
+		fmt.Println("EC2 server type not implemented")
+	}
+	return ""
 }
 func getInstanceIpAddress(instanceId string, remoteCfg hyperdriveTypes.EC2ComputeRemoteConfiguration) (*string, error) {
 
