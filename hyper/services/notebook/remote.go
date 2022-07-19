@@ -3,7 +3,6 @@ package notebook
 import (
 	"encoding/base64"
 	"fmt"
-	"github.com/gohypergiant/hyperdrive/hyper/types"
 	"os"
 	"path"
 	"time"
@@ -12,6 +11,7 @@ import (
 	"github.com/gohypergiant/hyperdrive/hyper/client/firefly"
 	"github.com/gohypergiant/hyperdrive/hyper/client/manifest"
 	"github.com/gohypergiant/hyperdrive/hyper/services/config"
+	"github.com/gohypergiant/hyperdrive/hyper/types"
 )
 
 const jobsDir string = "_jobs"
@@ -38,7 +38,7 @@ func (s RemoteNotebookService) Start(jupyterOptions types.JupyterLaunchOptions, 
 			s.RemoteConfiguration.EC2Configuration.Region = namedProfileConfig.Region
 			s.RemoteConfiguration.EC2Configuration.Token = namedProfileConfig.Token
 		}
-		aws.StartJupyterEC2(s.ManifestPath, s.RemoteConfiguration.EC2Configuration, ec2Options.InstanceType, ec2Options.AmiId, jupyterOptions, syncOptions)
+		aws.StartJupyterEC2(s.ManifestPath, s.RemoteConfiguration.EC2Configuration, ec2Options.InstanceType, ec2Options.AmiId, jupyterOptions, syncOptions, aws.NotebookEC2)
 	} else {
 		fmt.Println("Not Implemented")
 	}
