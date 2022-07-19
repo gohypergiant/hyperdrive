@@ -106,33 +106,33 @@ var stopCmd = &cobra.Command{
 		hyperpackage.HyperpackageService(hyperpackagePath, manifestPath, RemoteName).Stop(hyperpackageContainerName)
 	},
 }
-var hyperpackageCmd = &cobra.Command{
-	Use:   "hyperpackage",
+var packCmd = &cobra.Command{
+	Use:   "pack",
 	Short: "",
 }
 
 func init() {
-	rootCmd.AddCommand(hyperpackageCmd)
-	hyperpackageCmd.AddCommand(runCmd)
-	hyperpackageCmd.AddCommand(buildCmd)
+	rootCmd.AddCommand(packCmd)
+	packCmd.AddCommand(runCmd)
+	packCmd.AddCommand(buildCmd)
 	importCmd.Flags().StringVar(&importModelFileName, "filename", "", "import model filename")
 	importCmd.Flags().StringVar(&modelFlavor, "modelFlavor", "sklearn", "model flavor")
 	importCmd.Flags().StringVar(&trainShape, "shape", "", "Training shape of data, specifically the number of columns.")
-	hyperpackageCmd.AddCommand(importCmd)
-	hyperpackageCmd.AddCommand(listCmd)
+	packCmd.AddCommand(importCmd)
+	packCmd.AddCommand(listCmd)
 	stopCmd.Flags().StringVar(&hyperpackageContainerName, "hyperpackagePath", "", "name of container to stop")
-	hyperpackageCmd.AddCommand(stopCmd)
-	hyperpackageCmd.PersistentFlags().StringVarP(&hyperpackagePath, "hyperpackagePath", "p", "", "path to hyperpackage.zip")
-	hyperpackageCmd.PersistentFlags().StringVarP(&dockerfileSavePath, "dockerfileSavePath", "o", "", "path to save Dockerfile")
-	hyperpackageCmd.PersistentFlags().StringArrayVarP(&imageTags, "imageTags", "t", []string{}, "tag for resulting docker image")
-	hyperpackageCmd.PersistentFlags().StringVarP(&workspaceRemoteName, "workspaceRemote", "r", "", "name of the jupyter remote to use for syncing")
-	hyperpackageCmd.PersistentFlags().StringVar(&workspaceS3Profile, "workspaceS3Profile", "", "Named AWS profile to use (from ~/.aws/config) [Overrides workspaceRemote]")
-	hyperpackageCmd.PersistentFlags().StringVar(&workspaceS3AccessKey, "workspaceS3AccessKey", "", "AWS Access Key for accessing S3 buckets [Overrides workspaceRemote]")
-	hyperpackageCmd.PersistentFlags().StringVar(&workspaceS3Secret, "workspaceS3Secret", "", "AWS Secret for accessing S3 buckets [Overrides workspaceRemote]")
-	hyperpackageCmd.PersistentFlags().StringVar(&workspaceS3Token, "workspaceS3Token", "", "AWS Token for accessing S3 buckets [Overrides workspaceRemote]")
-	hyperpackageCmd.PersistentFlags().StringVar(&workspaceS3Region, "workspaceS3Region", "", "AWS Region for accessing S3 buckets [Overrides workspaceRemote]")
-	hyperpackageCmd.PersistentFlags().StringVar(&workspaceS3BucketName, "workspaceS3BucketName", "", "Bucket name for accessing S3 buckets [Overrides workspaceRemote]")
+	packCmd.PersistentFlags().StringVarP(&hyperpackagePath, "hyperpackagePath", "p", "", "path to hyperpackage.zip")
+	packCmd.PersistentFlags().StringVarP(&dockerfileSavePath, "dockerfileSavePath", "o", "", "path to save Dockerfile")
+	packCmd.PersistentFlags().StringArrayVarP(&imageTags, "imageTags", "t", []string{}, "tag for resulting docker image")
+	packCmd.PersistentFlags().StringVarP(&workspaceRemoteName, "workspaceRemote", "r", "", "name of the jupyter remote to use for syncing")
+	packCmd.PersistentFlags().StringVar(&workspaceS3Profile, "workspaceS3Profile", "", "Named AWS profile to use (from ~/.aws/config) [Overrides workspaceRemote]")
+	packCmd.PersistentFlags().StringVar(&workspaceS3AccessKey, "workspaceS3AccessKey", "", "AWS Access Key for accessing S3 buckets [Overrides workspaceRemote]")
+	packCmd.PersistentFlags().StringVar(&workspaceS3Secret, "workspaceS3Secret", "", "AWS Secret for accessing S3 buckets [Overrides workspaceRemote]")
+	packCmd.PersistentFlags().StringVar(&workspaceS3Token, "workspaceS3Token", "", "AWS Token for accessing S3 buckets [Overrides workspaceRemote]")
+	packCmd.PersistentFlags().StringVar(&workspaceS3Region, "workspaceS3Region", "", "AWS Region for accessing S3 buckets [Overrides workspaceRemote]")
+	packCmd.PersistentFlags().StringVar(&workspaceS3BucketName, "workspaceS3BucketName", "", "Bucket name for accessing S3 buckets [Overrides workspaceRemote]")
 	runCmd.PersistentFlags().StringVar(&ec2InstanceType, "ec2InstanceType", "", "The type of EC2 instance to be created")
 	runCmd.PersistentFlags().StringVar(&amiID, "amiId", "", "The ID of the AMI")
 	runCmd.PersistentFlags().StringVar(&hostPort, "hostPort", "", "Host port for container")
+	packCmd.AddCommand(stopCmd)
 }
