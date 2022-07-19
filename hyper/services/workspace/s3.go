@@ -82,9 +82,10 @@ func (s S3WorkspaceService) GetS3Url(studyName string) string {
 	return fmt.Sprintf("s3://%s/%s", s.S3Configuration.BucketName, studyName)
 }
 
-func (s S3WorkspaceService) Pack(studyName string, packPath string) {
-	if packPath == "" {
-		packPath = studyName + "/" + studyName + ".hyperpack.zip"
+func (s S3WorkspaceService) Pack(studyName string, packFile string) {
+	var packPath string = packFile
+	if packFile == "" {
+		packPath = studyName + "/_jobs/" + studyName + "/" + studyName + ".hyperpack.zip"
 	}
 
 	err := aws.DownloadObject(s.S3Configuration, studyName+".hyperpack.zip", packPath)
