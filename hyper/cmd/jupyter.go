@@ -18,6 +18,7 @@ package cmd
 import (
 	"fmt"
 	"math/rand"
+	"time"
 
 	"github.com/gohypergiant/hyperdrive/hyper/client/cli"
 	"github.com/gohypergiant/hyperdrive/hyper/services/notebook"
@@ -59,6 +60,7 @@ func checkPortAvailability(port string) bool {
 }
 
 func generateRandPort() string {
+	rand.Seed(time.Now().UnixNano())
 	min := 30000
 	max := 60000
 	randPort := strconv.Itoa(rand.Intn(max - min) + min)
