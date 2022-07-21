@@ -58,6 +58,13 @@ func checkPortAvailability(port string) bool {
 	return portOpen
 }
 
+func generateRandPort() string {
+	min := 30000
+	max := 60000
+	randPort := strconv.Itoa(rand.Intn(max - min) + min)
+	return randPort
+}
+
 func getPort(isRemote bool) int {
 	defaultPort := "8888"
 	if hostPort == "" && isRemote {
@@ -67,10 +74,9 @@ func getPort(isRemote bool) int {
 		if portAvail {
 			hostPort = defaultPort
 		} else {
-			min := 30000
-			max := 60000
-			hostPort = strconv.Itoa(rand.Intn(max - min) + min)
-			fmt.Printf("Default port 8888 is in use. Therefore, we've randomly assigned port %s for the container.\n", hostPort)
+			fmt.Printf("Port %s is in use. ", hostPort)
+			hostPort = generateRandPort()
+			fmt.Printf("Therefore, we've randomly assigned port %s for the container.\n", hostPort)
 		}
 	}
 	port, err := strconv.Atoi(hostPort)
