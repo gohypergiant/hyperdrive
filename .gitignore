@@ -15,5 +15,4 @@ hyper.exe
 *.pem
 .idea
 hyper/hyper
-
 statusfile.json

@@ -59,7 +59,6 @@ func startHttpServer() {
     os.Exit(2);
   }
 
-  // which is better?  
   http.HandleFunc("/status", statusPage)
   http.HandleFunc("/", statusPage)
 
