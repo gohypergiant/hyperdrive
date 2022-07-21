@@ -4,6 +4,7 @@ import (
 	"fmt"
 	"os"
 	"os/exec"
+	"strconv"
 	"strings"
 
 	"github.com/docker/docker/api/types/container"
@@ -12,6 +13,7 @@ import (
 	"github.com/gohypergiant/hyperdrive/hyper/client/cli"
 	"github.com/gohypergiant/hyperdrive/hyper/client/manifest"
 	"github.com/gohypergiant/hyperdrive/hyper/services/notebook"
+	"github.com/gohypergiant/hyperdrive/hyper/types"
 )
 
 type LocalHyperpackageService struct {
@@ -19,21 +21,27 @@ type LocalHyperpackageService struct {
 	ManifestPath     string
 }
 
-func (s LocalHyperpackageService) BuildAndRun(dockerfileSavePath string, imageTags []string) {
+func (s LocalHyperpackageService) BuildAndRun(dockerfileSavePath string, imageTags []string, jupyterOptions types.JupyterLaunchOptions, ec2Options types.EC2StartOptions, syncOptions types.WorkspaceSyncOptions) {
+	var hostPort string
+
 	studyName := manifest.GetName(s.ManifestPath)
 	if len(imageTags) == 0 {
 		imageTags = []string{fmt.Sprintf("%s:latest", studyName)}
 	}
 	runTag := imageTags[0]
+
+	if jupyterOptions.HostPort != 0 {
+		hostPort = strconv.Itoa(jupyterOptions.HostPort)
+	}
 	s.Build(dockerfileSavePath, imageTags)
-	s.Run(runTag)
+	s.Run(runTag, hostPort)
 }
 func (s LocalHyperpackageService) Build(dockerfileSavePath string, imageTags []string) {
 	dockerClient := cli.NewDockerClient()
 	dockerClient.CreateDockerFile(s.HyperpackagePath, dockerfileSavePath, false)
 	dockerClient.BuildImage(strings.TrimLeft(dockerfileSavePath, "./"), imageTags)
 }
-func (s LocalHyperpackageService) Run(imageTag string) {
+func (s LocalHyperpackageService) Run(imageTag string, hostPort string) {
 	dockerClient := cli.NewDockerClient()
 	studyName := fmt.Sprintf("%s_%s", HYPERPACK_CONTAINER_PREFIX, manifest.GetName(s.ManifestPath))
 	hostIP := "127.0.0.1"
@@ -49,7 +57,7 @@ func (s LocalHyperpackageService) Run(imageTag string) {
 			"8001/tcp": []nat.PortBinding{
 				{
 					HostIP:   hostIP,
-					HostPort: "",
+					HostPort: hostPort,
 				},
 			},
 		},
