@@ -2,6 +2,7 @@ package cmd
 
 import (
 	"fmt"
+
 	"github.com/gohypergiant/hyperdrive/hyper/services/config"
 	"github.com/gohypergiant/hyperdrive/hyper/services/notebook"
 	"github.com/gohypergiant/hyperdrive/hyper/services/workspace"
@@ -15,6 +16,7 @@ var (
 	workspaceRemoteName string
 	workspaceS3Token    string
 	studyName           string
+	remotePackPath      string
 )
 
 var workspaceCmd = &cobra.Command{
@@ -37,6 +39,15 @@ var workspacePullCmd = &cobra.Command{
 		//notebook.NotebookService(RemoteName, manifestPath, s3AccessKey, s3AccessSecret, s3Region).List()
 		workspaceSyncOptions := getWorkspaceSyncOptions()
 		workspace.WorkspaceService(workspaceRemoteName, manifestPath, workspaceSyncOptions.S3Config).Pull(localWorkspacePath, studyName)
+	},
+}
+var workspacePackCmd = &cobra.Command{
+	Use:   "pack",
+	Short: "pack",
+	Run: func(cmd *cobra.Command, args []string) {
+		//notebook.NotebookService(RemoteName, manifestPath, s3AccessKey, s3AccessSecret, s3Region).List()
+		workspaceSyncOptions := getWorkspaceSyncOptions()
+		workspace.WorkspaceService(workspaceRemoteName, manifestPath, workspaceSyncOptions.S3Config).Pack(studyName, remotePackPath)
 	},
 }
 
@@ -91,10 +102,12 @@ func init() {
 	rootCmd.AddCommand(workspaceCmd)
 	workspaceCmd.AddCommand(workspaceSyncCmd)
 	workspaceCmd.AddCommand(workspacePullCmd)
+	workspaceCmd.AddCommand(workspacePackCmd)
 
 	workspaceSyncCmd.Flags().BoolVarP(&watchSync, "watch", "w", false, "Run sync in watch mode")
 	workspaceSyncCmd.Flags().StringVarP(&localWorkspacePath, "localWorkspacePath", "l", "", "Local workspace path to sync")
 	workspacePullCmd.Flags().StringVarP(&localWorkspacePath, "localWorkspacePath", "l", "", "Local workspace path to sync")
+	workspacePackCmd.Flags().StringVarP(&remotePackPath, "remotePackPath", "", "", "Path to pack zip file")
 
 	workspaceCmd.PersistentFlags().StringVarP(&workspaceRemoteName, "remote", "r", "", "name of the workspace remote to use for syncing")
 	workspaceCmd.PersistentFlags().StringVar(&workspaceS3Profile, "s3Profile", "", "Named AWS profile to use (from ~/.aws/config) [Overrides workspaceRemote]")
