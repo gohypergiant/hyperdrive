@@ -16,6 +16,9 @@ limitations under the License.
 package cmd
 
 import (
+	"fmt"
+
+	"github.com/gohypergiant/hyperdrive/hyper/client/cli"
 	"github.com/gohypergiant/hyperdrive/hyper/services/notebook"
 	"github.com/gohypergiant/hyperdrive/hyper/types"
 	"github.com/spf13/cobra"
