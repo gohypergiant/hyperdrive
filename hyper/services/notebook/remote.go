@@ -3,7 +3,6 @@ package notebook
 import (
 	"encoding/base64"
 	"fmt"
-	"github.com/gohypergiant/hyperdrive/hyper/types"
 	"os"
 	"path"
 	"time"
@@ -12,6 +11,7 @@ import (
 	"github.com/gohypergiant/hyperdrive/hyper/client/firefly"
 	"github.com/gohypergiant/hyperdrive/hyper/client/manifest"
 	"github.com/gohypergiant/hyperdrive/hyper/services/config"
+	"github.com/gohypergiant/hyperdrive/hyper/types"
 )
 
 const jobsDir string = "_jobs"
