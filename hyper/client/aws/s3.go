@@ -2,13 +2,16 @@ package aws
 
 import (
 	"fmt"
+	"os"
+
 	"github.com/aws/aws-sdk-go/aws"
 	"github.com/aws/aws-sdk-go/aws/credentials"
 	"github.com/aws/aws-sdk-go/aws/session"
+	"github.com/aws/aws-sdk-go/service/s3"
+	"github.com/aws/aws-sdk-go/service/s3/s3manager"
 	config2 "github.com/gohypergiant/hyperdrive/hyper/services/config"
 	"github.com/gohypergiant/hyperdrive/hyper/types"
 	"github.com/seqsense/s3sync"
-	"os"
 )
 
 var sess *session.Session
@@ -50,4 +53,25 @@ func getSession(s3Config types.S3WorkspacePersistenceRemoteConfiguration, sess *
 	}
 	return sess
 
+}
+func DownloadObject(s3Config types.S3WorkspacePersistenceRemoteConfiguration, filename string, key string) error {
+	sess = getSession(s3Config, sess)
+	downloader := s3manager.NewDownloader(sess)
+
+	f, err := os.Create(filename)
+	if err != nil {
+		return fmt.Errorf("failed to create file %q, %v", filename, err)
+	}
+
+	fmt.Println("Downloading " + key + " from bucket " + s3Config.BucketName)
+	_, err = downloader.Download(f,
+		&s3.GetObjectInput{
+			Bucket: aws.String(s3Config.BucketName),
+			Key:    aws.String(key),
+		})
+
+	if err != nil {
+		return fmt.Errorf("failed to download file, %v", err)
+	}
+	return nil
 }
