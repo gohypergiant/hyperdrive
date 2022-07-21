@@ -56,7 +56,6 @@ func getPort(isRemote bool) int {
 		for _, runningContainer := range nowRunningContainers {
 			if runningContainer.Ports[0].PublicPort == defaultPortUInt16 {
 				defaultPortOpen = false
-				fmt.Println("Default port 8888 is in use. Will assign a random port for the container.")
 				break
 			}
 		}
@@ -66,7 +65,7 @@ func getPort(isRemote bool) int {
 			min := 30000
 			max := 60000
 			hostPort = strconv.Itoa(rand.Intn(max - min) + min)
-			fmt.Println("hostPort random:", hostPort)
+			fmt.Printf("Default port 8888 is in use. Therefore, we've randomly assigned port %s for the container.\n", hostPort)
 		}
 	}
 	port, err := strconv.Atoi(hostPort)
