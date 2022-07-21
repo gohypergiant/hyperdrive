@@ -43,23 +43,28 @@ var (
 	jupyterApiKey   string
 )
 
+func checkPortAvailability(port string) bool {
+	portOpen := true
+	dockerClient := cli.NewDockerClient()
+	nowRunningContainers, _ := dockerClient.ListAllRunningContainers()
+	portUInt64, _ := strconv.ParseUint(port, 10, 64)
+	portUInt16 := uint16(portUInt64)
+	for _, runningContainer := range nowRunningContainers {
+		if runningContainer.Ports[0].PublicPort == portUInt16 {
+			portOpen = false
+			break
+		}
+	}
+	return portOpen
+}
+
 func getPort(isRemote bool) int {
 	defaultPort := "8888"
-	defaultPortOpen := true
 	if hostPort == "" && isRemote {
 		hostPort = defaultPort
-	} else if hostPort == "" && !isRemote {
-		dockerClient := cli.NewDockerClient()
-		nowRunningContainers, _ := dockerClient.ListAllRunningContainers()
-		defaultPortUInt64, _ := strconv.ParseUint(defaultPort, 10, 64)
-		defaultPortUInt16 := uint16(defaultPortUInt64)
-		for _, runningContainer := range nowRunningContainers {
-			if runningContainer.Ports[0].PublicPort == defaultPortUInt16 {
-				defaultPortOpen = false
-				break
-			}
-		}
-		if defaultPortOpen {
+	} else if (hostPort == "" && !isRemote) || hostPort != "" {
+		portAvail := checkPortAvailability(hostPort)
+		if portAvail {
 			hostPort = defaultPort
 		} else {
 			min := 30000
