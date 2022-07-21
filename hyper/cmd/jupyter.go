@@ -43,14 +43,27 @@ var (
 )
 
 func getPort(isRemote bool) int {
-	defaultPort = "8888"
+	defaultPort := "8888"
+	defaultPortOpen := true
 	if hostPort == "" && isRemote {
 		hostPort = defaultPort
 	} else if hostPort == "" && !isRemote {
 		dockerClient := cli.NewDockerClient()
 		nowRunningContainers, _ := dockerClient.ListAllRunningContainers()
+		defaultPortUInt64, _ := strconv.ParseUint(defaultPort, 10, 64)
+		defaultPortUInt16 := uint16(defaultPortUInt64)
+		fmt.Println("uint16:", defaultPortUInt16)
 		for _, runningContainer := range nowRunningContainers {
-			fmt.Println(runningContainer.Ports[0].PublicPort)
+			if runningContainer.Ports[0].PublicPort == defaultPortUInt16 {
+				defaultPortOpen = false
+				fmt.Println("Default port 8888 is in use. Will assign a random port for the container.")
+				break
+			}
+		}
+		if defaultPortOpen {
+			hostPort = defaultPort
+		} else {
+			fmt.Println("random port assign")
 		}
 	}
 	port, err := strconv.Atoi(hostPort)
