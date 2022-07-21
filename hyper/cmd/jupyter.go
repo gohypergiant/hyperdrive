@@ -78,7 +78,7 @@ func getPort(isRemote bool) int {
 		} else {
 			fmt.Printf("Port %s is in use. ", hostPort)
 			hostPort = generateRandPort()
-			fmt.Printf("Therefore, unless there is already a container running for a specific study, we've randomly assigned port %s for the container.\n", hostPort)
+			fmt.Printf("Therefore, unless there is already a container running for this specific study, we've randomly assigned port %s for the container.\n", hostPort)
 		}
 	}
 	port, err := strconv.Atoi(hostPort)
