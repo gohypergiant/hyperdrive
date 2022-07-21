@@ -38,7 +38,7 @@ func (s RemoteNotebookService) Start(jupyterOptions types.JupyterLaunchOptions, 
 			s.RemoteConfiguration.EC2Configuration.Region = namedProfileConfig.Region
 			s.RemoteConfiguration.EC2Configuration.Token = namedProfileConfig.Token
 		}
-		aws.StartJupyterEC2(s.ManifestPath, s.RemoteConfiguration.EC2Configuration, ec2Options.InstanceType, ec2Options.AmiId, jupyterOptions, syncOptions, aws.NotebookEC2)
+		aws.StartJupyterEC2(s.ManifestPath, s.RemoteConfiguration.EC2Configuration, ec2Options.InstanceType, ec2Options.AmiId, jupyterOptions, syncOptions)
 	} else {
 		fmt.Println("Not Implemented")
 	}
