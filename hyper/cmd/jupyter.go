@@ -17,6 +17,7 @@ package cmd
 
 import (
 	"fmt"
+	"math/rand"
 
 	"github.com/gohypergiant/hyperdrive/hyper/client/cli"
 	"github.com/gohypergiant/hyperdrive/hyper/services/notebook"
@@ -62,7 +63,10 @@ func getPort(isRemote bool) int {
 		if defaultPortOpen {
 			hostPort = defaultPort
 		} else {
-			fmt.Println("random port assign")
+			min := 30000
+			max := 60000
+			hostPort = strconv.Itoa(rand.Intn(max - min) + min)
+			fmt.Println("hostPort random:", hostPort)
 		}
 	}
 	port, err := strconv.Atoi(hostPort)
