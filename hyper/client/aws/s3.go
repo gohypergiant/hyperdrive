@@ -27,13 +27,13 @@ func SyncDirectory(s3Config types.S3WorkspacePersistenceRemoteConfiguration, src
 }
 func GetSyncManger(s3Config types.S3WorkspacePersistenceRemoteConfiguration) *s3sync.Manager {
 	if syncManager == nil {
-		sess = getSession(s3Config, sess)
-		syncManager = s3sync.New(sess)
+		sess = getSession(s3Config)
+		syncManager = s3sync.New(sess, s3sync.WithDelete())
 	}
 	return syncManager
 }
 
-func getSession(s3Config types.S3WorkspacePersistenceRemoteConfiguration, sess *session.Session) *session.Session {
+func getSession(s3Config types.S3WorkspacePersistenceRemoteConfiguration) *session.Session {
 	awsConfig := aws.Config{Region: &s3Config.Region}
 	accessKey := s3Config.AccessKey
 	secret := s3Config.Secret
