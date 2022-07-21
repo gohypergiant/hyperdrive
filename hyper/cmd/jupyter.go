@@ -45,13 +45,12 @@ var (
 func getPort(isRemote bool) int {
 
 	if hostPort == "" && isRemote {
-
 		hostPort = "8888"
 	} else if !isRemote {
 		dockerClient := cli.NewDockerClient()
 		nowRunningContainers, _ := dockerClient.ListAllRunningContainers()
 		for _, runningContainer := range nowRunningContainers {
-			fmt.Println(runningContainer.Ports)
+			fmt.Println(runningContainer.Ports[0].PublicPort)
 		}
 	}
 	port, err := strconv.Atoi(hostPort)
