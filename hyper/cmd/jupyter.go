@@ -52,7 +52,6 @@ func getPort(isRemote bool) int {
 		nowRunningContainers, _ := dockerClient.ListAllRunningContainers()
 		defaultPortUInt64, _ := strconv.ParseUint(defaultPort, 10, 64)
 		defaultPortUInt16 := uint16(defaultPortUInt64)
-		fmt.Println("uint16:", defaultPortUInt16)
 		for _, runningContainer := range nowRunningContainers {
 			if runningContainer.Ports[0].PublicPort == defaultPortUInt16 {
 				defaultPortOpen = false
