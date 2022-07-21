@@ -2,13 +2,14 @@ package aws
 
 import (
 	"fmt"
+	"os"
+
 	"github.com/aws/aws-sdk-go/aws"
 	"github.com/aws/aws-sdk-go/aws/credentials"
 	"github.com/aws/aws-sdk-go/aws/session"
 	config2 "github.com/gohypergiant/hyperdrive/hyper/services/config"
 	"github.com/gohypergiant/hyperdrive/hyper/types"
 	"github.com/seqsense/s3sync"
-	"os"
 )
 
 var sess *session.Session
@@ -24,13 +25,13 @@ func SyncDirectory(s3Config types.S3WorkspacePersistenceRemoteConfiguration, src
 }
 func GetSyncManger(s3Config types.S3WorkspacePersistenceRemoteConfiguration) *s3sync.Manager {
 	if syncManager == nil {
-		sess = getSession(s3Config, sess)
-		syncManager = s3sync.New(sess)
+		sess = getSession(s3Config)
+		syncManager = s3sync.New(sess, s3sync.WithDelete())
 	}
 	return syncManager
 }
 
-func getSession(s3Config types.S3WorkspacePersistenceRemoteConfiguration, sess *session.Session) *session.Session {
+func getSession(s3Config types.S3WorkspacePersistenceRemoteConfiguration) *session.Session {
 	awsConfig := aws.Config{Region: &s3Config.Region}
 	accessKey := s3Config.AccessKey
 	secret := s3Config.Secret
