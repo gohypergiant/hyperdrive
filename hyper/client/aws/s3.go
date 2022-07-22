@@ -55,7 +55,7 @@ func getSession(s3Config types.S3WorkspacePersistenceRemoteConfiguration) *sessi
 
 }
 func DownloadObject(s3Config types.S3WorkspacePersistenceRemoteConfiguration, filename string, key string) error {
-	sess = getSession(s3Config, sess)
+	sess = getSession(s3Config)
 	downloader := s3manager.NewDownloader(sess)
 
 	f, err := os.Create(filename)
