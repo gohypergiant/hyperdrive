@@ -16,6 +16,11 @@ limitations under the License.
 package cmd
 
 import (
+	"fmt"
+	"math/rand"
+	"time"
+
+	"github.com/gohypergiant/hyperdrive/hyper/client/cli"
 	"github.com/gohypergiant/hyperdrive/hyper/services/notebook"
 	"github.com/gohypergiant/hyperdrive/hyper/types"
 	"github.com/spf13/cobra"
@@ -39,11 +44,49 @@ var (
 	jupyterApiKey   string
 )
 
+func checkPortAvailability(port string) bool {
+	portOpen := true
+	dockerClient := cli.NewDockerClient()
+	nowRunningContainers, _ := dockerClient.ListAllRunningContainers()
+	portUInt64, _ := strconv.ParseUint(port, 10, 64)
+	portUInt16 := uint16(portUInt64)
+	for _, runningContainer := range nowRunningContainers {
+		if runningContainer.Ports[0].PublicPort == portUInt16 {
+			portOpen = false
+			break
+		}
+	}
+	return portOpen
+}
+
+func generateRandPort() string {
+	rand.Seed(time.Now().UnixNano())
+	min := 30000
+	max := 60000
+	randPort := strconv.Itoa(rand.Intn(max - min) + min)
+	return randPort
+}
+
 func getPort(isRemote bool) int {
-
+	defaultPort := "8888"
 	if hostPort == "" && isRemote {
-
-		hostPort = "8888"
+		hostPort = defaultPort
+	} else if (hostPort == "" && !isRemote) {
+		portAvail := checkPortAvailability(defaultPort)
+		if portAvail {
+			hostPort = defaultPort
+		} else {
+			fmt.Printf("Port %s is in use. ", defaultPort)
+			hostPort = generateRandPort()
+			fmt.Printf("Therefore, unless there is already a container running for this specific study, we've randomly assigned port %s for the container.\n", hostPort)
+		}
+	} else if hostPort != "" {
+		portAvail := checkPortAvailability(hostPort)
+		if !portAvail {
+			fmt.Printf("Port %s is in use. ", hostPort)
+			hostPort = generateRandPort()
+			fmt.Printf("Therefore, unless there is already a container running for this specific study, we've randomly assigned port %s for the container.\n", hostPort)
+		}
 	}
 	port, err := strconv.Atoi(hostPort)
 	if err != nil {
