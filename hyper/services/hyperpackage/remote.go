@@ -33,7 +33,7 @@ func (s RemoteHyperpackageService) BuildAndRun(dockerfileSavePath string, imageT
 			s.RemoteConfiguration.EC2Configuration.Token = namedProfileConfig.Token
 		}
 		jupyterOptions.HostPort = 8888
-		aws.StartJupyterEC2(s.ManifestPath, s.RemoteConfiguration.EC2Configuration, ec2Options.InstanceType, ec2Options.AmiId, jupyterOptions, syncOptions)
+		aws.StartHyperpackageEC2(s.ManifestPath, s.RemoteConfiguration.EC2Configuration, ec2Options.InstanceType, ec2Options.AmiId, jupyterOptions, syncOptions)
 	} else {
 		fmt.Println("Not Implemented")
 	}
