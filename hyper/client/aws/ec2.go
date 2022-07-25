@@ -693,7 +693,7 @@ sudo chown ec2-user:ec2-user /tmp/hyperdrive/project
 cd /tmp/hyperdrive/project
 sudo -u ec2-user %s
 chown -R ec2-user:ec2-user .
-sudo -u ec2-user bash -c 'hyper hyperpackage run %s &'
+sudo -u ec2-user bash -c 'hyper pack run %s &'
 `, version, version, packCommand, runParameters)
 
 	return startupScript
