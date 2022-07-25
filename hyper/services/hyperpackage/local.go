@@ -21,8 +21,7 @@ type LocalHyperpackageService struct {
 	ManifestPath     string
 }
 
-func (s LocalHyperpackageService) BuildAndRun(dockerfileSavePath string, imageTags []string, jupyterOptions types.JupyterLaunchOptions, ec2Options types.EC2StartOptions, syncOptions types.WorkspaceSyncOptions) {
-	var hostPort string
+func (s LocalHyperpackageService) BuildAndRun(dockerfileSavePath string, imageTags []string, jupyterOptions types.JupyterLaunchOptions, ec2Options types.EC2StartOptions, syncOptions types.WorkspaceSyncOptions, dockerOptions types.DockerOptions) {
 
 	studyName := manifest.GetName(s.ManifestPath)
 	if len(imageTags) == 0 {
@@ -30,21 +29,31 @@ func (s LocalHyperpackageService) BuildAndRun(dockerfileSavePath string, imageTa
 	}
 	runTag := imageTags[0]
 
-	if jupyterOptions.HostPort != 0 {
-		hostPort = strconv.Itoa(jupyterOptions.HostPort)
-	}
 	s.Build(dockerfileSavePath, imageTags)
-	s.Run(runTag, hostPort)
+	s.Run(runTag, dockerOptions)
 }
 func (s LocalHyperpackageService) Build(dockerfileSavePath string, imageTags []string) {
 	dockerClient := cli.NewDockerClient()
 	dockerClient.CreateDockerFile(s.HyperpackagePath, dockerfileSavePath, false)
 	dockerClient.BuildImage(strings.TrimLeft(dockerfileSavePath, "./"), imageTags)
 }
-func (s LocalHyperpackageService) Run(imageTag string, hostPort string) {
+func (s LocalHyperpackageService) Run(imageTag string, dockerOptions types.DockerOptions) {
+	var hostIP, hostPort string
 	dockerClient := cli.NewDockerClient()
 	studyName := fmt.Sprintf("%s_%s", HYPERPACK_CONTAINER_PREFIX, manifest.GetName(s.ManifestPath))
-	hostIP := "127.0.0.1"
+
+	if dockerOptions.LocalOnly {
+		hostIP = "127.0.0.1"
+	} else {
+		hostIP = "0.0.0.0"
+	}
+
+	if dockerOptions.HostPort <= -1 {
+		hostPort = ""
+	} else {
+		hostPort = strconv.Itoa(dockerOptions.HostPort)
+	}
+
 	contConfig := &container.Config{
 		Hostname: studyName,
 		Image:    imageTag,

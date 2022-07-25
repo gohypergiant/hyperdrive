@@ -538,12 +538,12 @@ func StartJupyterEC2(manifestPath string, remoteCfg hyperdriveTypes.EC2ComputeRe
 
 	}
 }
-func StartHyperpackageEC2(manifestPath string, remoteCfg hyperdriveTypes.EC2ComputeRemoteConfiguration, ec2Type string, amiID string, jupyterLaunchOptions hyperdriveTypes.JupyterLaunchOptions, syncOptions hyperdriveTypes.WorkspaceSyncOptions) {
-	startupScript := getHyperpackageEC2StartScript(version, jupyterLaunchOptions, syncOptions, remoteCfg)
-	ip := StartServer(manifestPath, remoteCfg, ec2Type, amiID, startupScript, jupyterLaunchOptions.HostPort)
+func StartHyperpackageEC2(manifestPath string, remoteCfg hyperdriveTypes.EC2ComputeRemoteConfiguration, ec2Type string, amiID string, syncOptions hyperdriveTypes.WorkspaceSyncOptions, dockerOptions hyperdriveTypes.DockerOptions) {
+	startupScript := getHyperpackageEC2StartScript(version, dockerOptions, syncOptions, remoteCfg)
+	ip := StartServer(manifestPath, remoteCfg, ec2Type, amiID, startupScript, dockerOptions.HostPort)
 
 	if ip != "" {
-		fmt.Println("Deploy completed, preditions avaliable at http://" + ip + ":" + strconv.Itoa(jupyterLaunchOptions.HostPort))
+		fmt.Println("Deploy completed, preditions avaliable at http://" + ip + ":" + strconv.Itoa(dockerOptions.HostPort))
 	}
 }
 func StartServer(manifestPath string, remoteCfg hyperdriveTypes.EC2ComputeRemoteConfiguration, ec2Type string, amiID string, startupScript string, hostPort int) string {
@@ -669,7 +669,7 @@ sudo -u ec2-user bash -c 'hyper jupyter remoteHost --hostPort %d --apiKey %s %s 
 	return startupScript
 
 }
-func getHyperpackageEC2StartScript(version string, jupyterLaunchOptions hyperdriveTypes.JupyterLaunchOptions, syncOptions hyperdriveTypes.WorkspaceSyncOptions, remoteCfg hyperdriveTypes.EC2ComputeRemoteConfiguration) string {
+func getHyperpackageEC2StartScript(version string, dockerOptions hyperdriveTypes.DockerOptions, syncOptions hyperdriveTypes.WorkspaceSyncOptions, remoteCfg hyperdriveTypes.EC2ComputeRemoteConfiguration) string {
 	if syncOptions.S3Config.Profile != "" {
 
 		namedProfileConfig := config2.GetNamedProfileConfig(syncOptions.S3Config.Profile)
@@ -680,7 +680,7 @@ func getHyperpackageEC2StartScript(version string, jupyterLaunchOptions hyperdri
 
 	syncParameters := fmt.Sprintf("--s3AccessKey %s --s3Secret %s --s3Token %s --s3Region %s --s3BucketName %s -n %s", syncOptions.S3Config.AccessKey, syncOptions.S3Config.Secret, syncOptions.S3Config.Token, syncOptions.S3Config.Region, syncOptions.S3Config.BucketName, syncOptions.StudyName)
 	packCommand := fmt.Sprintf("hyper workspace pack %s", syncParameters)
-	runParameters := fmt.Sprintf("--hyperpackagePath %s.hyperpack.zip --hostPort %d", syncOptions.StudyName, jupyterLaunchOptions.HostPort)
+	runParameters := fmt.Sprintf("--hyperpackagePath %s.hyperpack.zip --hostPort %d", syncOptions.StudyName, dockerOptions.HostPort)
 	startupScript := fmt.Sprintf(`
 #!/bin/bash -xe
 #yum update -y
