@@ -688,7 +688,7 @@ func getHyperpackageEC2StartScript(version string, dockerOptions hyperdriveTypes
 
 	syncParameters := fmt.Sprintf("--s3AccessKey %s --s3Secret %s --s3Token %s --s3Region %s --s3BucketName %s -n %s", syncOptions.S3Config.AccessKey, syncOptions.S3Config.Secret, syncOptions.S3Config.Token, syncOptions.S3Config.Region, syncOptions.S3Config.BucketName, syncOptions.StudyName)
 	packCommand := fmt.Sprintf("hyper workspace pack %s", syncParameters)
-	runParameters := fmt.Sprintf("--hyperpackagePath %s.hyperpack.zip --hostPort %d", syncOptions.StudyName, dockerOptions.HostPort)
+	runParameters := fmt.Sprintf("--hyperpackagePath %s.hyperpack.zip --hostPort %d --localOnly=false", syncOptions.StudyName, dockerOptions.HostPort)
 	startupScript := fmt.Sprintf(`
 #!/bin/bash -xe
 #yum update -y
