@@ -540,10 +540,18 @@ func StartJupyterEC2(manifestPath string, remoteCfg hyperdriveTypes.EC2ComputeRe
 }
 func StartHyperpackageEC2(manifestPath string, remoteCfg hyperdriveTypes.EC2ComputeRemoteConfiguration, ec2Type string, amiID string, syncOptions hyperdriveTypes.WorkspaceSyncOptions, dockerOptions hyperdriveTypes.DockerOptions) {
 	startupScript := getHyperpackageEC2StartScript(version, dockerOptions, syncOptions, remoteCfg)
-	ip := StartServer(manifestPath, remoteCfg, ec2Type, amiID, startupScript, dockerOptions.HostPort)
+
+	var hostPort int
+	if dockerOptions.HostPort == -1 {
+		hostPort = 8888
+	} else {
+		hostPort = dockerOptions.HostPort
+	}
+
+	ip := StartServer(manifestPath, remoteCfg, ec2Type, amiID, startupScript, hostPort)
 
 	if ip != "" {
-		fmt.Println("Deploy completed, preditions avaliable at http://" + ip + ":" + strconv.Itoa(dockerOptions.HostPort))
+		fmt.Println("Deploy completed, preditions avaliable at http://" + ip + ":" + strconv.Itoa(hostPort))
 	}
 }
 func StartServer(manifestPath string, remoteCfg hyperdriveTypes.EC2ComputeRemoteConfiguration, ec2Type string, amiID string, startupScript string, hostPort int) string {
