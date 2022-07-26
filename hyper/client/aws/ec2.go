@@ -678,6 +678,8 @@ sudo -u ec2-user bash -c 'hyper jupyter remoteHost --hostPort %d --apiKey %s %s 
 
 }
 func getHyperpackageEC2StartScript(version string, dockerOptions hyperdriveTypes.DockerOptions, syncOptions hyperdriveTypes.WorkspaceSyncOptions, remoteCfg hyperdriveTypes.EC2ComputeRemoteConfiguration) string {
+	var hostPort int
+
 	if syncOptions.S3Config.Profile != "" {
 
 		namedProfileConfig := config2.GetNamedProfileConfig(syncOptions.S3Config.Profile)
@@ -686,9 +688,15 @@ func getHyperpackageEC2StartScript(version string, dockerOptions hyperdriveTypes
 		syncOptions.S3Config.Token = namedProfileConfig.Token
 	}
 
+	if dockerOptions.HostPort == -1 {
+		hostPort = 8888
+	} else {
+		hostPort = dockerOptions.HostPort
+	}
+
 	syncParameters := fmt.Sprintf("--s3AccessKey %s --s3Secret %s --s3Token %s --s3Region %s --s3BucketName %s -n %s", syncOptions.S3Config.AccessKey, syncOptions.S3Config.Secret, syncOptions.S3Config.Token, syncOptions.S3Config.Region, syncOptions.S3Config.BucketName, syncOptions.StudyName)
 	packCommand := fmt.Sprintf("hyper workspace pack %s", syncParameters)
-	runParameters := fmt.Sprintf("--hyperpackagePath %s.hyperpack.zip --hostPort %d --localOnly=false", syncOptions.StudyName, dockerOptions.HostPort)
+	runParameters := fmt.Sprintf("--hyperpackagePath %s.hyperpack.zip --hostPort %d --localOnly=false", syncOptions.StudyName, hostPort)
 	startupScript := fmt.Sprintf(`
 #!/bin/bash -xe
 #yum update -y
