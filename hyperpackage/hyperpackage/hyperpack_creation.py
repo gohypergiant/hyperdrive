@@ -1,3 +1,5 @@
+import torch
+
 SUPPORTED_MODEL_FLAVORS = ["automl"]
 
 
@@ -11,4 +13,14 @@ def create_hyperpack(trained_model=None, model_flavor: str = None):
                 supported_flavors
             )
         )
+    torch_export(trained_model=trained_model)
     print("ahoy environs!")
+
+
+def torch_export(
+    trained_model,
+    local_artifact_path="/home/jovyan/automl_trained_model",
+    train_shape=30,
+):
+    initial_types = torch.randn(1, train_shape)
+    torch.onnx.export(trained_model, initial_types, local_artifact_path, train_shape)
