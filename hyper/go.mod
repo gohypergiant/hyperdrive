@@ -7,7 +7,7 @@ require (
 	github.com/aws/aws-sdk-go-v2 v1.16.7
 	github.com/aws/aws-sdk-go-v2/config v1.15.14
 	github.com/aws/aws-sdk-go-v2/credentials v1.12.9
-	github.com/aws/aws-sdk-go-v2/service/ec2 v1.49.1
+	github.com/aws/aws-sdk-go-v2/service/ec2 v1.50.0
 	github.com/bramvdbogaerde/go-scp v1.2.0
 	github.com/docker/docker v20.10.17+incompatible
 	github.com/docker/go-connections v0.4.0
