@@ -30,6 +30,8 @@ import (
 
 const HYPERDRIVE_TYPE_TAG string = "hyperdrive-type"
 const HYPERDRIVE_NAME_TAG string = "hyperdrive-name"
+const HYPERDRIVE_VPC_TAG_KEY string = "hyperdrive-vpc"
+const HYPERDRIVE_VPC_TAG_VALUE string = "true"
 const HYPERDRIVE_SECURITY_GROUP_NAME string = "-SecurityGroup"
 
 type EC2Type int64
@@ -136,11 +138,11 @@ func AddInternetGateway(client *ec2.Client, vID string, igID string) {
 		panic("error attaching the Internet Gateway to VPC: " + err.Error())
 	}
 }
-func GetVpcId(r *ec2.DescribeVpcsOutput, projectName string) string {
+func GetVpcId(r *ec2.DescribeVpcsOutput) string {
 
 	for _, v := range r.Vpcs {
 		for _, t := range v.Tags {
-			if *t.Key == HYPERDRIVE_NAME_TAG && *t.Value == projectName {
+			if *t.Key == HYPERDRIVE_VPC_TAG_KEY && *t.Value == HYPERDRIVE_VPC_TAG_VALUE {
 				return *v.VpcId
 			}
 		}
@@ -193,15 +195,18 @@ func getOrCreateVPC(client *ec2.Client, projectName string) (string, string) {
 		panic("error when fetching VPCs, " + err.Error())
 	}
 
-	vpcID := GetVpcId(result, projectName)
+	vpcID := GetVpcId(result)
 
 	if vpcID == "" {
 
 		fmt.Println("Creating VPC")
 
 		inputMakeVPC := &ec2.CreateVpcInput{
-			CidrBlock:         aws.String("10.0.0.0/16"),
-			TagSpecifications: getTagSpecification(projectName, types.ResourceTypeVpc),
+			CidrBlock: aws.String("10.0.0.0/16"),
+			TagSpecifications: getTagSpecification(projectName, types.ResourceTypeVpc, types.Tag{
+				Key:   aws.String(HYPERDRIVE_VPC_TAG_KEY),
+				Value: aws.String(HYPERDRIVE_VPC_TAG_VALUE),
+			}),
 		}
 
 		resultMakeVPC, err := MakeVpc(context.TODO(), client, inputMakeVPC)
@@ -241,11 +246,11 @@ func getOrCreateVPC(client *ec2.Client, projectName string) (string, string) {
 	return vpcID, routeTableID
 }
 
-func getTagSpecification(projectName string, resourceType types.ResourceType) []types.TagSpecification {
+func getTagSpecification(projectName string, resourceType types.ResourceType, additionalTags ...types.Tag) []types.TagSpecification {
 	tagSpecification := []types.TagSpecification{
 		{
 			ResourceType: resourceType,
-			Tags: []types.Tag{
+			Tags: append([]types.Tag{
 				{
 					Key:   aws.String(HYPERDRIVE_TYPE_TAG),
 					Value: aws.String("true"),
@@ -254,7 +259,7 @@ func getTagSpecification(projectName string, resourceType types.ResourceType) []
 					Key:   aws.String(HYPERDRIVE_NAME_TAG),
 					Value: aws.String(projectName),
 				},
-			},
+			}, additionalTags...),
 		},
 	}
 	return tagSpecification
@@ -738,7 +743,7 @@ func StopServer(manifestPath string, remoteCfg hyperdriveTypes.EC2ComputeRemoteC
 		panic("error when fetching VPCs, " + err.Error())
 	}
 
-	vpcID := GetVpcId(vpcDescribeResult, projectName)
+	vpcID := GetVpcId(vpcDescribeResult)
 
 	if vpcID == "" {
 		fmt.Println("No VPC associated with this project found")
@@ -937,47 +942,44 @@ func StopServer(manifestPath string, remoteCfg hyperdriveTypes.EC2ComputeRemoteC
 	internetGatewayID := GetInternetGatewayID(internetGatewayDescribeResult, projectName)
 
 	if internetGatewayID != "" {
-		internetGatewayDetachInput := &ec2.DetachInternetGatewayInput{
-			InternetGatewayId: aws.String(internetGatewayID),
-			VpcId:             aws.String(vpcID),
-		}
-		_, err = DetachInternetGateway(context.TODO(), client, internetGatewayDetachInput)
-		if err != nil {
-			panic("error detaching Internet Gateway," + err.Error())
-		}
-
-		internetGatewayDeleteInput := &ec2.DeleteInternetGatewayInput{
-			InternetGatewayId: aws.String(internetGatewayID),
-		}
-
-		_, err = DeleteInternetGateway(context.TODO(), client, internetGatewayDeleteInput)
-		if err != nil {
-			panic("error deleting Internet Gateway," + err.Error())
-		}
-		fmt.Println("Internet Gateway deleted:", internetGatewayID)
+		removeInternetGateway(internetGatewayID, vpcID, client)
 	}
 
 	if subnetID != "" {
-		subnetDeleteInput := &ec2.DeleteSubnetInput{
-			SubnetId: aws.String(subnetID),
-		}
-		_, err = DeleteSubnet(context.TODO(), client, subnetDeleteInput)
-		if err != nil {
-			panic("error deleting Subnet," + err.Error())
-		}
-		fmt.Println("Subnet deleted:", subnetID)
+		deleteSubnet(subnetID, err, client)
+	}
+}
+
+func removeInternetGateway(internetGatewayID string, vpcID string, client *ec2.Client) {
+	internetGatewayDetachInput := &ec2.DetachInternetGatewayInput{
+		InternetGatewayId: aws.String(internetGatewayID),
+		VpcId:             aws.String(vpcID),
+	}
+	_, err := DetachInternetGateway(context.TODO(), client, internetGatewayDetachInput)
+	if err != nil {
+		panic("error detaching Internet Gateway," + err.Error())
 	}
 
-	if vpcID != "" {
-		vpcDeleteInput := &ec2.DeleteVpcInput{
-			VpcId: aws.String(vpcID),
-		}
-		_, err = DeleteVpc(context.TODO(), client, vpcDeleteInput)
-		if err != nil {
-			panic("error deleting VPC," + err.Error())
-		}
-		fmt.Println("VPC deleted:", vpcID)
+	internetGatewayDeleteInput := &ec2.DeleteInternetGatewayInput{
+		InternetGatewayId: aws.String(internetGatewayID),
 	}
+
+	_, err = DeleteInternetGateway(context.TODO(), client, internetGatewayDeleteInput)
+	if err != nil {
+		panic("error deleting Internet Gateway," + err.Error())
+	}
+	fmt.Println("Internet Gateway deleted:", internetGatewayID)
+}
+
+func deleteSubnet(subnetID string, err error, client *ec2.Client) {
+	subnetDeleteInput := &ec2.DeleteSubnetInput{
+		SubnetId: aws.String(subnetID),
+	}
+	_, err = DeleteSubnet(context.TODO(), client, subnetDeleteInput)
+	if err != nil {
+		panic("error deleting Subnet," + err.Error())
+	}
+	fmt.Println("Subnet deleted:", subnetID)
 }
 
 func WriteFileToEC2(instanceIp string, remoteCfg hyperdriveTypes.EC2ComputeRemoteConfiguration, projectName string, filePath string) {
