@@ -37,7 +37,7 @@ const HYPERDRIVE_SECURITY_GROUP_NAME string = "-SecurityGroup"
 type EC2Type int64
 
 // TODO, we should get this dynamically
-const version string = "0.0.58"
+const version string = "0.0.59"
 
 func GetInstances(c context.Context, api hyperdriveTypes.EC2DescribeInstancesAPI, input *ec2.DescribeInstancesInput) (*ec2.DescribeInstancesOutput, error) {
 	return api.DescribeInstances(c, input)
