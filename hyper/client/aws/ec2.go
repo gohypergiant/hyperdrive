@@ -30,6 +30,8 @@ import (
 
 const HYPERDRIVE_TYPE_TAG string = "hyperdrive-type"
 const HYPERDRIVE_NAME_TAG string = "hyperdrive-name"
+const HYPERDRIVE_VPC_TAG_KEY string = "hyperdrive-vpc"
+const HYPERDRIVE_VPC_TAG_VALUE string = "true"
 const HYPERDRIVE_SECURITY_GROUP_NAME string = "-SecurityGroup"
 
 type EC2Type int64
@@ -136,11 +138,11 @@ func AddInternetGateway(client *ec2.Client, vID string, igID string) {
 		panic("error attaching the Internet Gateway to VPC: " + err.Error())
 	}
 }
-func GetVpcId(r *ec2.DescribeVpcsOutput, projectName string) string {
+func GetVpcId(r *ec2.DescribeVpcsOutput) string {
 
 	for _, v := range r.Vpcs {
 		for _, t := range v.Tags {
-			if *t.Key == HYPERDRIVE_NAME_TAG && *t.Value == projectName {
+			if *t.Key == HYPERDRIVE_VPC_TAG_KEY && *t.Value == HYPERDRIVE_VPC_TAG_VALUE {
 				return *v.VpcId
 			}
 		}
@@ -193,15 +195,18 @@ func getOrCreateVPC(client *ec2.Client, projectName string) (string, string) {
 		panic("error when fetching VPCs, " + err.Error())
 	}
 
-	vpcID := GetVpcId(result, projectName)
+	vpcID := GetVpcId(result)
 
 	if vpcID == "" {
 
 		fmt.Println("Creating VPC")
 
 		inputMakeVPC := &ec2.CreateVpcInput{
-			CidrBlock:         aws.String("10.0.0.0/16"),
-			TagSpecifications: getTagSpecification(projectName, types.ResourceTypeVpc),
+			CidrBlock: aws.String("10.0.0.0/16"),
+			TagSpecifications: getTagSpecification(projectName, types.ResourceTypeVpc, types.Tag{
+				Key:   aws.String(HYPERDRIVE_VPC_TAG_KEY),
+				Value: aws.String(HYPERDRIVE_VPC_TAG_VALUE),
+			}),
 		}
 
 		resultMakeVPC, err := MakeVpc(context.TODO(), client, inputMakeVPC)
@@ -241,11 +246,11 @@ func getOrCreateVPC(client *ec2.Client, projectName string) (string, string) {
 	return vpcID, routeTableID
 }
 
-func getTagSpecification(projectName string, resourceType types.ResourceType) []types.TagSpecification {
+func getTagSpecification(projectName string, resourceType types.ResourceType, additionalTags ...types.Tag) []types.TagSpecification {
 	tagSpecification := []types.TagSpecification{
 		{
 			ResourceType: resourceType,
-			Tags: []types.Tag{
+			Tags: append([]types.Tag{
 				{
 					Key:   aws.String(HYPERDRIVE_TYPE_TAG),
 					Value: aws.String("true"),
@@ -254,7 +259,7 @@ func getTagSpecification(projectName string, resourceType types.ResourceType) []
 					Key:   aws.String(HYPERDRIVE_NAME_TAG),
 					Value: aws.String(projectName),
 				},
-			},
+			}, additionalTags...),
 		},
 	}
 	return tagSpecification
@@ -538,12 +543,20 @@ func StartJupyterEC2(manifestPath string, remoteCfg hyperdriveTypes.EC2ComputeRe
 
 	}
 }
-func StartHyperpackageEC2(manifestPath string, remoteCfg hyperdriveTypes.EC2ComputeRemoteConfiguration, ec2Type string, amiID string, jupyterLaunchOptions hyperdriveTypes.JupyterLaunchOptions, syncOptions hyperdriveTypes.WorkspaceSyncOptions) {
-	startupScript := getHyperpackageEC2StartScript(version, jupyterLaunchOptions, syncOptions, remoteCfg)
-	ip := StartServer(manifestPath, remoteCfg, ec2Type, amiID, startupScript, jupyterLaunchOptions.HostPort)
+func StartHyperpackageEC2(manifestPath string, remoteCfg hyperdriveTypes.EC2ComputeRemoteConfiguration, ec2Type string, amiID string, syncOptions hyperdriveTypes.WorkspaceSyncOptions, dockerOptions hyperdriveTypes.DockerOptions) {
+	startupScript := getHyperpackageEC2StartScript(version, dockerOptions, syncOptions, remoteCfg)
+
+	var hostPort int
+	if dockerOptions.HostPort == -1 {
+		hostPort = 8888
+	} else {
+		hostPort = dockerOptions.HostPort
+	}
+
+	ip := StartServer(manifestPath, remoteCfg, ec2Type, amiID, startupScript, hostPort)
 
 	if ip != "" {
-		fmt.Println("Deploy completed, preditions avaliable at http://" + ip + ":" + strconv.Itoa(jupyterLaunchOptions.HostPort))
+		fmt.Println("Deploy completed, preditions avaliable at http://" + ip + ":" + strconv.Itoa(hostPort))
 	}
 }
 func StartServer(manifestPath string, remoteCfg hyperdriveTypes.EC2ComputeRemoteConfiguration, ec2Type string, amiID string, startupScript string, hostPort int) string {
@@ -671,7 +684,7 @@ sudo -u ec2-user bash -c 'hyper jupyter remoteHost --hostPort %d --apiKey %s %s 
 	return startupScript
 
 }
-func getHyperpackageEC2StartScript(version string, jupyterLaunchOptions hyperdriveTypes.JupyterLaunchOptions, syncOptions hyperdriveTypes.WorkspaceSyncOptions, remoteCfg hyperdriveTypes.EC2ComputeRemoteConfiguration) string {
+func getHyperpackageEC2StartScript(version string, dockerOptions hyperdriveTypes.DockerOptions, syncOptions hyperdriveTypes.WorkspaceSyncOptions, remoteCfg hyperdriveTypes.EC2ComputeRemoteConfiguration) string {
 	if syncOptions.S3Config.Profile != "" {
 
 		namedProfileConfig := config2.GetNamedProfileConfig(syncOptions.S3Config.Profile)
@@ -682,7 +695,7 @@ func getHyperpackageEC2StartScript(version string, jupyterLaunchOptions hyperdri
 
 	syncParameters := fmt.Sprintf("--s3AccessKey %s --s3Secret %s --s3Token %s --s3Region %s --s3BucketName %s -n %s", syncOptions.S3Config.AccessKey, syncOptions.S3Config.Secret, syncOptions.S3Config.Token, syncOptions.S3Config.Region, syncOptions.S3Config.BucketName, syncOptions.StudyName)
 	packCommand := fmt.Sprintf("hyper workspace pack %s", syncParameters)
-	runParameters := fmt.Sprintf("--hyperpackagePath %s.hyperpack.zip --hostPort %d", syncOptions.StudyName, jupyterLaunchOptions.HostPort)
+	runParameters := fmt.Sprintf("--hyperpackagePath %s.hyperpack.zip --hostPort %d --localOnly=false", syncOptions.StudyName, dockerOptions.HostPort)
 	startupScript := fmt.Sprintf(`
 #!/bin/bash -xe
 #yum update -y
@@ -697,7 +710,7 @@ cd /tmp/hyperdrive/project
 sudo -u ec2-user %s
 chown -R ec2-user:ec2-user .
 hyper remoteStatus update "launching hyperpackage"
-sudo -u ec2-user bash -c 'hyper hyperpackage run %s &'
+sudo -u ec2-user bash -c 'hyper pack run %s &'
 `, version, version, packCommand, runParameters)
 
 	return startupScript
@@ -734,7 +747,7 @@ func StopServer(manifestPath string, remoteCfg hyperdriveTypes.EC2ComputeRemoteC
 		panic("error when fetching VPCs, " + err.Error())
 	}
 
-	vpcID := GetVpcId(vpcDescribeResult, projectName)
+	vpcID := GetVpcId(vpcDescribeResult)
 
 	if vpcID == "" {
 		fmt.Println("No VPC associated with this project found")
@@ -933,47 +946,44 @@ func StopServer(manifestPath string, remoteCfg hyperdriveTypes.EC2ComputeRemoteC
 	internetGatewayID := GetInternetGatewayID(internetGatewayDescribeResult, projectName)
 
 	if internetGatewayID != "" {
-		internetGatewayDetachInput := &ec2.DetachInternetGatewayInput{
-			InternetGatewayId: aws.String(internetGatewayID),
-			VpcId:             aws.String(vpcID),
-		}
-		_, err = DetachInternetGateway(context.TODO(), client, internetGatewayDetachInput)
-		if err != nil {
-			panic("error detaching Internet Gateway," + err.Error())
-		}
-
-		internetGatewayDeleteInput := &ec2.DeleteInternetGatewayInput{
-			InternetGatewayId: aws.String(internetGatewayID),
-		}
-
-		_, err = DeleteInternetGateway(context.TODO(), client, internetGatewayDeleteInput)
-		if err != nil {
-			panic("error deleting Internet Gateway," + err.Error())
-		}
-		fmt.Println("Internet Gateway deleted:", internetGatewayID)
+		removeInternetGateway(internetGatewayID, vpcID, client)
 	}
 
 	if subnetID != "" {
-		subnetDeleteInput := &ec2.DeleteSubnetInput{
-			SubnetId: aws.String(subnetID),
-		}
-		_, err = DeleteSubnet(context.TODO(), client, subnetDeleteInput)
-		if err != nil {
-			panic("error deleting Subnet," + err.Error())
-		}
-		fmt.Println("Subnet deleted:", subnetID)
+		deleteSubnet(subnetID, err, client)
+	}
+}
+
+func removeInternetGateway(internetGatewayID string, vpcID string, client *ec2.Client) {
+	internetGatewayDetachInput := &ec2.DetachInternetGatewayInput{
+		InternetGatewayId: aws.String(internetGatewayID),
+		VpcId:             aws.String(vpcID),
+	}
+	_, err := DetachInternetGateway(context.TODO(), client, internetGatewayDetachInput)
+	if err != nil {
+		panic("error detaching Internet Gateway," + err.Error())
 	}
 
-	if vpcID != "" {
-		vpcDeleteInput := &ec2.DeleteVpcInput{
-			VpcId: aws.String(vpcID),
-		}
-		_, err = DeleteVpc(context.TODO(), client, vpcDeleteInput)
-		if err != nil {
-			panic("error deleting VPC," + err.Error())
-		}
-		fmt.Println("VPC deleted:", vpcID)
+	internetGatewayDeleteInput := &ec2.DeleteInternetGatewayInput{
+		InternetGatewayId: aws.String(internetGatewayID),
 	}
+
+	_, err = DeleteInternetGateway(context.TODO(), client, internetGatewayDeleteInput)
+	if err != nil {
+		panic("error deleting Internet Gateway," + err.Error())
+	}
+	fmt.Println("Internet Gateway deleted:", internetGatewayID)
+}
+
+func deleteSubnet(subnetID string, err error, client *ec2.Client) {
+	subnetDeleteInput := &ec2.DeleteSubnetInput{
+		SubnetId: aws.String(subnetID),
+	}
+	_, err = DeleteSubnet(context.TODO(), client, subnetDeleteInput)
+	if err != nil {
+		panic("error deleting Subnet," + err.Error())
+	}
+	fmt.Println("Subnet deleted:", subnetID)
 }
 
 func WriteFileToEC2(instanceIp string, remoteCfg hyperdriveTypes.EC2ComputeRemoteConfiguration, projectName string, filePath string) {

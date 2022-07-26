@@ -18,6 +18,7 @@ var (
 	importModelFileName       string
 	modelFlavor               string
 	trainShape                string
+	localOnly                 bool
 )
 
 // runCmd represents the run command
@@ -51,9 +52,10 @@ var runCmd = &cobra.Command{
 			RemoteName).BuildAndRun(
 			dockerfileSavePath,
 			imageTags,
-			types.JupyterLaunchOptions{HostPort: portInt},
+			types.JupyterLaunchOptions{},
 			types.EC2StartOptions{InstanceType: ec2InstanceType, AmiId: amiID},
-			getWorkspaceSyncOptions())
+			getWorkspaceSyncOptions(),
+			types.DockerOptions{HostPort: portInt, LocalOnly: localOnly})
 	},
 }
 
@@ -133,6 +135,7 @@ func init() {
 	packCmd.PersistentFlags().StringVar(&workspaceS3BucketName, "workspaceS3BucketName", "", "Bucket name for accessing S3 buckets [Overrides workspaceRemote]")
 	runCmd.PersistentFlags().StringVar(&ec2InstanceType, "ec2InstanceType", "", "The type of EC2 instance to be created")
 	runCmd.PersistentFlags().StringVar(&amiID, "amiId", "", "The ID of the AMI")
-	runCmd.PersistentFlags().StringVar(&hostPort, "hostPort", "", "Host port for container")
+	runCmd.PersistentFlags().StringVar(&hostPort, "hostPort", "-1", "Host port for container")
+	runCmd.PersistentFlags().BoolVarP(&localOnly, "localOnly", "", true, "Make API accessible only locally (localhost)")
 	packCmd.AddCommand(stopCmd)
 }
