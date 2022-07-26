@@ -37,7 +37,7 @@ const HYPERDRIVE_SECURITY_GROUP_NAME string = "-SecurityGroup"
 type EC2Type int64
 
 // TODO, we should get this dynamically
-const version string = "0.0.32"
+const version string = "0.0.59"
 
 func GetInstances(c context.Context, api hyperdriveTypes.EC2DescribeInstancesAPI, input *ec2.DescribeInstancesInput) (*ec2.DescribeInstancesOutput, error) {
 	return api.DescribeInstances(c, input)
@@ -671,11 +671,13 @@ mkdir -p /tmp/hyperdrive/project
 curl -fsSL https://github.com/gohypergiant/hyperdrive/releases/download/%s/hyperdrive_%s_Linux_x86_64.tar.gz -o /tmp/hyperdrive/hyper.tar
 tar -xvf /tmp/hyperdrive/hyper.tar -C /tmp/hyperdrive
 mv /tmp/hyperdrive/hyper /usr/bin/hyper
+hyper remoteStatus &
 sudo chown ec2-user:ec2-user /tmp/hyperdrive/project
 cd /tmp/hyperdrive/project
 sudo -u ec2-user %s
 sudo -u ec2-user nohup %s &
 chown -R ec2-user:ec2-user .
+hyper remoteStatus update "launching notebook"
 sudo -u ec2-user bash -c 'hyper jupyter remoteHost --hostPort %d --apiKey %s %s &'
 `, version, version, pullCommand, syncCommand, jupyterLaunchOptions.HostPort, jupyterLaunchOptions.APIKey, s3Parameters)
 
@@ -710,10 +712,12 @@ mkdir -p /tmp/hyperdrive/project
 curl -fsSL https://github.com/gohypergiant/hyperdrive/releases/download/%s/hyperdrive_%s_Linux_x86_64.tar.gz -o /tmp/hyperdrive/hyper.tar
 tar -xvf /tmp/hyperdrive/hyper.tar -C /tmp/hyperdrive
 mv /tmp/hyperdrive/hyper /usr/bin/hyper
+hyper remoteStatus &
 sudo chown ec2-user:ec2-user /tmp/hyperdrive/project
 cd /tmp/hyperdrive/project
 sudo -u ec2-user %s
 chown -R ec2-user:ec2-user .
+hyper remoteStatus update "launching hyperpackage"
 sudo -u ec2-user bash -c 'hyper pack run %s &'
 `, version, version, packCommand, runParameters)
 
