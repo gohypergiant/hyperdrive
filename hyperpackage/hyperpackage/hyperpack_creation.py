@@ -1,4 +1,5 @@
 import os
+import shutil
 from pathlib import Path
 from hyperpackage.flavor.pytorch import torch_onnx_export
 
@@ -17,6 +18,7 @@ def create_hyperpack(trained_model=None, model_flavor: str = None):
         hyperpack_path = hyperpack_path + "_" + str(i)
         os.makedirs(hyperpack_path, exist_ok=False)
     torch_onnx_export(model=trained_model, hyperpack_dir=hyperpack_path)
+    zip_study(hyperpack_path)
     print("ahoy environs!")
 
 
@@ -43,3 +45,7 @@ def make_hyperpack_path(name: str) -> str:
     hyperpack_folder_name = name + ".hyperpack"
     path = os.path.join(home_dir, hyperpack_folder_name)
     return path
+
+
+def zip_study(folder_path):
+    shutil.make_archive(folder_path, "zip", folder_path)
