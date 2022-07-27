@@ -1,4 +1,4 @@
-from hypertrain.flavor.pytorch import torch_onnx_export
+from hyperpackage.flavor.pytorch import torch_onnx_export
 
 SUPPORTED_MODEL_FLAVORS = ["automl"]
 
