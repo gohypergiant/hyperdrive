@@ -21,12 +21,18 @@ def create_hyperpack(trained_model=None, model_flavor: str = None):
 
 
 def verify_args(model, flavor: str):
+    supported_flavors = "\n".join(map(str, SUPPORTED_MODEL_FLAVORS))
     if model is None:
         raise TypeError("You must pass in a trained model.")
     elif flavor is None:
-        supported_flavors = "\n".join(map(str, SUPPORTED_MODEL_FLAVORS))
         raise TypeError(
             "You must specify a model flavor. Supported model flavors are:\n{}".format(
+                supported_flavors
+            )
+        )
+    elif flavor not in SUPPORTED_MODEL_FLAVORS:
+        raise TypeError(
+            "You have selected a model flavor that is currently not supported. Supported model flavors are:\n{}".format(
                 supported_flavors
             )
         )
