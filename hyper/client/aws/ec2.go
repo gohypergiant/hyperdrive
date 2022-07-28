@@ -41,10 +41,15 @@ type EC2Type int64
 const version string = "0.0.59"
 
 func GetDefaultAMI(region string) string {
+	//Currently using
+	//amzn2-ami-ecs-inf-hvm-2.0.20220509-x86_64-ebs
 
 	defaultAmiMap := map[string]string{
-		"us-east-2": "ami-0a9fe010cca6f0707",
-		"us-west-2": "ami-0f127290342ded3f7",
+		"us-east-1":    "ami-0610039ae01c190ef",
+		"us-east-2":    "ami-0a9fe010cca6f0707",
+		"us-west-1":    "ami-08a812c60f204487e",
+		"us-west-2":    "ami-0f127290342ded3f7",
+		"ca-central-1": "ami-043372b16c87d995b",
 	}
 
 	val, ok := defaultAmiMap[strings.ToLower(region)]
