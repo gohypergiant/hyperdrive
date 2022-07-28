@@ -51,7 +51,7 @@ func checkPortAvailability(port string) bool {
 	portUInt64, _ := strconv.ParseUint(port, 10, 64)
 	portUInt16 := uint16(portUInt64)
 	for _, runningContainer := range nowRunningContainers {
-		if runningContainer.Ports[0].PublicPort == portUInt16 {
+		if len(runningContainer.Ports) > 0 && runningContainer.Ports[0].PublicPort == portUInt16 {
 			portOpen = false
 			break
 		}
@@ -63,7 +63,7 @@ func generateRandPort() string {
 	rand.Seed(time.Now().UnixNano())
 	min := 30000
 	max := 60000
-	randPort := strconv.Itoa(rand.Intn(max - min) + min)
+	randPort := strconv.Itoa(rand.Intn(max-min) + min)
 	return randPort
 }
 
@@ -71,7 +71,7 @@ func getPort(isRemote bool) int {
 	defaultPort := "8888"
 	if hostPort == "" && isRemote {
 		hostPort = defaultPort
-	} else if (hostPort == "" && !isRemote) {
+	} else if hostPort == "" && !isRemote {
 		portAvail := checkPortAvailability(defaultPort)
 		if portAvail {
 			hostPort = defaultPort

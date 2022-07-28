@@ -11,6 +11,7 @@ import (
 	"reflect"
 	"runtime"
 	"strconv"
+	"strings"
 	"time"
 
 	config2 "github.com/gohypergiant/hyperdrive/hyper/services/config"
@@ -38,6 +39,22 @@ type EC2Type int64
 
 // TODO, we should get this dynamically
 const version string = "0.0.59"
+
+func GetDefaultAMI(region string) string {
+
+	defaultAmiMap := map[string]string{
+		"us-east-2": "ami-0a9fe010cca6f0707",
+		"us-west-2": "ami-0f127290342ded3f7",
+	}
+
+	val, ok := defaultAmiMap[strings.ToLower(region)]
+
+	if !ok {
+		panic("No default AMI known for region, please specify one using the --amiId flag")
+	}
+
+	return val
+}
 
 func GetInstances(c context.Context, api hyperdriveTypes.EC2DescribeInstancesAPI, input *ec2.DescribeInstancesInput) (*ec2.DescribeInstancesOutput, error) {
 	return api.DescribeInstances(c, input)
@@ -565,6 +582,10 @@ func StartServer(manifestPath string, remoteCfg hyperdriveTypes.EC2ComputeRemote
 		fmt.Println("EC2InstanceTypeNotFound: please specify a EC2 instance type using the flag --ec2InstanceType")
 		return ""
 	}
+	if amiID == "" {
+		amiID = GetDefaultAMI(remoteCfg.Region)
+	}
+
 	projectName := manifest.GetProjectName(manifestPath)
 	if projectName == "" {
 		fmt.Println("ProjectNameNotFound: please specify a project_name on the manifest (", manifestPath, ")")
