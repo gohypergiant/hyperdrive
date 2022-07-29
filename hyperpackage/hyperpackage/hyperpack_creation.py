@@ -1,5 +1,6 @@
 import os
 import shutil
+import yaml
 from pathlib import Path
 from hyperpackage.flavor.pytorch import torch_onnx_export
 
@@ -19,6 +20,8 @@ def create_hyperpack(trained_model=None, model_flavor: str = None):
         os.makedirs(hyperpack_path, exist_ok=False)
     torch_onnx_export(model=trained_model, hyperpack_dir=hyperpack_path)
     zip_study(hyperpack_path)
+    study_yaml_dict = {"project_name": model_flavor, "study_name": model_flavor}
+    write_yaml(study_yaml_dict, hyperpack_path)
     print("ahoy environs!")
 
 
@@ -45,6 +48,11 @@ def make_hyperpack_path(name: str) -> str:
     hyperpack_folder_name = name + ".hyperpack"
     path = os.path.join(home_dir, hyperpack_folder_name)
     return path
+
+
+def write_yaml(dictionary, yaml_file_name):
+    with open(yaml_file_name, "w") as stream:
+        yaml.dump(dictionary, stream)
 
 
 def zip_study(folder_path):
