@@ -21,7 +21,8 @@ def create_hyperpack(trained_model=None, model_flavor: str = None):
     torch_onnx_export(model=trained_model, hyperpack_dir=hyperpack_path)
     zip_study(hyperpack_path)
     study_yaml_dict = {"project_name": model_flavor, "study_name": model_flavor}
-    write_yaml(study_yaml_dict, "study.yaml")
+    yaml_file_location = os.path.join(hyperpack_path, "study.yaml")
+    write_yaml(study_yaml_dict, yaml_file_location)
     print("ahoy environs!")
 
 
@@ -50,8 +51,8 @@ def make_hyperpack_path(name: str) -> str:
     return path
 
 
-def write_yaml(dictionary, yaml_file_name):
-    with open(yaml_file_name, "w") as stream:
+def write_yaml(dictionary: dict, yaml_file_loc: str):
+    with open(yaml_file_loc, "w") as stream:
         yaml.dump(dictionary, stream)
 
 
