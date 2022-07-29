@@ -7,6 +7,7 @@ SUPPORTED_MODEL_FLAVORS = ["automl"]
 
 
 def create_hyperpack(trained_model=None, model_flavor: str = None):
+    curr_dir = os.getcwd()
     verify_args(model=trained_model, flavor=model_flavor)
     hyperpack_path = make_hyperpack_path(name=model_flavor)
     try:
@@ -20,7 +21,7 @@ def create_hyperpack(trained_model=None, model_flavor: str = None):
     torch_onnx_export(model=trained_model, hyperpack_dir=hyperpack_path)
     zip_study(hyperpack_path)
     study_yaml_dict = {"project_name": model_flavor, "study_name": model_flavor}
-    study_yaml_path = os.path.join(hyperpack_path, "study.yaml")
+    study_yaml_path = os.path.join(curr_dir, "study.yaml")
     write_yaml(study_yaml_dict, study_yaml_path)
     print("ahoy environs!")
 
