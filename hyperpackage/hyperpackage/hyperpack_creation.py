@@ -21,7 +21,7 @@ def create_hyperpack(trained_model=None, model_flavor: str = None):
     torch_onnx_export(model=trained_model, hyperpack_dir=hyperpack_path)
     zip_study(hyperpack_path)
     study_yaml_dict = {"project_name": model_flavor, "study_name": model_flavor}
-    write_yaml(study_yaml_dict, hyperpack_path)
+    write_yaml(study_yaml_dict, "study.yaml")
     print("ahoy environs!")
 
 
