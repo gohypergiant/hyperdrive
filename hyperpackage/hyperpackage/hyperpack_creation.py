@@ -72,9 +72,10 @@ def write_yaml(dictionary: dict, yaml_file_path: str):
 
 
 def zip_study(folder_path):
-    root_dir = os.path.dirname(folder_path)
-    base_dir = os.path.basename(folder_path)
-    shutil.make_archive(folder_path, "zip", root_dir, base_dir)
+    # root_dir = os.path.dirname(folder_path)
+    # base_dir = os.path.basename(folder_path)
+    # shutil.make_archive(folder_path, "zip", root_dir, base_dir)
+    shutil.make_archive(folder_path, "zip", folder_path)
 
 
 def generate_folder_name(
