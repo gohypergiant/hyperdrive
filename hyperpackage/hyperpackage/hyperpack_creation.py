@@ -1,6 +1,8 @@
+import json
 import os
 import shutil
 import yaml
+from datetime import datetime
 from hyperpackage.flavor.pytorch import torch_onnx_export
 
 SUPPORTED_MODEL_FLAVORS = ["automl"]
@@ -23,6 +25,9 @@ def create_hyperpack(trained_model=None, model_flavor: str = None):
     best_trial_path = os.path.join(hyperpack_path, best_trial_dir_name)
     os.makedirs(best_trial_path, exist_ok=True)
     torch_onnx_export(model=trained_model, trial_path=best_trial_path)
+    created_time = datetime.now().strftime("%Y-%m-%d %H:%M")
+    study_json_dict = {"best_trial": best_trial_dir_name, "created_at": created_time}
+    write_json(study_json_dict, best_trial_path)
     zip_study(hyperpack_path)
     study_yaml_dict = {"project_name": model_flavor, "study_name": model_flavor}
     study_yaml_path = os.path.join(curr_dir, "study.yaml")
@@ -53,6 +58,11 @@ def make_hyperpack_path(name: str) -> str:
     hyperpack_folder_name = name + ".hyperpack"
     path = os.path.join(curr_dir, hyperpack_folder_name)
     return path
+
+
+def write_json(dictionary, local_artifact_path):
+    with open(local_artifact_path, "w") as json_file:
+        json_file.write(json.dumps(dictionary))
 
 
 def write_yaml(dictionary: dict, yaml_file_path: str):
