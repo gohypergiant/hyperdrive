@@ -11,7 +11,7 @@ SUPPORTED_MODEL_FLAVORS = ["automl"]
 def create_hyperpack(trained_model=None, model_flavor: str = None):
     curr_dir = os.getcwd()
     verify_args(model=trained_model, flavor=model_flavor)
-    hyperpack_path = make_hyperpack_path(name=model_flavor)
+    hyperpack_path = make_hyperpack_path(base_dir=curr_dir, name=model_flavor)
     try:
         os.makedirs(hyperpack_path, exist_ok=False)
     except FileExistsError:
@@ -21,18 +21,18 @@ def create_hyperpack(trained_model=None, model_flavor: str = None):
         hyperpack_path = hyperpack_path + "_" + str(i)
         os.makedirs(hyperpack_path, exist_ok=False)
     best_trial_name = "adventurous"
-    best_trial_dir_name = generate_folder_name(name=best_trial_name)
-    best_trial_path = os.path.join(hyperpack_path, best_trial_dir_name)
+    best_trial_folder_name = generate_folder_name(name=best_trial_name)
+    best_trial_path = os.path.join(hyperpack_path, best_trial_folder_name)
     os.makedirs(best_trial_path, exist_ok=True)
     torch_onnx_export(model=trained_model, trial_path=best_trial_path)
     created_time = datetime.now().strftime("%Y-%m-%d %H:%M")
-    study_json_dict = {"best_trial": best_trial_dir_name, "created_at": created_time}
+    study_json_dict = {"best_trial": best_trial_folder_name, "created_at": created_time}
     study_json_path = os.path.join(hyperpack_path, "_study.json")
-    write_json(study_json_dict, study_json_path)
-    zip_study(hyperpack_path)
+    write_json(dictionary=study_json_dict, json_file_path=study_json_path)
+    zip_study(folder_path=hyperpack_path)
     study_yaml_dict = {"project_name": model_flavor, "study_name": model_flavor}
     study_yaml_path = os.path.join(curr_dir, "study.yaml")
-    write_yaml(study_yaml_dict, study_yaml_path)
+    write_yaml(dictionary=study_yaml_dict, yaml_file_path=study_yaml_path)
     print("ahoy environs!")
 
 
@@ -54,15 +54,14 @@ def verify_args(model, flavor: str):
         )
 
 
-def make_hyperpack_path(name: str) -> str:
-    curr_dir = os.getcwd()
+def make_hyperpack_path(base_dir: str, name: str) -> str:
     hyperpack_folder_name = name + ".hyperpack"
-    path = os.path.join(curr_dir, hyperpack_folder_name)
+    path = os.path.join(base_dir, hyperpack_folder_name)
     return path
 
 
-def write_json(dictionary, local_artifact_path):
-    with open(local_artifact_path, "w") as json_file:
+def write_json(dictionary, json_file_path):
+    with open(json_file_path, "w") as json_file:
         json_file.write(json.dumps(dictionary))
 
 
