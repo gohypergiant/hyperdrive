@@ -29,25 +29,13 @@ def create_hyperpack(trained_model=None, model_flavor: str = None):
     best_trial_folder_name = generate_folder_name(name=best_trial_name)
     best_trial_path = os.path.join(hyperpack_path, best_trial_folder_name)
     os.makedirs(best_trial_path, exist_ok=True)
-    torch_onnx_export(model=loaded_model, trial_path=best_trial_path)
+    save_best_trial_model(
+        model=loaded_model, flavor=model_flavor, save_path=best_trial_path
+    )
     create_study_json(hyperpack_path=hyperpack_path, best_trial=best_trial_folder_name)
     create_study_yaml(current_dir=curr_dir, name=model_flavor)
     zip_study(folder_path=hyperpack_path)
     print("ahoy environs!")
-
-
-def load_trained_model(model):
-    if isinstance(model, str):
-        try:
-            the_model = torch.load(model)
-        except Exception:
-            print("Error while attempting to load torch model.")
-    elif str(type(model)) == "<class 'neural_network.network.Network'>":
-        the_model = model
-    else:
-        raise TypeError("The model type you have passed in is currently not supported.")
-
-    return the_model
 
 
 def verify_args(model, flavor: str):
@@ -72,10 +60,29 @@ def verify_args(model, flavor: str):
         )
 
 
+def load_trained_model(model):
+    if isinstance(model, str):
+        try:
+            the_model = torch.load(model)
+        except Exception:
+            print("Error while attempting to load torch model.")
+    elif str(type(model)) == "<class 'neural_network.network.Network'>":
+        the_model = model
+    else:
+        raise TypeError("The model type you have passed in is currently not supported.")
+
+    return the_model
+
+
 def make_hyperpack_path(base_dir: str, name: str) -> str:
     hyperpack_folder_name = name + ".hyperpack"
     path = os.path.join(base_dir, hyperpack_folder_name)
     return path
+
+
+def save_best_trial_model(model, flavor: str, save_path: str):
+    if flavor == "automl":
+        torch_onnx_export(model=model, trial_path=save_path)
 
 
 def create_study_json(hyperpack_path: str, best_trial: str):
