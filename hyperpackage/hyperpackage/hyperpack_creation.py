@@ -12,10 +12,18 @@ from hyperpackage.utilities import (
 SUPPORTED_MODEL_FLAVORS = ["automl"]
 
 
-def create_hyperpack(trained_model=None, model_flavor: str = None):
+def create_hyperpack(
+    trained_model=None, model_flavor: str = None, num_train_columns: int = 0
+):
     curr_dir = os.getcwd()
     verify_args(model=trained_model, flavor=model_flavor)
     loaded_model = load_trained_model(model=trained_model)
+    if model_flavor == "automl" and num_train_columns == 0:
+        num_train_columns = loaded_model.fc1.in_features
+    elif num_train_columns == 0:
+        raise ValueError(
+            "Please pass in the number of columns in the training dataset."
+        )
     hyperpack_path = make_hyperpack_path(base_dir=curr_dir, name=model_flavor)
     try:
         os.makedirs(hyperpack_path, exist_ok=False)
@@ -30,7 +38,10 @@ def create_hyperpack(trained_model=None, model_flavor: str = None):
     best_trial_path = os.path.join(hyperpack_path, best_trial_folder_name)
     os.makedirs(best_trial_path, exist_ok=True)
     save_best_trial_model(
-        model=loaded_model, flavor=model_flavor, save_path=best_trial_path
+        model=loaded_model,
+        flavor=model_flavor,
+        save_path=best_trial_path,
+        num_cols=num_train_columns,
     )
     create_study_json(hyperpack_path=hyperpack_path, best_trial=best_trial_folder_name)
     create_study_yaml(current_dir=curr_dir, name=model_flavor)
@@ -80,9 +91,9 @@ def make_hyperpack_path(base_dir: str, name: str) -> str:
     return path
 
 
-def save_best_trial_model(model, flavor: str, save_path: str):
+def save_best_trial_model(model, flavor: str, save_path: str, num_cols: int):
     if flavor == "automl":
-        torch_onnx_export(model=model, trial_path=save_path)
+        torch_onnx_export(model=model, trial_path=save_path, train_shape_cols=num_cols)
 
 
 def create_study_json(hyperpack_path: str, best_trial: str):
