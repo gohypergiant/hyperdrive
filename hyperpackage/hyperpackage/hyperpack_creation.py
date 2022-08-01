@@ -38,7 +38,11 @@ def verify_args(model, flavor: str):
     supported_flavors = "\n".join(map(str, SUPPORTED_MODEL_FLAVORS))
     if model is None:
         raise TypeError("You must pass in a trained model.")
-    elif flavor is None:
+    elif isinstance(model, str):
+        if not os.path.exists(model):
+            raise FileNotFoundError("No file could be found at {}.".format(model))
+
+    if flavor is None:
         raise TypeError(
             "You must specify a model flavor. Supported model flavors are:\n{}".format(
                 supported_flavors
