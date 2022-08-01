@@ -18,7 +18,11 @@ def create_hyperpack(trained_model=None, model_flavor: str = None):
             i += 1
         hyperpack_path = hyperpack_path + "_" + str(i)
         os.makedirs(hyperpack_path, exist_ok=False)
-    torch_onnx_export(model=trained_model, hyperpack_dir=hyperpack_path)
+    best_trial_name = "adventurous"
+    best_trial_dir_name = generate_folder_name(name=best_trial_name)
+    best_trial_path = os.path.join(hyperpack_path, best_trial_dir_name)
+    os.makedirs(best_trial_path, exist_ok=True)
+    torch_onnx_export(model=trained_model, trial_path=best_trial_path)
     zip_study(hyperpack_path)
     study_yaml_dict = {"project_name": model_flavor, "study_name": model_flavor}
     study_yaml_path = os.path.join(curr_dir, "study.yaml")
@@ -60,3 +64,18 @@ def zip_study(folder_path):
     root_dir = os.path.dirname(folder_path)
     base_dir = os.path.basename(folder_path)
     shutil.make_archive(folder_path, "zip", root_dir, base_dir)
+
+
+def generate_folder_name(
+    trial_id: int = 0,
+    name: str = None,
+    format_precision: str = "06",
+    suffix: str = "trial",
+):
+    prefix = format(trial_id, format_precision)
+    if name is not None:
+        folder_name = f"{prefix}-{name}-{suffix}"
+    else:
+        folder_name = f"{prefix}-{suffix}"
+
+    return folder_name
