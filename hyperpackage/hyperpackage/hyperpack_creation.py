@@ -1,4 +1,5 @@
 import os
+import torch
 from datetime import datetime
 from hyperpackage.flavor.pytorch import torch_onnx_export
 from hyperpackage.utilities import (
@@ -14,6 +15,7 @@ SUPPORTED_MODEL_FLAVORS = ["automl"]
 def create_hyperpack(trained_model=None, model_flavor: str = None):
     curr_dir = os.getcwd()
     verify_args(model=trained_model, flavor=model_flavor)
+    loaded_model = load_trained_model(model=trained_model)
     hyperpack_path = make_hyperpack_path(base_dir=curr_dir, name=model_flavor)
     try:
         os.makedirs(hyperpack_path, exist_ok=False)
@@ -27,11 +29,25 @@ def create_hyperpack(trained_model=None, model_flavor: str = None):
     best_trial_folder_name = generate_folder_name(name=best_trial_name)
     best_trial_path = os.path.join(hyperpack_path, best_trial_folder_name)
     os.makedirs(best_trial_path, exist_ok=True)
-    torch_onnx_export(model=trained_model, trial_path=best_trial_path)
+    torch_onnx_export(model=loaded_model, trial_path=best_trial_path)
     create_study_json(hyperpack_path=hyperpack_path, best_trial=best_trial_folder_name)
     create_study_yaml(current_dir=curr_dir, name=model_flavor)
     zip_study(folder_path=hyperpack_path)
     print("ahoy environs!")
+
+
+def load_trained_model(model):
+    if isinstance(model, str):
+        try:
+            the_model = torch.load(model)
+        except Exception:
+            print("Error while attempting to load torch model.")
+    elif str(type(model)) == "<class 'neural_network.network.Network'>":
+        the_model = model
+    else:
+        raise TypeError("The model type you have passed in is currently not supported.")
+
+    return the_model
 
 
 def verify_args(model, flavor: str):
