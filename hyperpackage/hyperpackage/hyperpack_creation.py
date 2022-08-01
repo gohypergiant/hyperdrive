@@ -28,14 +28,9 @@ def create_hyperpack(trained_model=None, model_flavor: str = None):
     best_trial_path = os.path.join(hyperpack_path, best_trial_folder_name)
     os.makedirs(best_trial_path, exist_ok=True)
     torch_onnx_export(model=trained_model, trial_path=best_trial_path)
-    created_time = datetime.now().strftime("%Y-%m-%d %H:%M")
-    study_json_dict = {"best_trial": best_trial_folder_name, "created_at": created_time}
-    study_json_path = os.path.join(hyperpack_path, "_study.json")
-    write_json(dictionary=study_json_dict, json_file_path=study_json_path)
+    create_study_json(hyperpack_path=hyperpack_path, best_trial=best_trial_folder_name)
+    create_study_yaml(current_dir=curr_dir, name=model_flavor)
     zip_study(folder_path=hyperpack_path)
-    study_yaml_dict = {"project_name": model_flavor, "study_name": model_flavor}
-    study_yaml_path = os.path.join(curr_dir, "study.yaml")
-    write_yaml(dictionary=study_yaml_dict, yaml_file_path=study_yaml_path)
     print("ahoy environs!")
 
 
@@ -61,3 +56,16 @@ def make_hyperpack_path(base_dir: str, name: str) -> str:
     hyperpack_folder_name = name + ".hyperpack"
     path = os.path.join(base_dir, hyperpack_folder_name)
     return path
+
+
+def create_study_json(hyperpack_path: str, best_trial: str):
+    created_time = datetime.now().strftime("%Y-%m-%d %H:%M")
+    study_json_dict = {"best_trial": best_trial, "created_at": created_time}
+    study_json_path = os.path.join(hyperpack_path, "_study.json")
+    write_json(dictionary=study_json_dict, json_file_path=study_json_path)
+
+
+def create_study_yaml(current_dir: str, name: str):
+    study_yaml_dict = {"project_name": name, "study_name": name}
+    study_yaml_path = os.path.join(current_dir, "study.yaml")
+    write_yaml(dictionary=study_yaml_dict, yaml_file_path=study_yaml_path)
