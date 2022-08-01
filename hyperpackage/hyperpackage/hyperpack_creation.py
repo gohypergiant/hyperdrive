@@ -27,7 +27,7 @@ def create_hyperpack(trained_model=None, model_flavor: str = None):
     torch_onnx_export(model=trained_model, trial_path=best_trial_path)
     created_time = datetime.now().strftime("%Y-%m-%d %H:%M")
     study_json_dict = {"best_trial": best_trial_dir_name, "created_at": created_time}
-    study_json_path = os.path.join(best_trial_path, "_study.json")
+    study_json_path = os.path.join(hyperpack_path, "_study.json")
     write_json(study_json_dict, study_json_path)
     zip_study(hyperpack_path)
     study_yaml_dict = {"project_name": model_flavor, "study_name": model_flavor}
