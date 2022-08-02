@@ -8,7 +8,10 @@ import (
 	"github.com/gohypergiant/hyperdrive/hyper/client/aws"
 	"github.com/gohypergiant/hyperdrive/hyper/services/notebook"
 	"github.com/gohypergiant/hyperdrive/hyper/types"
+	"github.com/rogpeppe/go-internal/lockedfile"
 )
+
+const LOCKFILE_NAME string = "file.lock"
 
 type S3WorkspaceService struct {
 	ManifestPath    string
@@ -64,11 +67,17 @@ func (s S3WorkspaceService) syncOnce(localPath string, studyName string) {
 	remotePath := s.GetS3Url(studyName)
 	fmt.Println(remotePath)
 
+	lockfile, err := lockedfile.Create(LOCKFILE_NAME)
+	if err != nil {
+		fmt.Println("could not aquire lock to sync")
+		return
+	}
 	fmt.Println("syncing local to remote")
 	aws.SyncDirectory(s.S3Configuration, localPath, remotePath)
 	fmt.Println("syncing remote to local")
 	aws.SyncDirectory(s.S3Configuration, remotePath, localPath)
-
+	lockfile.Close()
+	os.Remove(LOCKFILE_NAME)
 }
 func (s S3WorkspaceService) watchSync(localPath string, studyName string) {
 	s.syncOnce(localPath, studyName)
