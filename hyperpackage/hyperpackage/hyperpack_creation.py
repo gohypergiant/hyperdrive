@@ -16,14 +16,25 @@ def create_hyperpack(
     trained_model=None, model_flavor: str = None, num_train_columns: int = 0
 ):
     curr_dir = os.getcwd()
+
+    print("*** Verifying trained_model and model_flavor args ***")
     verify_args(model=trained_model, flavor=model_flavor)
+
+    print("*** Loading the trained model ***")
     loaded_model = load_trained_model(model=trained_model)
+
+    # checking the num_train_columns arg. We did not check this arg in the
+    # verify_args func because if an automl model is passed in and the user
+    # doesn't pass in the number of training dataset columns, we
+    # can get the number of training dataset columns for the user
     if model_flavor == "automl" and num_train_columns == 0:
         num_train_columns = loaded_model.fc1.in_features
     elif num_train_columns == 0:
         raise ValueError(
             "Please pass in the number of columns in the training dataset."
         )
+
+    # make the hyperpack directory (e.g., automl.hyperpack)
     hyperpack_path = make_hyperpack_path(base_dir=curr_dir, name=model_flavor)
     try:
         os.makedirs(hyperpack_path, exist_ok=False)
@@ -33,20 +44,31 @@ def create_hyperpack(
             i += 1
         hyperpack_path = hyperpack_path + "_" + str(i)
         os.makedirs(hyperpack_path, exist_ok=False)
+
+    # make the directory for the best trial
     best_trial_name = "adventurous"
     best_trial_folder_name = generate_folder_name(name=best_trial_name)
     best_trial_path = os.path.join(hyperpack_path, best_trial_folder_name)
     os.makedirs(best_trial_path, exist_ok=True)
+
+    print("*** Saving the model to ONNX format ***")
     save_best_model_to_onnx(
         model=loaded_model,
         flavor=model_flavor,
         save_path=best_trial_path,
         num_cols=num_train_columns,
     )
+
+    print("*** Creating _study.json ***")
     create_study_json(hyperpack_path=hyperpack_path, best_trial=best_trial_folder_name)
+
+    print("*** Creating study.yaml ***")
     create_study_yaml(current_dir=curr_dir, name=model_flavor)
+
+    print("*** Zipping hyperpack folder to {}.zip ***".format(hyperpack_path))
     zip_study(folder_path=hyperpack_path)
-    print("ahoy environs!")
+
+    print("*** Hyperpack created! ***")
 
 
 def verify_args(model, flavor: str):
