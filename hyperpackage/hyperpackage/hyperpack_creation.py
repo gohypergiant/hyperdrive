@@ -37,7 +37,7 @@ def create_hyperpack(
     best_trial_folder_name = generate_folder_name(name=best_trial_name)
     best_trial_path = os.path.join(hyperpack_path, best_trial_folder_name)
     os.makedirs(best_trial_path, exist_ok=True)
-    save_best_trial_model(
+    save_best_model_to_onnx(
         model=loaded_model,
         flavor=model_flavor,
         save_path=best_trial_path,
@@ -91,7 +91,7 @@ def make_hyperpack_path(base_dir: str, name: str) -> str:
     return path
 
 
-def save_best_trial_model(model, flavor: str, save_path: str, num_cols: int):
+def save_best_model_to_onnx(model, flavor: str, save_path: str, num_cols: int):
     if flavor == "automl":
         torch_onnx_export(model=model, trial_path=save_path, train_shape_cols=num_cols)
 
