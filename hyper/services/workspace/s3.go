@@ -11,7 +11,7 @@ import (
 	"github.com/rogpeppe/go-internal/lockedfile"
 )
 
-const LOCKFILE_NAME string = "file.lock"
+const LOCKFILE_NAME string = "hyperdrive-workspace.lock"
 
 type S3WorkspaceService struct {
 	ManifestPath    string
