@@ -20,13 +20,13 @@ def create_hyperpack(
     Args:
         trained_model: pretrained model. Can be either a string, which is a path
                        to a pickled model of type <class 'neural_network.network.Network'>,
-                       or to an object in memory of type <class 'neural_network.network.Network'>.
+                       or to an object in memory of type <class 'neural_network.network.Network'>
         model_flavor: library/package used to build pretrained model. Currently,
                       we only support "automl", but examples of other flavors
                       that will eventually be supported include "sklearn",
-                      "pytorch", and "xgboost".
+                      "pytorch", and "xgboost"
         num_train_columns: the number of columns in the training dataset used to
-                           train the pretrained model.
+                           train the pretrained model
     """
     curr_dir = os.getcwd()
 
@@ -91,7 +91,7 @@ def verify_args(model, flavor: str):
         model: pretrained model. Can be either a string, which is a path
                to a pickled model of type <class 'neural_network.network.Network'>,
                or to an object in memory of type
-               <class 'neural_network.network.Network'>.
+               <class 'neural_network.network.Network'>
         flavor: library/package used to build pretrained model
     """
     supported_flavors = "\n".join(map(str, SUPPORTED_MODEL_FLAVORS))
@@ -154,7 +154,7 @@ def save_best_model_to_onnx(model, flavor: str, save_path: str, num_cols: int):
     Args:
         model: pretrained model object
         flavor: library/package used to build pretrained model
-        save_path: path where ONNX format model will be saved
+        save_path: path where ONNX model will be saved
         num_cols: number of training dataset columns
     """
     if flavor == "automl":
