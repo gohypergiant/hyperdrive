@@ -102,7 +102,9 @@ Your machine should have the following software installed:
     hyper pack run
 ```
 
-        NOTE: If you want to run the prediction server from a different <br/> directory, you'll need to move BOTH the automl.hyperpack.zip AND <br/> study.yaml files.
+        NOTE: If you want to run the prediction server from a  
+        different directory, you'll need to move BOTH the automl.hyperpack.zip  
+        AND <br/> study.yaml files.
 
 8. From the printed output of the `hyper pack run` command, please make note of the following 2 items:
 
