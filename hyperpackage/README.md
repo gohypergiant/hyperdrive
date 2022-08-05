@@ -14,15 +14,13 @@ Your machine should have the following software installed:
 
 ## Installation Instructions - Hyper CLI
 
-1. Start Docker Desktop
-
-2. In a terminal/bash session, git clone the `hyperdrive` repository:
+1. In a terminal/bash session, git clone the `hyperdrive` repository:
 
 ```bash
     git clone git@github.com:gohypergiant/hyperdrive.git
 ```
 
-3. In a terminal/bash session, in the `hyperdrive` repository from step 2, navigate to the `hyper` subdirectory. Here is a view of the `hyperdrive` directory structure:
+2. In a terminal/bash session, in the `hyperdrive` repository from step 2, navigate to the `hyper` subdirectory. Here is a view of the `hyperdrive` directory structure:
 
 ```
     hyperdrive
@@ -34,13 +32,13 @@ Your machine should have the following software installed:
     ├──hypertrain
 ```
 
-4. In the `hyper` subdirectory, run this command to build the binary:
+3. In the `hyper` subdirectory, run this command to build the binary:
 
 ```bash
     make build
 ```
 
-5. Put the binary in your path by running the following command:
+4. Put the binary in your path by running the following command:
 
 ```bash
   chmod +x hyper && sudo mv hyper /usr/local/bin/hyper
