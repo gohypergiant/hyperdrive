@@ -15,6 +15,19 @@ SUPPORTED_MODEL_FLAVORS = ["automl"]
 def create_hyperpack(
     trained_model=None, model_flavor: str = None, num_train_columns: int = 0
 ):
+    """Entrypoint function for the hyperpackage package. The user will call this
+       function
+    Args:
+        trained_model: pretrained model. Can be either a string, which is a path
+                       to a pickled model of type <class 'neural_network.network.Network'>,
+                       or to an object in memory of type <class 'neural_network.network.Network'>.
+        model_flavor: library/package used to build pretrained model. Currently,
+                      we only support "automl", but examples of other flavors
+                      that will eventually be supported include "sklearn",
+                      "pytorch", and "xgboost".
+        num_train_columns: the number of columns in the training dataset used to
+                           train the pretrained model.
+    """
     curr_dir = os.getcwd()
 
     print("*** Verifying trained_model and model_flavor args ***")
@@ -72,6 +85,15 @@ def create_hyperpack(
 
 
 def verify_args(model, flavor: str):
+    """Verifies the model and flavor args that were passed to the create_hyperpack
+       function
+    Args:
+        model: pretrained model. Can be either a string, which is a path
+               to a pickled model of type <class 'neural_network.network.Network'>,
+               or to an object in memory of type
+               <class 'neural_network.network.Network'>.
+        flavor: library/package used to build pretrained model
+    """
     supported_flavors = "\n".join(map(str, SUPPORTED_MODEL_FLAVORS))
     if model is None:
         raise TypeError("You must pass in a trained model.")
@@ -94,6 +116,14 @@ def verify_args(model, flavor: str):
 
 
 def load_trained_model(model):
+    """Loads the pretrained model
+    Args:
+        model: pretrained model. Can be either a string, which is a path
+               to a pickled model of type <class 'neural_network.network.Network'>,
+               or to an object in memory of type
+               <class 'neural_network.network.Network'>
+    Returns: the loaded model
+    """
     if isinstance(model, str):
         try:
             the_model = torch.load(model)
@@ -108,17 +138,35 @@ def load_trained_model(model):
 
 
 def make_hyperpack_path(base_dir: str, name: str) -> str:
+    """Makes the directory path to the hyperpack folder
+    Args:
+        base_dir: string representing the base directory of the hyperpack folder
+        name: string to be used as part of the name of the hyperpack folder
+    Returns: path to the hyperpack folder
+    """
     hyperpack_folder_name = name + ".hyperpack"
     path = os.path.join(base_dir, hyperpack_folder_name)
     return path
 
 
 def save_best_model_to_onnx(model, flavor: str, save_path: str, num_cols: int):
+    """Saves the model to ONNX format
+    Args:
+        model: pretrained model object
+        flavor: library/package used to build pretrained model
+        save_path: path where ONNX format model will be saved
+        num_cols: number of training dataset columns
+    """
     if flavor == "automl":
         torch_onnx_export(model=model, trial_path=save_path, train_shape_cols=num_cols)
 
 
 def create_study_json(hyperpack_path: str, best_trial: str):
+    """Creates the "_study.json" file
+    Args:
+        hyperpack_path: path to hyperpack folder
+        best_trial: name of best trial
+    """
     created_time = datetime.now().strftime("%Y-%m-%d %H:%M")
     study_json_dict = {"best_trial": best_trial, "created_at": created_time}
     study_json_path = os.path.join(hyperpack_path, "_study.json")
@@ -126,6 +174,11 @@ def create_study_json(hyperpack_path: str, best_trial: str):
 
 
 def create_study_yaml(current_dir: str, name: str):
+    """Creates the "study.yaml" file
+    Args:
+        current_dir: path to current directory
+        name: string to be used for both project_name and study_name
+    """
     study_yaml_dict = {"project_name": name, "study_name": name}
     study_yaml_path = os.path.join(current_dir, "study.yaml")
     write_yaml(dictionary=study_yaml_dict, yaml_file_path=study_yaml_path)
