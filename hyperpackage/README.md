@@ -56,7 +56,9 @@ Your machine should have the following software installed:
     pip install -e git+https://github.com/gohypergiant/hyperdrive.git#egg=hyperpackage\&subdirectory=hyperpackage
 ```
     
-    - NOTE: if you install via terminal/bash session, a "src" folder with the hyperpackage source code will be created in the directory from which you ran the pip install command.
+    NOTE: if you install via terminal/bash session, a "src" folder with
+    the hyperpackage source code will be created in the directory from which
+    you ran the pip install command.
 
 ## Usage
 
@@ -74,7 +76,9 @@ Your machine should have the following software installed:
     output = model.fit(x=features, y=target)
 ```
 
-    You can then call the `create_hyperpackage` function by passing in the pretrained automl model from the output object (specifically, output["model"]), like so:
+    You can then call the `create_hyperpackage` function by passing in the 
+    pretrained automl model from the output object (specifically,
+    output["model"]), like so:
 
 ```
     create_hyperpack(trained_model=output["model"], model_flavor="automl")
