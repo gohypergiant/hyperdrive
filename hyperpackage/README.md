@@ -25,13 +25,13 @@ Your machine should have the following software installed:
 3. In a terminal/bash session, in the `hyperdrive` repository from step 2, navigate to the `hyper` subdirectory. Here is a view of the `hyperdrive` directory structure:
 
 ```
-hyperdrive
-├──dataclient
-├──docker
-├──executor
-├──hyper        # NAVIGATE TO THIS DIRECTORY
-├──hyperpackage
-├──hypertrain
+    hyperdrive
+    ├──dataclient
+    ├──docker
+    ├──executor
+    ├──hyper        # NAVIGATE TO THIS DIRECTORY
+    ├──hyperpackage
+    ├──hypertrain
 ```
 
 4. In the `hyper` subdirectory, run this command to build the binary:
