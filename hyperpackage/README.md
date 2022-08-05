@@ -94,7 +94,9 @@ Your machine should have the following software installed:
     study.yaml
 ```
 
-6. To run the prediction server, in a terminal/bash session, run the following Hyper CLI command in the same directory that the automl.hyperpack.zip and study.yaml artifacts are located:
+6. Start Docker Desktop
+
+7. To run the prediction server, in a terminal/bash session, run the following Hyper CLI command in the same directory that the automl.hyperpack.zip and study.yaml artifacts are located:
 
 ``` bash
     hyper pack run
@@ -102,13 +104,13 @@ Your machine should have the following software installed:
 
     NOTE: If you want to run the prediction server from a different directory, you'll need to move BOTH the automl.hyperpack.zip AND study.yaml files.
 
-7. From the printed output of the `hyper pack run` command, please make note of the following 2 items:
+8. From the printed output of the `hyper pack run` command, please make note of the following 2 items:
 
     Server port number: look for the message "Hyperpackage now running via Docker Container 9672b19c0b on port [XXXXX]". You'll need the port number [XXXXX].
 
     Fast App API key: look for the message "Fast App API key is: [FAST_API_KEY]"
 
-8. Retrieve a prediction by running the following `curl` command in a terminal/bash session. The input data that you pass with the -d flag should be an array of values that is an appropriate shape (i.e., you should be passing 5 values if your model is expecting 5 inputs). You'll need both the server port number and Fast App API key from the previous step:
+9. Retrieve a prediction by running the following `curl` command in a terminal/bash session. The input data that you pass with the -d flag should be an array of values that is an appropriate shape (i.e., you should be passing 5 values if your model is expecting 5 inputs). You'll need both the server port number and Fast App API key from the previous step:
 
 ``` bash
     curl -X 'POST' \
