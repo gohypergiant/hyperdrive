@@ -8,9 +8,9 @@ Your machine should have the following software installed:
 
 1. Python >= 3.9
 2. Docker
-   -Get Docker Here: https://docs.docker.com/get-docker/
+   - Get Docker Here: https://docs.docker.com/get-docker/
 3. Hyper CLI
-   -See installation instructions below
+   - See installation instructions below
 
 ## Installation Instructions - Hyper CLI
 
