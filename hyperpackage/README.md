@@ -68,7 +68,7 @@ Your machine should have the following software installed:
     from hyperpackage.hyperpack_creation import create_hyperpack
 ```
 
-2. Currently, the only supported model flavor is automl, aka the "research-EfficientAutoML" library. The `create_hyperpack` function can accept either the model object itself, or a string path to a model saved via the `torch.save()` function from `pytorch`. We'll go over both situations, starting with the model object in memory.
+2. Currently, the only supported model flavor is automl, aka the [research-EfficientAutoML](https://github.com/gohypergiant/research-EfficientAutoML) library. The `create_hyperpack` function can accept either the model object itself, or a string path to a model saved via the `torch.save()` function from `pytorch`. We'll go over both situations, starting with the model object in memory.
 
 3. Assuming that you've run an automl study and have obtained outputs via this command:
 
