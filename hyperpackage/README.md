@@ -24,12 +24,12 @@ Your machine should have the following software installed:
 
 ```
     hyperdrive
-    ├──dataclient
-    ├──docker
-    ├──executor
-    ├──hyper        # NAVIGATE TO THIS DIRECTORY
-    ├──hyperpackage
-    ├──hypertrain
+    ├── dataclient
+    ├── docker
+    ├── executor
+    ├── hyper        # NAVIGATE TO THIS DIRECTORY
+    ├── hyperpackage
+    ├── hypertrain
 ```
 
 3. In the `hyper` subdirectory, run this command to build the binary:
@@ -51,14 +51,14 @@ Your machine should have the following software installed:
     %pip install -e git+https://github.com/gohypergiant/hyperdrive.git#egg=hyperpackage\&subdirectory=hyperpackage
 ```
 
-2. If you'd prefer to install from a terminal/bash session, please run this:
+2. OR if you'd prefer to install from a terminal/bash session, you can run this:
 ```bash
     pip install -e git+https://github.com/gohypergiant/hyperdrive.git#egg=hyperpackage\&subdirectory=hyperpackage
 ```
     
-        NOTE: if you install via terminal/bash session, a "src" folder with  
-        the hyperpackage source code will be created in the directory from  
-        which you ran the pip install command.
+    NOTE: if you install via a terminal/bash session, a "src" folder with  
+    the hyperpackage source code will be created in the directory from  
+    which you ran the pip install command.
 
 ## Usage
 
@@ -68,23 +68,23 @@ Your machine should have the following software installed:
     from hyperpackage.hyperpack_creation import create_hyperpack
 ```
 
-2. Currently, the only supported model flavor is automl, aka the [research-EfficientAutoML](https://github.com/gohypergiant/research-EfficientAutoML) library. The `create_hyperpack` function can accept either the model object itself, or a string path to a model saved via the `torch.save()` function from `pytorch`. We'll go over both situations, starting with the model object in memory.
+2. Currently, the only supported model flavor is automl, aka the [research-EfficientAutoML](https://github.com/gohypergiant/research-EfficientAutoML) library. The `create_hyperpack` function can accept either the automl model object itself, or a string path to a model saved via the `torch.save()` function from `pytorch`. We'll go over both situations, starting with the model object in memory.
 
-3. Assuming that you've run an automl study and have obtained outputs via this command:
+3. Model object in memory - assuming that you've run an automl study and have obtained outputs via this command:
 
 ```
     output = model.fit(x=features, y=target)
 ```
 
-        You can then call the `create_hyperpackage` function by passing in  
-        the pretrained automl model from the output object (specifically,  
-        output["model"]), like so:
+    You can then call the `create_hyperpackage` function by passing in  
+    the pretrained automl model from the output object (specifically,  
+    output["model"]), like so:
 
 ```
     create_hyperpack(trained_model=output["model"], model_flavor="automl")
 ```
  
-4. To call `create_hyperpackage` with a string path to a saved model, e.g., "/Users/hanswilsdorf/saved_model":
+4. String path to model - to call `create_hyperpackage` with a string path to a saved model, e.g., "/Users/hanswilsdorf/saved_model":
 
 ```
     create_hyperpack(trained_model="/Users/hanswilsdorf/saved_model", model_flavor="automl")
@@ -98,17 +98,17 @@ Your machine should have the following software installed:
     study.yaml
 ```
 
-6. Start Docker Desktop
+6. Before running the prediction server, start Docker Desktop.
 
-7. To run the prediction server, in a terminal/bash session, run the following Hyper CLI command in the same directory that the automl.hyperpack.zip and study.yaml artifacts are located:
+7. To run the prediction server, in a terminal/bash session, run the following Hyper CLI command in the same directory that the `automl.hyperpack.zip` and `study.yaml` artifacts are located:
 
 ``` bash
     hyper pack run
 ```
 
-        NOTE: If you want to run the prediction server from a different  
-        directory, you'll need to move BOTH the automl.hyperpack.zip  
-        AND study.yaml files.
+    NOTE: If you want to run the prediction server from a different  
+    directory, you'll need to move BOTH the automl.hyperpack.zip  
+    AND study.yaml files into that directory.
 
 8. From the printed output of the `hyper pack run` command, please make note of the following 2 items:
 
