@@ -85,7 +85,7 @@ def create_hyperpack(
 
 
 def verify_args(model, flavor: str):
-    """Verifies the model and flavor args that were passed to the create_hyperpack
+    """Verifies the model and flavor args that are passed to the create_hyperpack
        function
     Args:
         model: pretrained model. Can be either a string, which is a path
