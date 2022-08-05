@@ -56,7 +56,7 @@ Your machine should have the following software installed:
     pip install -e git+https://github.com/gohypergiant/hyperdrive.git#egg=hyperpackage\&subdirectory=hyperpackage
 ```
     
-        NOTE: if you install via terminal/bash session, a "src" folder with <br> the hyperpackage source code will be created in the directory from <br> which you ran the pip install command.
+        NOTE: if you install via terminal/bash session, a "src" folder with <br /> the hyperpackage source code will be created in the directory from <br /> which you ran the pip install command.
 
 ## Usage
 
@@ -74,7 +74,7 @@ Your machine should have the following software installed:
     output = model.fit(x=features, y=target)
 ```
 
-        You can then call the `create_hyperpackage` function by passing in the <br> pretrained automl model from the output object (specifically, <br> output["model"]), like so:
+        You can then call the `create_hyperpackage` function by passing in <br /> the pretrained automl model from the output object (specifically, <br /> output["model"]), like so:
 
 ```
     create_hyperpack(trained_model=output["model"], model_flavor="automl")
@@ -102,7 +102,7 @@ Your machine should have the following software installed:
     hyper pack run
 ```
 
-        NOTE: If you want to run the prediction server from a different <br> directory, you'll need to move BOTH the automl.hyperpack.zip AND <br> study.yaml files.
+        NOTE: If you want to run the prediction server from a different <br /> directory, you'll need to move BOTH the automl.hyperpack.zip AND <br /> study.yaml files.
 
 8. From the printed output of the `hyper pack run` command, please make note of the following 2 items:
 
