@@ -1,0 +1,29 @@
+name: Hypergiant Python CI workflow
+
+on:
+  push:
+    branches-ignore: [stable, master, main]
+
+jobs:
+  secret-scan:
+    uses: gohypergiant/.github/.github/workflows/secret-scan.yml@stable
+
+  lint:
+    uses: gohypergiant/.github/.github/workflows/super-linter.yml@stable
+
+  security-scan:
+    runs-on: ubuntu-latest
+    steps:
+      -
+        name: Checkout
+        uses: actions/checkout@v2
+
+      -
+        name: Setup Python Environment
+        uses: actions/setup-python@v2
+        with:
+          python-version: '3.9'
+
+      - name: PyCharm Security Scanner
+        uses: tonybaloney/pycharm-security@1.25.1
+
