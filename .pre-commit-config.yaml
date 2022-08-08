@@ -1,5 +1,6 @@
+repos:
 - repo: https://github.com/TekWizely/pre-commit-golang
-  rev: master
+  rev: v1.0.0-beta.5
   hooks:
     -   id: go-fmt
         args: [ -w , -s ]
