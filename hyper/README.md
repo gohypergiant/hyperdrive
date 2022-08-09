@@ -2,9 +2,7 @@
 
 ## Installation Instructions
 
-### Using the CLI (local)
-
-1. Start Docker Desktop
+### Installing From Source
 
 1. In a terminal/bash session, git clone the `hyperdrive` repository:
 
@@ -38,6 +36,15 @@ make build
   sudo mv hyper /usr/local/bin/hyper && \
   sudo chmod +x /usr/local/bin/hyper
 ```
+
+
+### Usage
+
+#### Prerequisites
+
+1.  Make sure docker is running
+
+#### Using Hyper with Hypertrain
 
 1. In a terminal/bash session, create a project folder. Put your data into this project folder. Here is an example:
 
@@ -141,7 +148,7 @@ Once you have a running notebook server instance, you should be able to start a 
 
 ## Local
 
-To use a local Firefly server, first create the server
+To use a local jupyter notebook server, first create the server
 
 ```bash
 # If a manifest path isn't provided, it will look for a file name study.yaml by default

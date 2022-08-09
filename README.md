@@ -14,17 +14,47 @@ Your machine should have the following software installed:
 
 See CONTRIBUTORS.md for details on requirements.
 
-## Packages
+## Installation
+
+### Hyper CLI
+
+Grab a binary from the releases listed on this repo. To install from source, see [Hyper CLI readme] (hyper/README.md)
+
+### Dataclient
+
+The Dataclient can be installed via pip using the following command:
+```
+pip install -e git+https://github.com/gohypergiant/hyperdrive.git#egg=dataclient\&subdirectory=dataclient
+```
+
+### Hyperpackage
+
+Hyperpackage can be installed via pip using the following command:
+```
+pip install -e git+https://github.com/gohypergiant/hyperdrive.git#egg=hyperpackage\&subdirectory=hyperpackage
+```
+
+### Hypertrain
+
+Hypertrain can be installed via pip using the following command:
+```
+pip install -e git+https://github.com/gohypergiant/hyperdrive.git#egg=hypertrain\&subdirectory=hypertrain
+```
+
+## Documentation
 
 ### Hyper CLI
 
 See [Hyper CLI readme] (hyper/README.md)
 
-
 ## Hyperpackage
 
-What is a hyperpackage
+See [Hyperpackage] (hyperpackage/README.md)
 
-How do I create a hyperpackage
+## Hypertrain
 
-How do I deploy a hyperpackage
+See [Hypertrain] (hypertrain/README.md)
+
+## Dataclient
+
+See [Dataclient] (dataclient/README.md)
