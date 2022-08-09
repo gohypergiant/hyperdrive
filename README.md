@@ -45,16 +45,16 @@ pip install -e git+https://github.com/gohypergiant/hyperdrive.git#egg=hypertrain
 
 ### Hyper CLI
 
-See [Hyper CLI readme] (hyper/README.md)
+See [Hyper CLI readme](hyper/README.md)
 
 ## Hyperpackage
 
-See [Hyperpackage] (hyperpackage/README.md)
+See [Hyperpackage](hyperpackage/README.md)
 
 ## Hypertrain
 
-See [Hypertrain] (hypertrain/README.md)
+See [Hypertrain](hypertrain/README.md)
 
 ## Dataclient
 
-See [Dataclient] (dataclient/README.md)
+See [Dataclient](dataclient/README.md)
