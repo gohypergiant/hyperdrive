@@ -2,6 +2,8 @@
 
 A package to create hyperpacks.
 
+A hyperpack is a machine learning, model deployment-ready artifact (i.e., a zipped/bundled set of files) that can be used with Hyperdrive to serve real-time predictions.
+
 ## Before You Begin (Requirements)
 
 Your machine should have the following software installed:
@@ -123,4 +125,15 @@ Your machine should have the following software installed:
     http://127.0.0.1:[SERVER_PORT_NUMBER_HERE]/predict \
     -H 'x-api-key: [FAST_APP_API_KEY_HERE]' \
     -d '[ARRAY_OF_VALUES_HERE]'
+```
+
+## Hyperpack Schema
+
+1. The hyperpack, when unzipped, has the following structure/schema:
+
+```
+    automl.hyperpack
+    ├── _study.json                # contains details of best trial
+    ├── 000000-adventurous-trial   # dir of best trial
+        ├── trained_model          # model in ONNX format
 ```
