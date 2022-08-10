@@ -14,7 +14,7 @@ Your machine should have the following software installed:
 
 See CONTRIBUTORS.md for details on requirements.
 
-## Installation
+## Installation Quick Start
 
 ### Hyper CLI
 

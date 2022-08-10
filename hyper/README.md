@@ -2,6 +2,8 @@
 
 ## Installation Instructions
 
+Releases are made available for most common architectures on this github repository. If you wish to install from source, see the instructions below:
+
 ### Installing From Source
 
 1. In a terminal/bash session, git clone the `hyperdrive` repository:
@@ -168,3 +170,6 @@ The study will be scheduled to be executed on the server, to fetch the hyperpack
 
 Note: To use a local Firefly server for training, it is necessary to create the notebook server instance and execute the traning session from within the same git project.
 
+# Hyperpack
+
+A hyperpackage is a zipped file structure that contains serialized trained models and
