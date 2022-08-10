@@ -18,7 +18,7 @@ See CONTRIBUTORS.md for details on requirements.
 
 ### Hyper CLI
 
-Grab a binary from the releases listed on this repo. To install from source, see [Hyper CLI readme](hyper/README.md)
+Grab a binary from the releases listed on this repo. To install from source, see [Hyper CLI readme](hyper/README.md#installing-from-source)
 
 ### Dataclient
 

@@ -1,6 +1,6 @@
 # Hyperdrive CLI
 
-## Installation Instructions
+## Installation
 
 Releases are made available for most common architectures on this github repository. If you wish to install from source, see the instructions below:
 
@@ -46,49 +46,6 @@ make build
 
 1.  Make sure docker is running
 
-#### Using Hyper with Hypertrain
-
-1. In a terminal/bash session, create a project folder. Put your data into this project folder. Here is an example:
-
-```
-threat_detection
-├──data
-    ├──label_data.csv
-    ├──object_data.json
-```
-
-1. Create a local jupyter server by running this command in a terminal/bash session:
-
-```bash
-hyper jupyter --browser
-```
-
-1. Train the Model
-
-```bash
-hyper train
-```
-
-1. Retrieve the hyperpack
-
-```bash
-cp ../_jobs/threat_detection/threat_detection.hyperpack.zip .
-```
-
-1. Run the prediction server
-
-```bash
-hyper hyperpackage run
-```
-
-1. Submit a prediction
-
-```
-curl -X 'POST' \
-  http://127.0.0.1:PORT_OF_YOUR_SERVER_HERE/predict \
-  -H 'accept: application/json' \
-   -d '[ 22.6734323 , 133.87953978,  71.25881828,  24.74618134]'
-```
 
 ## Commands
 
@@ -170,6 +127,47 @@ The study will be scheduled to be executed on the server, to fetch the hyperpack
 
 Note: To use a local Firefly server for training, it is necessary to create the notebook server instance and execute the traning session from within the same git project.
 
-# Hyperpack
+## Cookbook
+### Using Hyper with Hypertrain
 
-A hyperpackage is a zipped file structure that contains serialized trained models and
+1. In a terminal/bash session, create a project folder. Put your data into this project folder. Here is an example:
+
+```
+threat_detection
+├──data
+    ├──label_data.csv
+    ├──object_data.json
+```
+
+1. Create a local jupyter server by running this command in a terminal/bash session:
+
+```bash
+hyper jupyter --browser
+```
+
+1. Train the Model
+
+```bash
+hyper train
+```
+
+1. Retrieve the hyperpack
+
+```bash
+cp ../_jobs/threat_detection/threat_detection.hyperpack.zip .
+```
+
+1. Run the prediction server
+
+```bash
+hyper hyperpackage run
+```
+
+1. Submit a prediction
+
+```
+curl -X 'POST' \
+  http://127.0.0.1:PORT_OF_YOUR_SERVER_HERE/predict \
+  -H 'accept: application/json' \
+   -d '[ 22.6734323 , 133.87953978,  71.25881828,  24.74618134]'
+```

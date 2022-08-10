@@ -12,7 +12,7 @@ Your machine should have the following software installed:
 2. Docker
    - Get Docker Here: https://docs.docker.com/get-docker/
 3. Hyper CLI
-   - See [installation instructions](../hyper/README.md)
+   - [See installation instructions](../hyper/README.md#installation)
 
 
 ## Installation Instructions - hyperpackage
