@@ -33,7 +33,7 @@ def create_hyperpack(
     print("*** Verifying trained_model and model_flavor args ***")
     verify_args(model=trained_model, flavor=model_flavor)
 
-    print("*** Loading the trained model **")
+    print("*** Loading the trained model ***")
     loaded_model = load_trained_model(model=trained_model)
 
     # checking the num_train_columns arg. We did not check this arg in the
