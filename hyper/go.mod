@@ -4,7 +4,7 @@ go 1.18
 
 require (
 	github.com/aws/aws-sdk-go v1.44.73
-	github.com/aws/aws-sdk-go-v2 v1.16.10
+	github.com/aws/aws-sdk-go-v2 v1.16.11
 	github.com/aws/aws-sdk-go-v2/config v1.16.0
 	github.com/aws/aws-sdk-go-v2/credentials v1.12.12
 	github.com/aws/aws-sdk-go-v2/service/ec2 v1.52.0
