@@ -50,17 +50,13 @@ Your machine should have the following software installed:
 
 1. If you're working in a JupyterLab or Jupyter notebook, run this magic in a cell:
 ```bash
-    %pip install -e git+https://github.com/gohypergiant/hyperdrive.git#egg=hyperpackage\&subdirectory=hyperpackage
+    %pip install git+https://github.com/gohypergiant/hyperdrive.git#egg=hyperpackage\&subdirectory=hyperpackage
 ```
 
 2. OR if you'd prefer to install from a terminal/bash session, you can run this:
 ```bash
-    pip install -e git+https://github.com/gohypergiant/hyperdrive.git#egg=hyperpackage\&subdirectory=hyperpackage
+    pip install git+https://github.com/gohypergiant/hyperdrive.git#egg=hyperpackage\&subdirectory=hyperpackage
 ```
-    
-    NOTE: if you install via a terminal/bash session, a "src" folder with  
-    the hyperpackage source code will be created in the directory from  
-    which you ran the pip install command.
 
 ## Usage
 
