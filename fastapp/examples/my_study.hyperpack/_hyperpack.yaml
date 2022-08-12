@@ -1,0 +1,30 @@
+study_name: log_reg_health_tracker
+model_flavor: sklearn
+training:
+  data:
+    features:
+      source: ./data/ht_agg.json
+      join_id: _id
+    target:
+      source: ./data/users.json
+      response_variable: lifestyle
+      join_id: _id
+
+  direction: minimize
+  metric: sklearn.metrics.mean_squared_error
+
+  n_trials: 10
+  models:
+    sklearn.linear_model.LogisticRegression:
+      C: np.logspace(0,1,11)
+      solver:
+        - lbfgs:
+          penalty: l2
+        - liblinear:
+          penalty: l1
+        - saga:
+          penalty:
+            - l1:
+            - l2:
+            - elasticnet:
+              l1_ratio: 0.25
