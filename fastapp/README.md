@@ -1,4 +1,4 @@
-# mlsdk-fast-app
+# fastapp
 
 FastApp application/base image for deployable hyperpackage
 
@@ -89,3 +89,6 @@ Responds with
   "created_at": "2021-12-17 23:25"
 }
 ```
+
+## Hyperpack Schema
+To see an example of a hyperpack schema/structure, please see `examples/my_study.hyperpack`
