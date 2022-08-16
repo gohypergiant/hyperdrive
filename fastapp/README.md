@@ -1,4 +1,4 @@
-# fastapp
+# Hyperpack Wrapper (fastapp)
 
 FastApp application/base image for deployable hyperpackage
 
