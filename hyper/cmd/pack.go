@@ -72,7 +72,7 @@ var buildCmd = &cobra.Command{
 			dockerfileSavePath = fmt.Sprintf("./%s.Dockerfile", studyName)
 		}
 		fmt.Println("🚀 Building hyperpackage %s. Dockerfile will be saved to ", dockerfileSavePath)
-		hyperpackage.HyperpackageService(hyperpackagePath, manifestPath, RemoteName).Build(dockerfileSavePath, imageTags)
+		hyperpackage.HyperpackageService(hyperpackagePath, manifestPath, RemoteName).Build(dockerfileSavePath, imageTags, types.WorkspaceSyncOptions{})
 	},
 }
 

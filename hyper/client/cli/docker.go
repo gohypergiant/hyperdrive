@@ -28,6 +28,7 @@ import (
 	"github.com/docker/docker/pkg/archive"
 	"github.com/docker/docker/pkg/jsonmessage"
 	"github.com/docker/docker/pkg/stdcopy"
+	HyperTypes "github.com/gohypergiant/hyperdrive/hyper/types"
 	"github.com/moby/term"
 )
 
@@ -163,7 +164,7 @@ type HyperPackageDockerfileParameters struct {
 	StudyPath string
 }
 
-func (dockerClient *DockerClient) CreateDockerFile(studyPath string, savePath string, requirements bool) {
+func (dockerClient *DockerClient) CreateDockerFile(studyPath string, savePath string, requirements bool, syncOptions HyperTypes.WorkspaceSyncOptions) {
 	dockerFileTemplate := ""
 	if requirements {
 		dockerFileTemplate = `
@@ -171,6 +172,21 @@ FROM ghcr.io/gohypergiant/hyperdrive-jupyter:cpu-localstable
 COPY requirements.txt /home/jovyan/requirements.txt
 RUN pip install -r requirements.txt
 `
+	} else if syncOptions.S3Config.IsValid() {
+		fastAppApiKey := generateFastAppAPIKey()
+		s3ZipPath := fmt.Sprintf("%[1]s/_jobs/%[1]s/%[1]s.hyperpack.zip", syncOptions.StudyName)
+		dockerFileTemplate = fmt.Sprintf(`
+FROM ghcr.io/gohypergiant/gohypergiant/mlsdk-fast-app:stable
+COPY --from=builder /hyperpackage /hyperpackage
+ENV FASTKEY=%s
+ENV REGION_NAME=%s
+ENV AWS_ACCESS_KEY_ID=%s
+ENV AWS_SECRET_ACCESS_KEY=%s
+ENV AWS_SESSION_TOKEN=%s	
+RUN echo "*** Fast App API key is: $FASTKEY ***"
+RUN echo "'%s\n\
+%s'" >> /hyperpack_s3.txt
+`, fastAppApiKey, syncOptions.S3Config.Region, syncOptions.S3Config.AccessKey, syncOptions.S3Config.Secret, syncOptions.S3Config.Token, syncOptions.S3Config.BucketName, s3ZipPath)
 	} else {
 		fastAppApiKey := generateFastAppAPIKey()
 		dockerFileTemplate = fmt.Sprintf(`
