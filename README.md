@@ -58,3 +58,7 @@ See [Hypertrain](hypertrain/README.md)
 ## Dataclient
 
 See [Dataclient](dataclient/README.md)
+
+## Hyperpack Wrapper (fastapp)
+
+See [Hyperpack Wrapper](fastapp/README.md)
