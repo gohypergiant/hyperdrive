@@ -69,9 +69,10 @@ func generateRandPort() string {
 
 func getPort(isRemote bool) int {
 	defaultPort := "8888"
-	if hostPort == "" && isRemote {
+	if hostPort == "-1" && isRemote {
 		hostPort = defaultPort
-	} else if hostPort == "" && !isRemote {
+	} else if hostPort == "-1" && !isRemote {
+		fmt.Println("hostPort:", hostPort)
 		portAvail := checkPortAvailability(defaultPort)
 		if portAvail {
 			hostPort = defaultPort
@@ -80,7 +81,7 @@ func getPort(isRemote bool) int {
 			hostPort = generateRandPort()
 			fmt.Printf("Therefore, unless there is already a container running for this specific study, we've randomly assigned port %s for the container.\n", hostPort)
 		}
-	} else if hostPort != "" {
+	} else if hostPort != "-1" {
 		portAvail := checkPortAvailability(hostPort)
 		if !portAvail {
 			fmt.Printf("Port %s is in use. ", hostPort)
