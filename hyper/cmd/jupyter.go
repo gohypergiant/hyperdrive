@@ -72,7 +72,6 @@ func getPort(isRemote bool) int {
 	if hostPort == "-1" && isRemote {
 		hostPort = defaultPort
 	} else if hostPort == "-1" && !isRemote {
-		fmt.Println("hostPort:", hostPort)
 		portAvail := checkPortAvailability(defaultPort)
 		if portAvail {
 			hostPort = defaultPort
