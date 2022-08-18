@@ -12,39 +12,8 @@ Your machine should have the following software installed:
 2. Docker
    - Get Docker Here: https://docs.docker.com/get-docker/
 3. Hyper CLI
-   - See installation instructions below
+   - [See installation instructions](../hyper/README.md#installation)
 
-## Installation Instructions - Hyper CLI
-
-1. In a terminal/bash session, git clone the `hyperdrive` repository:
-
-```bash
-    git clone git@github.com:gohypergiant/hyperdrive.git
-```
-
-2. In a terminal/bash session, in the `hyperdrive` repository from step 2, navigate to the `hyper` subdirectory. Here is a view of the `hyperdrive` directory structure:
-
-```
-    hyperdrive
-    ├── dataclient
-    ├── docker
-    ├── executor
-    ├── hyper        # NAVIGATE TO THIS DIRECTORY
-    ├── hyperpackage
-    ├── hypertrain
-```
-
-3. In the `hyper` subdirectory, run this command to build the binary:
-
-```bash
-    make build
-```
-
-4. Put the binary in your path by running the following command:
-
-```bash
-  chmod +x hyper && sudo mv hyper /usr/local/bin/hyper
-```
 
 ## Installation Instructions - hyperpackage
 
@@ -125,11 +94,20 @@ Your machine should have the following software installed:
 
 ## Hyperpack Schema
 
-1. The hyperpack, when unzipped, has the following structure/schema:
+The hyperpack, when unzipped, has the following structure/schema:
 
 ```
-    automl.hyperpack
-    ├── _study.json                # contains details of best trial
-    ├── 000000-adventurous-trial   # dir of best trial
-        ├── trained_model          # model in ONNX format
+   my_hyperpack.hyperpack.zip
+   ├── _hyperpack.yaml            # contains information about the model and training parameters 
+   ├── _study.json                # contains details of best trial
+   ├── 000001-friendly-trial
+   │   ├── trained_model          # model in ONNX format
+   │   ├── _trial.json            # contains details of best trial
+   │   └── ...                    # optional additional contents can include an .ipynb notebook from the run
+   ├── 000002-unwieldy-trial
+       ├── ....
+
 ```
+
+An example of a compressed and uncompressed hyperpack are available in the examples folder of this repository
+
