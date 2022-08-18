@@ -69,9 +69,9 @@ func generateRandPort() string {
 
 func getPort(isRemote bool) int {
 	defaultPort := "8888"
-	if hostPort == "" && isRemote {
+	if hostPort == "-1" && isRemote {
 		hostPort = defaultPort
-	} else if hostPort == "" && !isRemote {
+	} else if hostPort == "-1" && !isRemote {
 		portAvail := checkPortAvailability(defaultPort)
 		if portAvail {
 			hostPort = defaultPort
@@ -80,7 +80,7 @@ func getPort(isRemote bool) int {
 			hostPort = generateRandPort()
 			fmt.Printf("Therefore, unless there is already a container running for this specific study, we've randomly assigned port %s for the container.\n", hostPort)
 		}
-	} else if hostPort != "" {
+	} else if hostPort != "-1" {
 		portAvail := checkPortAvailability(hostPort)
 		if !portAvail {
 			fmt.Printf("Port %s is in use. ", hostPort)
@@ -183,7 +183,7 @@ func init() {
 	jupyterCmd.PersistentFlags().StringVar(&ec2InstanceType, "ec2InstanceType", "", "The type of EC2 instance to be created")
 	jupyterCmd.PersistentFlags().StringVar(&amiID, "amiId", "", "The ID of the AMI")
 	jupyterCmd.PersistentFlags().StringVar(&jupyterApiKey, "apiKey", "", "API key to use for the jupyter instance")
-	jupyterCmd.PersistentFlags().StringVar(&hostPort, "hostPort", "", "Host port for container")
+	jupyterCmd.PersistentFlags().StringVar(&hostPort, "hostPort", "-1", "Host port for container")
 	jupyterCmd.PersistentFlags().StringVarP(&workspaceRemoteName, "workspaceRemote", "r", "", "name of the jupyter remote to use for syncing")
 	jupyterCmd.PersistentFlags().StringVar(&workspaceS3Profile, "workspaceS3Profile", "", "Named AWS profile to use (from ~/.aws/config) [Overrides workspaceRemote]")
 	jupyterCmd.PersistentFlags().StringVar(&workspaceS3AccessKey, "workspaceS3AccessKey", "", "AWS Access Key for accessing S3 buckets [Overrides workspaceRemote]")
