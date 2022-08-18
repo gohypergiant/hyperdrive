@@ -16,6 +16,8 @@ See CONTRIBUTORS.md for details on requirements.
 
 ## Installation Instructions
 
+### Using the CLI (local)
+
 1. Start Docker Desktop
 
 1. In a terminal/bash session, git clone the `hyperdrive` repository:
@@ -51,10 +53,6 @@ make build
   sudo chmod +x /usr/local/bin/hyper
 ```
 
-## Training model and deploying Instructions
-
-### Using the CLI (local)
-
 1. In a terminal/bash session, create a project folder. Put your data into this project folder. Here is an example:
 
 ```
@@ -85,7 +83,7 @@ cp ../_jobs/threat_detection/threat_detection.hyperpack.zip .
 1. Run the prediction server
 
 ```bash
-hyper pack run
+hyper hyperpackage run
 ```
 
 1. Submit a prediction
@@ -93,50 +91,6 @@ hyper pack run
 ```
 curl -X 'POST' \
   http://127.0.0.1:PORT_OF_YOUR_SERVER_HERE/predict \
-  -H 'accept: application/json' \
-   -d '[ 22.6734323 , 133.87953978,  71.25881828,  24.74618134]'
-```
-
-### Using the CLI (remote AWS)
-
-> **_NOTE:_** Running the commands below will require AWS credentials with access to create EC2 instances and access S3. You can configure a remote compute profile and remote workspace profile using the `hyper config` command
-
-1. Create a project folder. Put your data into this project folder. Here is an example:
-
-```
-threat_detection
-├──data
-    ├──label_data.csv
-    ├──object_data.json
-```
-
-1. Create a remote server by running this command in a terminal/bash session:
-
-```bash
-hyper jupyter remoteHost --remote <REMOTE_COMPUTE_SERVER_NAME> --workspaceRemote <REMOTE_WORKSPACE_SERVER_NAME>  --ec2InstanceType <EC2_TYPE> --amiId {AMI_ID}
-```
-
-1. If the last executed was successful, you can access the server using the URL generated.
-
-2. Train the Model
-
-```bash
-hyper train --remote <REMOTE_COMPUTE_SERVER_NAME>
-```
-
-> **_NOTE:_** The hyperpack file will be synced with the workspace so it is not necessary to retrieve it.
-
-1. Run the prediction server
-
-```bash
-hyper pack run --remote <REMOTE_COMPUTE_SERVER_NAME> --workspaceRemote <REMOTE_WORKSPACE_SERVER_NAME>  --ec2InstanceType <EC2_TYPE> --amiId {AMI_ID}
-```
-
-1. Submit a prediction
-
-```
-curl -X 'POST' \
-  http://IP_OF_YOUR_SERVER_HERE:PORT_OF_YOUR_SERVER_HERE/predict \
   -H 'accept: application/json' \
    -d '[ 22.6734323 , 133.87953978,  71.25881828,  24.74618134]'
 ```
