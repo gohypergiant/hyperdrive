@@ -38,7 +38,7 @@ func (s RemoteHyperpackageService) BuildAndRun(dockerfileSavePath string, imageT
 		fmt.Println("Not Implemented")
 	}
 }
-func (s RemoteHyperpackageService) Build(dockerfileSavePath string, imageTags []string) {
+func (s RemoteHyperpackageService) Build(dockerfileSavePath string, imageTags []string, syncOptions types.WorkspaceSyncOptions) {
 }
 func (s RemoteHyperpackageService) Run(imageTag string, dockerOptions types.DockerOptions) {
 }

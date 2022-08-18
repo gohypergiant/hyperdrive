@@ -6,7 +6,7 @@ import (
 )
 
 type IHyperpackageService interface {
-	Build(dockerfileSavePath string, imageTags []string)
+	Build(dockerfileSavePath string, imageTags []string, syncOptions types.WorkspaceSyncOptions)
 	Run(imageTag string, dockerOptions types.DockerOptions)
 	BuildAndRun(dockerfileSavePath string, imageTags []string, jupyterOptions types.JupyterLaunchOptions, ec2Options types.EC2StartOptions, syncOptions types.WorkspaceSyncOptions, dockerOptions types.DockerOptions)
 	Import(importModelFileName string, modelFlavor string, trainShape string)

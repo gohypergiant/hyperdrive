@@ -62,3 +62,7 @@ type NamedProfileConfiguration struct {
 	Token     string
 	Region    string
 }
+
+func (s S3WorkspacePersistenceRemoteConfiguration) IsValid() bool {
+	return s.BucketName != "" && s.AccessKey != "" && s.Secret != "" && s.Region != ""
+}

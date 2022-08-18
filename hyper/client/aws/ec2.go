@@ -728,8 +728,7 @@ func getHyperpackageEC2StartScript(version string, dockerOptions hyperdriveTypes
 	}
 
 	syncParameters := fmt.Sprintf("--s3AccessKey %s --s3Secret %s --s3Token %s --s3Region %s --s3BucketName %s -n %s", syncOptions.S3Config.AccessKey, syncOptions.S3Config.Secret, syncOptions.S3Config.Token, syncOptions.S3Config.Region, syncOptions.S3Config.BucketName, syncOptions.StudyName)
-	packCommand := fmt.Sprintf("hyper workspace pack %s", syncParameters)
-	runParameters := fmt.Sprintf("--hyperpackagePath %s.hyperpack.zip --hostPort %d --localOnly=false", syncOptions.StudyName, hostPort)
+	runParameters := fmt.Sprintf("--hyperpackagePath %s.hyperpack.zip --hostPort %d --localOnly=false %s", syncOptions.StudyName, hostPort, syncParameters)
 	startupScript := fmt.Sprintf(`
 #!/bin/bash -xe
 #yum update -y
@@ -741,11 +740,10 @@ mv /tmp/hyperdrive/hyper /usr/bin/hyper
 hyper remoteStatus &
 sudo chown ec2-user:ec2-user /tmp/hyperdrive/project
 cd /tmp/hyperdrive/project
-sudo -u ec2-user %s
 chown -R ec2-user:ec2-user .
 hyper remoteStatus update "launching hyperpackage"
 sudo -u ec2-user bash -c 'hyper pack run %s &'
-`, version, version, packCommand, runParameters)
+`, version, version, runParameters)
 
 	return startupScript
 }

@@ -1,10 +1,28 @@
+import boto3
 import json
+import zipfile
 from os import listdir, path
 
 from fastapp.services.utils import model_slug_info
 
 path_map = {}
 hyperpackage_path = "/hyperpackage"
+hyperpackage_s3_file = "hyperpack_s3.txt"
+hyperpackage_s3_path = "/" + hyperpackage_s3_file
+
+if path.exists(hyperpackage_s3_path):
+    session = boto3.Session()
+    client = session.client('s3')    
+
+    with open(hyperpackage_s3_path, 'r') as f:
+        lines = f.read().splitlines() 
+        bucket = lines[0]
+        s3_hyperpack_path = lines[1]
+        client.download_file(bucket, s3_hyperpack_path, "hyperpack.zip")
+
+        with zipfile.ZipFile("hyperpack.zip","r") as zip_file:
+            zip_file.extractall(hyperpackage_path)
+
 for item in listdir(hyperpackage_path):
     item_path = path.join(hyperpackage_path, item)
     if not path.isdir(item_path):
