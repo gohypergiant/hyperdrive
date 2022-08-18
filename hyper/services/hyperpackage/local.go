@@ -29,12 +29,12 @@ func (s LocalHyperpackageService) BuildAndRun(dockerfileSavePath string, imageTa
 	}
 	runTag := imageTags[0]
 
-	s.Build(dockerfileSavePath, imageTags)
+	s.Build(dockerfileSavePath, imageTags, syncOptions)
 	s.Run(runTag, dockerOptions)
 }
-func (s LocalHyperpackageService) Build(dockerfileSavePath string, imageTags []string) {
+func (s LocalHyperpackageService) Build(dockerfileSavePath string, imageTags []string, syncOptions types.WorkspaceSyncOptions) {
 	dockerClient := cli.NewDockerClient()
-	dockerClient.CreateDockerFile(s.HyperpackagePath, dockerfileSavePath, false)
+	dockerClient.CreateDockerFile(s.HyperpackagePath, dockerfileSavePath, false, syncOptions)
 	dockerClient.BuildImage(strings.TrimLeft(dockerfileSavePath, "./"), imageTags)
 }
 func (s LocalHyperpackageService) Run(imageTag string, dockerOptions types.DockerOptions) {

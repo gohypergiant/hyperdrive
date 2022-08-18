@@ -3,13 +3,14 @@ package notebook
 import (
 	"errors"
 	"fmt"
-	"github.com/gohypergiant/hyperdrive/hyper/types"
 	"io"
 	"os"
 	"path/filepath"
 	"strconv"
 	"strings"
 	"time"
+
+	"github.com/gohypergiant/hyperdrive/hyper/types"
 
 	"github.com/docker/docker/api/types/container"
 	"github.com/docker/docker/api/types/mount"
@@ -129,7 +130,7 @@ func (s LocalNotebookService) Start(jupyterOptions types.JupyterLaunchOptions, _
 				os.Exit(1)
 			}
 		}
-		dockerClient.CreateDockerFile("", "Dockerfile.reqs", true)
+		dockerClient.CreateDockerFile("", "Dockerfile.reqs", true, types.WorkspaceSyncOptions{})
 		dockerClient.BuildImage("Dockerfile.reqs", []string{imageName})
 
 		createdIdReqs, errReqs := dockerClient.CreateContainer(imageName, name, contConfig, hostConfig, false)
