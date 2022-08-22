@@ -25,7 +25,9 @@ def generate_folder_name(
     return folder_name
 
 
-def write_hyperpack_to_s3():
+def write_hyperpack_to_s3(
+    access_key_id="", secret_access_key="", session_token="", s3_bucket_path=""
+):
     print("ciao mondo!")
 
 
