@@ -61,8 +61,10 @@ def write_hyperpack_to_s3(
         aws_session_token=session_token,
     )
 
+    s3_object_key = hyperpack_file.rsplit("/", 1)[-1]
+
     try:
-        s3.meta.client.upload_file(hyperpack_file, s3_bucket, "hyperpack.zip")
+        s3.meta.client.upload_file(hyperpack_file, s3_bucket, s3_object_key)
     except Exception as exp:
         print("exp: ", exp)
         raise
