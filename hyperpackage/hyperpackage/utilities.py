@@ -1,4 +1,5 @@
 import json
+import os
 import shutil
 import yaml
 import zipfile
@@ -35,8 +36,11 @@ def write_hyperpack_to_s3(
 ):
     if hyperpack_path == "":
         raise ValueError("Please pass in the path to your hyperpack zip file.")
+    elif not os.path.isfile(hyperpack_path):
+        raise FileNotFoundError("No file could be found at {}".format(hyperpack_path))
     elif not zipfile.is_zipfile(hyperpack_path):
-        raise TypeError("Invalid zip file.")
+        raise TypeError("The file {} is an invalid zip file.".format(hyperpack_path))
+
     if (
         access_key_id in [None, ""]
         or secret_access_key in [None, ""]
