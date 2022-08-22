@@ -72,7 +72,7 @@ def write_hyperpack_to_s3(
         raise
 
     print(
-        "*** COMPLETE: The {} hyperpack was written to the {} S3 bucket ***".format(
+        "*** COMPLETED: The {} hyperpack was written to the {} S3 bucket ***".format(
             s3_object_key, s3_bucket
         )
     )
