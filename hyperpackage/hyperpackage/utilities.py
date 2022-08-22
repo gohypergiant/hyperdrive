@@ -29,18 +29,18 @@ def generate_folder_name(
 
 
 def write_hyperpack_to_s3(
-    hyperpack_path="",
+    hyperpack_file="",
     access_key_id=None,
     secret_access_key=None,
     session_token=None,
-    s3_bucket_path=None,
+    s3_bucket=None,
 ):
-    if hyperpack_path == "":
+    if hyperpack_file == "":
         raise ValueError("Please pass in the path to your hyperpack zip file.")
-    elif not os.path.isfile(hyperpack_path):
-        raise FileNotFoundError("No file could be found at {}".format(hyperpack_path))
-    elif not zipfile.is_zipfile(hyperpack_path):
-        raise TypeError("The file {} is an invalid zip file.".format(hyperpack_path))
+    elif not os.path.isfile(hyperpack_file):
+        raise FileNotFoundError("No file could be found at {}".format(hyperpack_file))
+    elif not zipfile.is_zipfile(hyperpack_file):
+        raise TypeError("The file {} is an invalid zip file.".format(hyperpack_file))
 
     if (
         access_key_id in [None, ""]
@@ -51,7 +51,7 @@ def write_hyperpack_to_s3(
             "Please pass in the following AWS S3 credentials: access_key_id, secret_access_key, and session_token."
         )
 
-    if s3_bucket_path in [None, ""]:
+    if s3_bucket in [None, ""]:
         raise ValueError("Please pass in a S3 bucket path.")
 
     s3 = boto3.resource(
@@ -62,7 +62,7 @@ def write_hyperpack_to_s3(
     )
 
     try:
-        s3.meta.client.upload_file(hyperpack_path, s3_bucket_path, "hyperpack.zip")
+        s3.meta.client.upload_file(hyperpack_file, s3_bucket, "hyperpack.zip")
     except Exception as exp:
         print("exp: ", exp)
         raise
