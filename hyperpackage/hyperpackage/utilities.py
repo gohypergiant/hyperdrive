@@ -62,7 +62,7 @@ def write_hyperpack_to_s3(
         )
 
     if s3_bucket in [None, ""]:
-        raise ValueError("Please pass in a S3 bucket.")
+        raise ValueError("Please pass in a S3 bucket name.")
 
     s3 = boto3.resource(
         "s3",
