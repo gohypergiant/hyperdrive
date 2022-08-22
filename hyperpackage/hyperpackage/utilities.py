@@ -25,6 +25,10 @@ def generate_folder_name(
     return folder_name
 
 
+def write_hyperpack_to_s3():
+    print("ciao mondo!")
+
+
 def write_json(dictionary, json_file_path):
     """Writes object to JSON format
     Args:
