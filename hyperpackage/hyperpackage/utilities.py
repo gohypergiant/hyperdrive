@@ -71,7 +71,11 @@ def write_hyperpack_to_s3(
         print("S3 upload error: ", exp)
         raise
 
-    print("Hyperpack {} written to the {} S3 bucket".format(s3_object_key, s3_bucket))
+    print(
+        "*** COMPLETE: The {} hyperpack was written to the {} S3 bucket ***".format(
+            s3_object_key, s3_bucket
+        )
+    )
 
 
 def write_json(dictionary, json_file_path):
