@@ -26,8 +26,18 @@ def generate_folder_name(
 
 
 def write_hyperpack_to_s3(
-    access_key_id="", secret_access_key="", session_token="", s3_bucket_path=""
+    access_key_id=None, secret_access_key=None, session_token=None, s3_bucket_path=None
 ):
+    if (
+        access_key_id in [None, ""]
+        or secret_access_key in [None, ""]
+        or session_token in [None, ""]
+    ):
+        raise ValueError(
+            "Please pass in the following AWS S3 credentials: access_key_id, secret_access_key, and session_token."
+        )
+    if s3_bucket_path in [None, ""]:
+        raise ValueError("Please pass in a S3 bucket path.")
     print("ciao mondo!")
 
 
