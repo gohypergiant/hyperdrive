@@ -34,6 +34,7 @@ def write_hyperpack_to_s3(
 ):
     if hyperpack_path == "":
         raise ValueError("Please pass in the path to your hyperpack zip file.")
+
     if (
         access_key_id in [None, ""]
         or secret_access_key in [None, ""]
@@ -42,8 +43,10 @@ def write_hyperpack_to_s3(
         raise ValueError(
             "Please pass in the following AWS S3 credentials: access_key_id, secret_access_key, and session_token."
         )
+
     if s3_bucket_path in [None, ""]:
         raise ValueError("Please pass in a S3 bucket path.")
+
     print("ciao mondo!")
 
 
