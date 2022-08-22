@@ -1,3 +1,4 @@
+import boto3
 import json
 import os
 import shutil
@@ -52,6 +53,18 @@ def write_hyperpack_to_s3(
 
     if s3_bucket_path in [None, ""]:
         raise ValueError("Please pass in a S3 bucket path.")
+
+    s3 = boto3.resource(
+        "s3",
+        aws_access_key_id=access_key_id,
+        aws_secret_access_key=secret_access_key,
+        aws_session_token=session_token,
+    )
+
+    try:
+        s3.meta.client.upload_file(hyperpack_path, s3_bucket_path, "hyperpack.zip")
+    except Exception as exp:
+        print("exp: ", exp)
 
     print("ciao mondo!")
 
