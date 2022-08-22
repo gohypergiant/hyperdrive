@@ -50,7 +50,7 @@ def write_hyperpack_to_s3(
         or session_token in [None, ""]
     ):
         raise ValueError(
-            "Please pass in the following AWS S3 credentials: access_key_id, secret_access_key, and session_token."
+            "Please pass in all of the following AWS S3 credentials: access_key_id, secret_access_key, and session_token."
         )
 
     if s3_bucket in [None, ""]:
