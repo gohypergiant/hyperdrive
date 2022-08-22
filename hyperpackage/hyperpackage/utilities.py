@@ -29,12 +29,20 @@ def generate_folder_name(
 
 
 def write_hyperpack_to_s3(
-    hyperpack_file="",
-    access_key_id=None,
-    secret_access_key=None,
-    session_token=None,
-    s3_bucket=None,
+    hyperpack_file: str = "",
+    access_key_id: str = None,
+    secret_access_key: str = None,
+    session_token: str = None,
+    s3_bucket: str = None,
 ):
+    """Writes hyperpack to a S3 bucket
+    Args:
+        hyperpack_file: name of, or path to, hyperpack file
+        access_key_id: AWS_ACCESS_KEY_ID
+        secret_access_key: AWS_SECRET_ACCESS_KEY
+        session_token: AWS_SESSION_TOKEN
+        s3_bucket: name of S3 bucket
+    """
     if hyperpack_file == "":
         raise ValueError(
             "Please pass in the name of, or path to, your hyperpack zip file."
