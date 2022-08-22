@@ -36,7 +36,7 @@ def write_hyperpack_to_s3(
     s3_bucket=None,
 ):
     if hyperpack_file == "":
-        raise ValueError("Please pass in the path to your hyperpack zip file.")
+        raise ValueError("Please pass in the name or path to your hyperpack zip file.")
     elif not os.path.isfile(hyperpack_file):
         raise FileNotFoundError("No file could be found at {}".format(hyperpack_file))
     elif not zipfile.is_zipfile(hyperpack_file):
