@@ -65,6 +65,7 @@ def write_hyperpack_to_s3(
         s3.meta.client.upload_file(hyperpack_path, s3_bucket_path, "hyperpack.zip")
     except Exception as exp:
         print("exp: ", exp)
+        raise
 
     print("ciao mondo!")
 
