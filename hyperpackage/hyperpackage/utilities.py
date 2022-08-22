@@ -26,8 +26,14 @@ def generate_folder_name(
 
 
 def write_hyperpack_to_s3(
-    access_key_id=None, secret_access_key=None, session_token=None, s3_bucket_path=None
+    hyperpack_path="",
+    access_key_id=None,
+    secret_access_key=None,
+    session_token=None,
+    s3_bucket_path=None,
 ):
+    if hyperpack_path == "":
+        raise ValueError("Please pass in the path to your hyperpack zip file.")
     if (
         access_key_id in [None, ""]
         or secret_access_key in [None, ""]
