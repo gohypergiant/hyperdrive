@@ -68,7 +68,7 @@ def write_hyperpack_to_s3(
     try:
         s3.meta.client.upload_file(hyperpack_file, s3_bucket, s3_object_key)
     except Exception as exp:
-        print("Error occurred while uploading the hyperpack: ", exp)
+        print("S3 upload error: ", exp)
         raise
 
     print("Hyperpack {} written to the {} S3 bucket".format(s3_object_key, s3_bucket))
