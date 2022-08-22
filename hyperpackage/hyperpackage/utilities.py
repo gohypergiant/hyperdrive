@@ -36,7 +36,9 @@ def write_hyperpack_to_s3(
     s3_bucket=None,
 ):
     if hyperpack_file == "":
-        raise ValueError("Please pass in the name or path to your hyperpack zip file.")
+        raise ValueError(
+            "Please pass in the name of, or path to, your hyperpack zip file."
+        )
     elif not os.path.isfile(hyperpack_file):
         raise FileNotFoundError("No file could be found at {}".format(hyperpack_file))
     elif not zipfile.is_zipfile(hyperpack_file):
@@ -66,10 +68,10 @@ def write_hyperpack_to_s3(
     try:
         s3.meta.client.upload_file(hyperpack_file, s3_bucket, s3_object_key)
     except Exception as exp:
-        print("exp: ", exp)
+        print("Error occurred while uploading the hyperpack: ", exp)
         raise
 
-    print("ciao mondo!")
+    print("Hyperpack {} written to the {} S3 bucket".format(s3_object_key, s3_bucket))
 
 
 def write_json(dictionary, json_file_path):
