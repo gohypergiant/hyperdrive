@@ -25,7 +25,7 @@ setuptools.setup(
         "Operating System :: OS Independent",
     ],
     include_package_data=True,
-    install_requires=["numpy",],
+    install_requires=["numpy", "boto3"],
     extras_require={"torch": ["pytorch"],},
     packages=setuptools.find_packages(),
     python_requires=">=3.9",

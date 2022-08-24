@@ -12,15 +12,15 @@ hyperpackage_s3_path = "/" + hyperpackage_s3_file
 
 if path.exists(hyperpackage_s3_path):
     session = boto3.Session()
-    client = session.client('s3')    
+    client = session.client("s3")
 
-    with open(hyperpackage_s3_path, 'r') as f:
-        lines = f.read().splitlines() 
+    with open(hyperpackage_s3_path, "r") as f:
+        lines = f.read().splitlines()
         bucket = lines[0]
         s3_hyperpack_path = lines[1]
         client.download_file(bucket, s3_hyperpack_path, "hyperpack.zip")
 
-        with zipfile.ZipFile("hyperpack.zip","r") as zip_file:
+        with zipfile.ZipFile("hyperpack.zip", "r") as zip_file:
             zip_file.extractall(hyperpackage_path)
 
 for item in listdir(hyperpackage_path):

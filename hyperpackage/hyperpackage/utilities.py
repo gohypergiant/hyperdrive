@@ -1,6 +1,9 @@
+import boto3
 import json
+import os
 import shutil
 import yaml
+import zipfile
 
 
 def generate_folder_name(
@@ -23,6 +26,64 @@ def generate_folder_name(
         folder_name = f"{prefix}-{suffix}"
 
     return folder_name
+
+
+def write_hyperpack_to_s3(
+    hyperpack_file: str = "",
+    access_key_id: str = None,
+    secret_access_key: str = None,
+    session_token: str = None,
+    s3_bucket: str = None,
+):
+    """Writes hyperpack to a S3 bucket
+    Args:
+        hyperpack_file: name of, or path to, hyperpack file
+        access_key_id: AWS_ACCESS_KEY_ID
+        secret_access_key: AWS_SECRET_ACCESS_KEY
+        session_token: AWS_SESSION_TOKEN
+        s3_bucket: name of S3 bucket
+    """
+    if hyperpack_file == "":
+        raise ValueError(
+            "Please pass in the name of, or path to, your hyperpack zip file."
+        )
+    elif not os.path.isfile(hyperpack_file):
+        raise FileNotFoundError("No file could be found at {}".format(hyperpack_file))
+    elif not zipfile.is_zipfile(hyperpack_file):
+        raise TypeError("The file {} is an invalid zip file.".format(hyperpack_file))
+
+    if (
+        access_key_id in [None, ""]
+        or secret_access_key in [None, ""]
+        or session_token in [None, ""]
+    ):
+        raise ValueError(
+            "Please pass in all of the following AWS S3 credentials: access_key_id, secret_access_key, and session_token."
+        )
+
+    if s3_bucket in [None, ""]:
+        raise ValueError("Please pass in a S3 bucket name.")
+
+    s3 = boto3.resource(
+        "s3",
+        aws_access_key_id=access_key_id,
+        aws_secret_access_key=secret_access_key,
+        aws_session_token=session_token,
+    )
+
+    s3_object_key = hyperpack_file.rsplit("/", 1)[-1]
+
+    try:
+        s3.meta.client.upload_file(hyperpack_file, s3_bucket, s3_object_key)
+    except Exception as exp:
+        print("S3 upload error: ", exp)
+        raise
+
+    print(
+        "*** COMPLETED: The {} hyperpack was written to the {} S3 bucket ***".format(
+            s3_object_key, s3_bucket
+        )
+    )
 
 
 def write_json(dictionary, json_file_path):
