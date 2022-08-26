@@ -3,6 +3,7 @@ import logging
 from os import path
 
 import numpy as np
+from onnx.backend.test.case.node.softmax import softmax
 from onnxruntime import InferenceSession
 
 from fastapp.services.hyperpackage import get_study_info, model_path
@@ -25,7 +26,7 @@ def predict(input_data, model_id: str):
     model = ONNXModel(trained_model_path)
     try:
         result = model.predict(input_data=np.array(input_data, dtype=np.float32))
-        print(result)
+        result = softmax(result).argmax().item()
         return np.array(result).tolist()
     except ValueError as err:
         logging.error(err)
