@@ -11,8 +11,8 @@ def batch(body, model_id=default_model_id):
 
 
 def predict(body, model_id=default_model_id):
-    result = svc_model_predict([body], model_id=model_id)[0]
-    return {"prediction": list(result)[0]}
+    result = svc_model_predict([body], model_id=model_id)
+    return {"prediction": result}
 
 
 def info(model_id=default_model_id) -> dict:

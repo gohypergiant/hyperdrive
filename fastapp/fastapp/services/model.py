@@ -27,7 +27,7 @@ def predict(input_data, model_id: str):
     try:
         result = model.predict(input_data=np.array(input_data, dtype=np.float32))
         result = softmax(result).argmax().item()
-        return np.array(result).tolist()
+        return result
     except ValueError as err:
         logging.error(err)
 
