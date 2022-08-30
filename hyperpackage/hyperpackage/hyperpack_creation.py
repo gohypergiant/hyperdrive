@@ -123,7 +123,7 @@ def verify_args(model, flavor: str, task: str):
         )
     elif flavor not in SUPPORTED_MODEL_FLAVORS:
         raise TypeError(
-            "You have specified a model flavor, [{}], that is currently not supported. Supported model flavors are:\n{}".format(
+            "You have specified a model flavor, {}, that is currently not supported. Supported model flavors are:\n{}".format(
                 flavor, supported_flavors
             )
         )
@@ -136,7 +136,7 @@ def verify_args(model, flavor: str, task: str):
         )
     elif task not in SUPPORTED_ML_TASKS:
         raise TypeError(
-            "You have specified a task, [{}], that is currently not supported. Supported tasks are:\n{}".format(
+            "You have specified a task, {}, that is currently not supported. Supported tasks are:\n{}".format(
                 task, supported_tasks
             )
         )
