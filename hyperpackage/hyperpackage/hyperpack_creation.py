@@ -19,7 +19,10 @@ SUPPORTED_ML_TASKS = [
 
 
 def create_hyperpack(
-    trained_model=None, model_flavor: str = None, num_train_columns: int = 0
+    trained_model=None,
+    model_flavor: str = None,
+    ml_task: str = None,
+    num_train_columns: int = 0,
 ):
     """Entrypoint function for the hyperpackage package. The user will call this
        function
@@ -37,7 +40,7 @@ def create_hyperpack(
     curr_dir = os.getcwd()
 
     print("*** Verifying trained_model and model_flavor args ***")
-    verify_args(model=trained_model, flavor=model_flavor)
+    verify_args(model=trained_model, flavor=model_flavor, task=ml_task)
 
     print("*** Loading the trained model ***")
     loaded_model = load_trained_model(model=trained_model)
@@ -90,7 +93,7 @@ def create_hyperpack(
     print("*** Hyperpack created! ***")
 
 
-def verify_args(model, flavor: str):
+def verify_args(model, flavor: str, task: str):
     """Verifies the model and flavor args that are passed to the create_hyperpack
        function
     Args:
@@ -101,6 +104,7 @@ def verify_args(model, flavor: str):
         flavor: library/package used to build pretrained model
     """
     supported_flavors = "\n".join(map(str, SUPPORTED_MODEL_FLAVORS))
+    supported_tasks = "\n".join(map(str, SUPPORTED_ML_TASKS))
     if model is None:
         raise TypeError("You must pass in a trained model.")
     elif isinstance(model, str):
@@ -117,6 +121,19 @@ def verify_args(model, flavor: str):
         raise TypeError(
             "You have selected a model flavor that is currently not supported. Supported model flavors are:\n{}".format(
                 supported_flavors
+            )
+        )
+
+    if task is None:
+        raise TypeError(
+            "You must specify a machine learning task. Supported tasks are:\n{}".format(
+                supported_tasks
+            )
+        )
+    elif task not in SUPPORTED_ML_TASKS:
+        raise TypeError(
+            "You have selected a task that is currently not supported. Supported tasks are:\n{}".format(
+                supported_tasks
             )
         )
 
