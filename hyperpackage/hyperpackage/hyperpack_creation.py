@@ -11,6 +11,12 @@ from hyperpackage.utilities import (
 
 SUPPORTED_MODEL_FLAVORS = ["automl"]
 
+SUPPORTED_ML_TASKS = [
+    "regression",
+    "binary_classification",
+    "multi_class_classification",
+]
+
 
 def create_hyperpack(
     trained_model=None, model_flavor: str = None, num_train_columns: int = 0
