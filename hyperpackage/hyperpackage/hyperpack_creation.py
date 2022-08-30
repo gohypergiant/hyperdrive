@@ -84,7 +84,11 @@ def create_hyperpack(
     )
 
     print("*** Creating _study.json ***")
-    create_study_json(hyperpack_path=hyperpack_path, best_trial=best_trial_folder_name)
+    create_study_json(
+        hyperpack_path=hyperpack_path,
+        best_trial=best_trial_folder_name,
+        ml_task=ml_task,
+    )
 
     print("*** Creating study.yaml ***")
     create_study_yaml(current_dir=curr_dir, name=model_flavor)
@@ -188,14 +192,19 @@ def save_best_model_to_onnx(model, flavor: str, save_path: str, num_cols: int):
         torch_onnx_export(model=model, trial_path=save_path, train_shape_cols=num_cols)
 
 
-def create_study_json(hyperpack_path: str, best_trial: str):
+def create_study_json(hyperpack_path: str, best_trial: str, ml_task: str):
     """Creates the "_study.json" file
     Args:
         hyperpack_path: path to hyperpack folder
         best_trial: name of best trial
+        ml_task: type of machine learning task
     """
     created_time = datetime.now().strftime("%Y-%m-%d %H:%M")
-    study_json_dict = {"best_trial": best_trial, "created_at": created_time}
+    study_json_dict = {
+        "best_trial": best_trial,
+        "created_at": created_time,
+        "ml_task": ml_task,
+    }
     study_json_path = os.path.join(hyperpack_path, "_study.json")
     write_json(dictionary=study_json_dict, json_file_path=study_json_path)
 
