@@ -34,6 +34,8 @@ def create_hyperpack(
                       we only support "automl", but examples of other flavors
                       that will eventually be supported include "sklearn",
                       "pytorch", and "xgboost"
+        ml_task: the type of machine learning task, e.g., regression,
+                 binary_classification, or multi_class_classification
         num_train_columns: the number of columns in the training dataset used to
                            train the pretrained model
     """
@@ -102,6 +104,8 @@ def verify_args(model, flavor: str, task: str):
                or to an object in memory of type
                <class 'neural_network.network.Network'>
         flavor: library/package used to build pretrained model
+        task: type of machine learning task, e.g., regression, binary_classification,
+              multi_class_classification
     """
     supported_flavors = "\n".join(map(str, SUPPORTED_MODEL_FLAVORS))
     supported_tasks = "\n".join(map(str, SUPPORTED_ML_TASKS))
