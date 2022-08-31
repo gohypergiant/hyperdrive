@@ -24,19 +24,17 @@ def get_default_model_id() -> str:
 def predict(input_data, model_id: str):
     study_info = get_study_info()
     ml_task = study_info["ml_task"]
-    print("\n\nml_task is:", ml_task, "\n\n")
+
     trained_model_path = path.join(model_path(model_id), "trained_model")
     model = ONNXModel(trained_model_path)
+
     try:
         result = model.predict(input_data=np.array(input_data, dtype=np.float32))
         if ml_task == "binary_classification":
             result = int(expit(result).round())
-            print("ONE binary result:", result)
         elif ml_task == "multi_class_classification":
             result = log_softmax(result).argmax().item()
-            print("ONE multi result:", result)
         else:
-            print("ONE regression result:", result)
             result = result[0].item()
         return result
     except ValueError as err:
