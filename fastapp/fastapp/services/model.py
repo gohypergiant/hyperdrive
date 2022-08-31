@@ -30,7 +30,7 @@ def predict(input_data, model_id: str):
     try:
         result = model.predict(input_data=np.array(input_data, dtype=np.float32))
         if ml_task == "binary_classification":
-            result = expit(result).round().item()
+            result = int(expit(result).round().item())
             print("ONE binary result:", result)
         elif ml_task == "multi_class_classification":
             result = log_softmax(result).argmax().item()
