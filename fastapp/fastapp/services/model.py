@@ -1,10 +1,10 @@
 import json
 import logging
+import numpy as np
 from os import path
 
-import numpy as np
-from onnx.backend.test.case.node.softmax import softmax
 from onnxruntime import InferenceSession
+from scipy.special import expit, log_softmax
 
 from fastapp.services.hyperpackage import get_study_info, model_path
 from fastapp.services.utils import model_slug_info
@@ -30,11 +30,14 @@ def predict(input_data, model_id: str):
     try:
         result = model.predict(input_data=np.array(input_data, dtype=np.float32))
         if ml_task == "binary_classification":
-            result = softmax(result).round().item()
+            result = expit(result).round().item()
+            print("ONE binary result:", result)
         elif ml_task == "multi_class_classification":
-            result = softmax(result).argmax().item()
+            result = log_softmax(result).argmax().item()
+            print("ONE multi result:", result)
         else:
-            result = result
+            print("ONE regression result:", result)
+            result = result[0].item()
         return result
     except ValueError as err:
         logging.error(err)

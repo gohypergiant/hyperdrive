@@ -36,7 +36,6 @@ dependencies:
   - ncurses=6.3=h9c3ff4c_0
   - nodeenv=1.6.0=pyhd8ed1ab_0
   - numpy=1.22.1=py310h454958d_0
-  - onnx=1.11.0
   - onnxruntime=1.10.0=py310h4ea3434_2
   - openssl=3.0.0=h7f98852_2
   - pip=22.0.2=pyhd8ed1ab_0
@@ -51,6 +50,7 @@ dependencies:
   - pyyaml=6.0=py310h6acc77f_3
   - re2=2021.11.01=h9c3ff4c_0
   - readline=8.1=h46c0cb4_0
+  - scipy=1.7.3
   - setuptools=60.6.0=py310hff52083_0
   - six=1.16.0=pyh6c4a22f_0
   - sniffio=1.2.0=py310hff52083_2
