@@ -11,9 +11,18 @@ from hyperpackage.utilities import (
 
 SUPPORTED_MODEL_FLAVORS = ["automl"]
 
+SUPPORTED_ML_TASKS = [
+    "regression",
+    "binary_classification",
+    "multi_class_classification",
+]
+
 
 def create_hyperpack(
-    trained_model=None, model_flavor: str = None, num_train_columns: int = 0
+    trained_model=None,
+    model_flavor: str = None,
+    ml_task: str = None,
+    num_train_columns: int = 0,
 ):
     """Entrypoint function for the hyperpackage package. The user will call this
        function
@@ -25,13 +34,15 @@ def create_hyperpack(
                       we only support "automl", but examples of other flavors
                       that will eventually be supported include "sklearn",
                       "pytorch", and "xgboost"
+        ml_task: the type of machine learning task, e.g., regression,
+                 binary_classification, or multi_class_classification
         num_train_columns: the number of columns in the training dataset used to
                            train the pretrained model
     """
     curr_dir = os.getcwd()
 
     print("*** Verifying trained_model and model_flavor args ***")
-    verify_args(model=trained_model, flavor=model_flavor)
+    verify_args(model=trained_model, flavor=model_flavor, task=ml_task)
 
     print("*** Loading the trained model ***")
     loaded_model = load_trained_model(model=trained_model)
@@ -73,7 +84,11 @@ def create_hyperpack(
     )
 
     print("*** Creating _study.json ***")
-    create_study_json(hyperpack_path=hyperpack_path, best_trial=best_trial_folder_name)
+    create_study_json(
+        hyperpack_path=hyperpack_path,
+        best_trial=best_trial_folder_name,
+        ml_task=ml_task,
+    )
 
     print("*** Creating study.yaml ***")
     create_study_yaml(current_dir=curr_dir, name=model_flavor)
@@ -84,7 +99,7 @@ def create_hyperpack(
     print("*** Hyperpack created! ***")
 
 
-def verify_args(model, flavor: str):
+def verify_args(model, flavor: str, task: str):
     """Verifies the model and flavor args that are passed to the create_hyperpack
        function
     Args:
@@ -93,8 +108,11 @@ def verify_args(model, flavor: str):
                or to an object in memory of type
                <class 'neural_network.network.Network'>
         flavor: library/package used to build pretrained model
+        task: type of machine learning task, e.g., regression, binary_classification,
+              multi_class_classification
     """
     supported_flavors = "\n".join(map(str, SUPPORTED_MODEL_FLAVORS))
+    supported_tasks = "\n".join(map(str, SUPPORTED_ML_TASKS))
     if model is None:
         raise TypeError("You must pass in a trained model.")
     elif isinstance(model, str):
@@ -109,8 +127,21 @@ def verify_args(model, flavor: str):
         )
     elif flavor not in SUPPORTED_MODEL_FLAVORS:
         raise TypeError(
-            "You have selected a model flavor that is currently not supported. Supported model flavors are:\n{}".format(
-                supported_flavors
+            "You have specified a model flavor, {}, that is currently not supported. Supported model flavors are:\n{}".format(
+                flavor, supported_flavors
+            )
+        )
+
+    if task is None:
+        raise TypeError(
+            "You must specify a machine learning task. Supported tasks are:\n{}".format(
+                supported_tasks
+            )
+        )
+    elif task not in SUPPORTED_ML_TASKS:
+        raise TypeError(
+            "You have specified a task, {}, that is currently not supported. Supported tasks are:\n{}".format(
+                task, supported_tasks
             )
         )
 
@@ -161,14 +192,19 @@ def save_best_model_to_onnx(model, flavor: str, save_path: str, num_cols: int):
         torch_onnx_export(model=model, trial_path=save_path, train_shape_cols=num_cols)
 
 
-def create_study_json(hyperpack_path: str, best_trial: str):
+def create_study_json(hyperpack_path: str, best_trial: str, ml_task: str):
     """Creates the "_study.json" file
     Args:
         hyperpack_path: path to hyperpack folder
         best_trial: name of best trial
+        ml_task: type of machine learning task
     """
     created_time = datetime.now().strftime("%Y-%m-%d %H:%M")
-    study_json_dict = {"best_trial": best_trial, "created_at": created_time}
+    study_json_dict = {
+        "best_trial": best_trial,
+        "created_at": created_time,
+        "ml_task": ml_task,
+    }
     study_json_path = os.path.join(hyperpack_path, "_study.json")
     write_json(dictionary=study_json_dict, json_file_path=study_json_path)
 

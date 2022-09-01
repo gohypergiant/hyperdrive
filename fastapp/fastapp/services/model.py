@@ -1,9 +1,10 @@
 import json
 import logging
+import numpy as np
 from os import path
 
-import numpy as np
 from onnxruntime import InferenceSession
+from scipy.special import expit, log_softmax
 
 from fastapp.services.hyperpackage import get_study_info, model_path
 from fastapp.services.utils import model_slug_info
@@ -21,12 +22,21 @@ def get_default_model_id() -> str:
 
 
 def predict(input_data, model_id: str):
+    study_info = get_study_info()
+    ml_task = study_info["ml_task"]
+
     trained_model_path = path.join(model_path(model_id), "trained_model")
     model = ONNXModel(trained_model_path)
+
     try:
         result = model.predict(input_data=np.array(input_data, dtype=np.float32))
-        print(result)
-        return np.array(result).tolist()
+        if ml_task == "binary_classification":
+            result = int(expit(result).round())
+        elif ml_task == "multi_class_classification":
+            result = log_softmax(result).argmax().item()
+        else:
+            result = result[0].item()
+        return result
     except ValueError as err:
         logging.error(err)
 
