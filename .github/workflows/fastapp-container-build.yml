@@ -2,10 +2,12 @@ name: PR Merge
 
 on:
   push:
+    paths:
+      - .github/workflows/fastapp-container-build.yml
+      - fastapp/**
     branches:
       - "main"
       - "stable"
-      - "fastapp-ci"
 
 env:
   REGISTRY: ghcr.io
