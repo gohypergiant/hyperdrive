@@ -17,9 +17,6 @@ jobs:
       - name: Checkout
         uses: actions/checkout@v2
 
-      - name: Change to fastapp dir
-        run: cd ./fastapp
-
       - name: Set up QEMU
         uses: docker/setup-qemu-action@v1
 
@@ -75,8 +72,8 @@ jobs:
         env:
           DOCKER_BUILDKIT: 1
         with:
-          context: .
-          file: ./docker/fast-app.Dockerfile
+          context: ./fastapp
+          file: ./fastapp/docker/fast-app.Dockerfile
           cache-from: type=local,src=/tmp/.buildx-cache
           cache-to: type=local,dest=/tmp/.buildx-cache
           push: ${{ github.event_name != 'pull_request' }}
