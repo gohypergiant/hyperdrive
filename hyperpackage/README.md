@@ -50,14 +50,14 @@ Your machine should have the following software installed:
 ```
     create_hyperpack(trained_model=output["model"], model_flavor="automl", ml_task="binary_classification")
 ```
-NOTE: You MUST pass in `ml_task`, which refers to the type of machine learning task. Available options are "regression", "binary_classification", and "multi_class_classification".
+NOTE: You MUST pass in `ml_task`, which refers to the machine learning task type of the model. Available options are "regression", "binary_classification", and "multi_class_classification".
 
 4. String path to model - to call `create_hyperpackage` with a string path to a saved model, e.g., "/Users/hanswilsdorf/saved_model":
 
 ```
     create_hyperpack(trained_model="/Users/hanswilsdorf/saved_model", model_flavor="automl", ml_task="binary_classification")
 ```
-NOTE: You MUST pass in `ml_task`, which refers to the type of machine learning task. Available options are "regression", "binary_classification", and "multi_class_classification".
+NOTE: You MUST pass in `ml_task`, which refers to the machine learning task type of the model. Available options are "regression", "binary_classification", and "multi_class_classification".
 
 5. Successful execution of the `create_hyperpack` function will create the following artifacts IN THE CURRENT DIRECTORY from which you called the `create_hyperpack` function:
 
