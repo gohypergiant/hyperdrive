@@ -96,7 +96,7 @@ NOTE: You MUST pass in `ml_task`, which refers to the machine learning task type
 
 ## Writing hyperpacks to S3
 
-Hyperpackage provides a utility function to write your hyperpack to a S3 bucket. Here are the steps:
+Hyperpackage provides a utility function to write your hyperpack to an Amazon S3 bucket. Here are the steps:
 
 1. In a JupyterLab/Notebook or python session, import the `write_hyperpack_to_s3` function:
 
@@ -108,12 +108,12 @@ Hyperpackage provides a utility function to write your hyperpack to a S3 bucket.
 
 ```
     write_hyperpack_to_s3(
-    hyperpack_file="my_hyperpack.zip",
-    access_key_id=AWS_ACCESS_KEY_ID,
-    secret_access_key=AWS_SECRET_ACCESS_KEY,
-    session_token=AWS_SESSION_TOKEN,
-    s3_bucket="my_beautiful_bucket"
-)
+        hyperpack_file="my_hyperpack.zip",
+        access_key_id=AWS_ACCESS_KEY_ID,
+        secret_access_key=AWS_SECRET_ACCESS_KEY,
+        session_token=AWS_SESSION_TOKEN,
+        s3_bucket="my_beautiful_bucket"
+    )
 ```
 
 ## Hyperpack Schema
