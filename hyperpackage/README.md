@@ -98,7 +98,7 @@ NOTE: You MUST pass in `ml_task`, which refers to the machine learning task type
 
 Hyperpackage provides a utility function to write your hyperpack to a S3 bucket. Here are the steps:
 
-1. In a JupyterLab/Notebook or python session, import the `create_hyperpack` function:
+1. In a JupyterLab/Notebook or python session, import the `write_hyperpack_to_s3` function:
 
 ```
     from hyperpackage.utilities import write_hyperpack_to_s3
