@@ -265,7 +265,31 @@ func getOrCreateVPC(client *ec2.Client, projectName string) (string, string) {
 			panic("error adding Route to Route Table," + err.Error())
 		}
 	}
+	if routeTableID == "" {
+		routeTableID = getRouteTableId(client, vpcID)
+	}
 	return vpcID, routeTableID
+}
+func getRouteTableId(client *ec2.Client, vpcId string) string {
+	inputGetRouteTable := &ec2.DescribeRouteTablesInput{
+		Filters: []types.Filter{
+			{
+				Name:   aws.String("vpc-id"),
+				Values: []string{vpcId},
+			},
+		},
+	}
+
+	results, err := DescribeRouteTables(context.TODO(), client, inputGetRouteTable)
+	if err != nil {
+		panic("error getting route table" + err.Error())
+	}
+
+	if len(results.RouteTables) <= 0 {
+		panic("error getting route table")
+	}
+	return *results.RouteTables[0].RouteTableId
+
 }
 
 func getTagSpecification(projectName string, resourceType types.ResourceType, additionalTags ...types.Tag) []types.TagSpecification {
@@ -652,26 +676,30 @@ If you want to change the instance size, stop the current running instance:
 
 	ip := result.Instances[0].PublicIpAddress
 	if ip == nil {
+		time.Sleep(3 * time.Second) //Wait
 		ip, err = getInstanceIpAddress(*result.Instances[0].InstanceId, remoteCfg)
-		if err != nil {
+		if err != nil || ip == nil {
 
 			fmt.Println("Provisioned instance but cannot get publicIP")
 			os.Exit(1)
 			return ""
 		}
-
 	}
+	outputNotebookInfo(keyName, *ip)
+	return *ip
+}
+
+func outputNotebookInfo(keyName string, ip string) {
 	fmt.Println("")
 	fmt.Println("EC2 instance provisioned. You can access via ssh by running:")
 
 	if keyName == ssh.DEFAULT_KEY {
-		fmt.Println("ssh ec2-user@" + *ip)
+		fmt.Println("ssh ec2-user@" + ip)
 	} else {
-		fmt.Println("ssh -i ~/.ssh/" + keyName + " ec2-user@" + *ip)
+		fmt.Println("ssh -i ~/.ssh/" + keyName + " ec2-user@" + ip)
 	}
 	fmt.Println("")
 
-	return *ip
 }
 
 func getJupyterEc2StartScript(version string, jupyterLaunchOptions hyperdriveTypes.JupyterLaunchOptions, syncOptions hyperdriveTypes.WorkspaceSyncOptions, remoteCfg hyperdriveTypes.EC2ComputeRemoteConfiguration) string {
