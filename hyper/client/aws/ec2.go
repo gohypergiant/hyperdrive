@@ -281,6 +281,10 @@ func getTagSpecification(projectName string, resourceType types.ResourceType, ad
 					Key:   aws.String(HYPERDRIVE_NAME_TAG),
 					Value: aws.String(projectName),
 				},
+				{
+					Key:   aws.String("Name"),
+					Value: aws.String(projectName),
+				},
 			}, additionalTags...),
 		},
 	}
