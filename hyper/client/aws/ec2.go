@@ -338,19 +338,7 @@ func getOrCreateSubnet(client *ec2.Client, vID string, region string, projectNam
 	fmt.Println("No Subnet found for VPC", vID)
 	fmt.Println("Creating Subnet")
 
-	subnetMakeInput := &ec2.CreateSubnetInput{
-		CidrBlock:         aws.String("10.0.1.0/24"),
-		VpcId:             aws.String(vID),
-		AvailabilityZone:  aws.String(region + "a"),
-		TagSpecifications: getTagSpecification(projectName, types.ResourceTypeSubnet),
-	}
-
-	subnetMakeResult, err := MakeSubnet(context.TODO(), client, subnetMakeInput)
-	if err != nil {
-		panic("error creating Subnet," + err.Error())
-	}
-
-	subnetID = *subnetMakeResult.Subnet.SubnetId
+	subnetID = makeSubnet(client, vID, region, projectName, err, subnetID)
 
 	setSubnetToProvisionPublicIP(subnetID, client)
 	inputAddRouteTable := &ec2.AssociateRouteTableInput{
@@ -364,6 +352,28 @@ func getOrCreateSubnet(client *ec2.Client, vID string, region string, projectNam
 	}
 
 	return subnetID
+}
+
+func makeSubnet(client *ec2.Client, vID string, region string, projectName string, err error, subnetID string) string {
+	for i := 1; i <= 255; i++ {
+		cidr := fmt.Sprintf("10.0.%d.0/24", i)
+		subnetMakeInput := &ec2.CreateSubnetInput{
+			CidrBlock:         aws.String(cidr),
+			VpcId:             aws.String(vID),
+			AvailabilityZone:  aws.String(region + "a"),
+			TagSpecifications: getTagSpecification(projectName, types.ResourceTypeSubnet),
+		}
+
+		subnetMakeResult, err := MakeSubnet(context.TODO(), client, subnetMakeInput)
+		if err == nil {
+
+			subnetID = *subnetMakeResult.Subnet.SubnetId
+			return subnetID
+		} else {
+			fmt.Println(fmt.Sprintf("Could not create subnet %s, trying another", cidr))
+		}
+	}
+	panic("error creating Subnet," + err.Error())
 }
 
 func describeSubnets(client *ec2.Client, vID string) (*ec2.DescribeSubnetsOutput, error) {
