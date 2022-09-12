@@ -16,11 +16,8 @@ logger.error("Dummy Error")
 logger.debug("Dummy Debug")
 logger.warning("Dummy Warning")
 
-api_app = FastAPI(title="mlsdk-fastapp-api")
-api_app.include_router(model.router)
-
-app = FastAPI(title="mlsdk-fastapp-web")
-app.mount("/api", api_app)
+app = FastAPI(title="mlsdk-fastapp")
+app.include_router(model.router)
 
 @app.on_event("startup")
 def show_fast_app_api_key():
