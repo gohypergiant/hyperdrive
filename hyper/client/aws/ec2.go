@@ -355,6 +355,7 @@ func getOrCreateSubnet(client *ec2.Client, vID string, region string, projectNam
 }
 
 func makeSubnet(client *ec2.Client, vID string, region string, projectName string, err error, subnetID string) string {
+	//TODO: Refactor this in MLSDK-445
 	for i := 1; i <= 255; i++ {
 		cidr := fmt.Sprintf("10.0.%d.0/24", i)
 		subnetMakeInput := &ec2.CreateSubnetInput{
