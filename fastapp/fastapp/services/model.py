@@ -52,7 +52,7 @@ def batch_predict(input_data, model_id: str):
     try:
         if ml_task == "binary_classification":
             for input in input_data:
-                result = model.predict(input_data=np.array(input, dtype=np.float32))
+                result = model.predict(input_data=np.array([input], dtype=np.float32))
                 result = int(expit(result).round())
                 predictions.append(result)
         elif ml_task == "multi_class_classification":
