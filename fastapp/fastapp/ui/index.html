@@ -14,35 +14,43 @@
         </div>
 
         <div class="px-4 py-4">
-          <form action="/files/" enctype="multipart/form-data" method="post">
+          <form
+            action="/upload-hyperpack"
+            enctype="multipart/form-data"
+            method="post"
+          >
             <div class="flex justify-center">
-              <div class="border rounded-lg mb-4 w-48 text-center">
+              <div>
                 <label for="inputFile" class="cursor-pointer">
-                  Select Hyperpack
-                  <div class="flex justify-center mt-4 mb-4">
-                    <svg
-                      xmlns="http://www.w3.org/2000/svg"
-                      fill="none"
-                      viewBox="0 0 24 24"
-                      stroke-width="1.5"
-                      stroke="currentColor"
-                      class="w-12 h-12"
-                    >
-                      <path
-                        stroke-linecap="round"
-                        stroke-linejoin="round"
-                        d="M7.5 7.5h-.75A2.25 2.25 0 004.5 9.75v7.5a2.25 2.25 0 002.25 2.25h7.5a2.25 2.25 0 002.25-2.25v-7.5a2.25 2.25 0 00-2.25-2.25h-.75m0-3l-3-3m0 0l-3 3m3-3v11.25m6-2.25h.75a2.25 2.25 0 012.25 2.25v7.5a2.25 2.25 0 01-2.25 2.25h-7.5a2.25 2.25 0 01-2.25-2.25v-.75"
-                      />
-                    </svg>
+                  <div
+                    class="border rounded-lg mb-4 w-48 shadow-sm text-center"
+                  >
+                    Select Hyperpack
+                    <div class="flex justify-center mt-4 mb-4">
+                      <svg
+                        xmlns="http://www.w3.org/2000/svg"
+                        fill="none"
+                        viewBox="0 0 24 24"
+                        stroke-width="1.5"
+                        stroke="currentColor"
+                        class="w-12 h-12"
+                      >
+                        <path
+                          stroke-linecap="round"
+                          stroke-linejoin="round"
+                          d="M7.5 7.5h-.75A2.25 2.25 0 004.5 9.75v7.5a2.25 2.25 0 002.25 2.25h7.5a2.25 2.25 0 002.25-2.25v-7.5a2.25 2.25 0 00-2.25-2.25h-.75m0-3l-3-3m0 0l-3 3m3-3v11.25m6-2.25h.75a2.25 2.25 0 012.25 2.25v7.5a2.25 2.25 0 01-2.25 2.25h-7.5a2.25 2.25 0 01-2.25-2.25v-.75"
+                        />
+                      </svg>
 
-                    <input
-                      id="inputFile"
-                      name="hyperpack"
-                      type="file"
-                      class="hidden"
-                    />
+                      <input
+                        id="inputFile"
+                        name="file"
+                        type="file"
+                        class="hidden"
+                      />
+                    </div>
+                    <span id="filename" class="text-green-500"></span>
                   </div>
-                  <span id="filename" class="text-green-500"></span>
                 </label>
               </div>
             </div>
@@ -61,17 +69,6 @@
         </div>
       </div>
     </div>
-    <script>
-      const input = document.getElementById("inputFile");
-      const filename = document.getElementById("filename");
-      const upload = document.getElementById("upload");
-
-      input.addEventListener("change", () => {
-        const inputFile = document.querySelector("input[type=file]").files[0];
-
-        filename.innerText = inputFile.name;
-        upload.removeAttribute("disabled");
-      });
-    </script>
+    <script src="app.js"></script>
   </body>
 </html>

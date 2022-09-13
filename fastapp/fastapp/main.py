@@ -7,6 +7,7 @@ from fastapi.staticfiles import StaticFiles
 
 from fastapp.logging.config import LogConfig
 from fastapp.routers import model
+from fastapp.routers import upload
 
 dictConfig(LogConfig().dict())
 logger = logging.getLogger("hyperpack-wrapper")
@@ -18,6 +19,7 @@ logger.warning("Dummy Warning")
 
 app = FastAPI(title="mlsdk-fastapp")
 app.include_router(model.router)
+app.include_router(upload.router)
 
 @app.on_event("startup")
 def show_fast_app_api_key():
