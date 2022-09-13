@@ -41,6 +41,10 @@ def predict(input_data, model_id: str):
         logging.error(err)
 
 
+def batch_predict(input_data, model_id: str):
+    return 0
+
+
 class ONNXModel:
     def __init__(self, path):
 
