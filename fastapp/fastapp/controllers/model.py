@@ -7,8 +7,8 @@ default_model_id = get_default_model_id()
 
 
 def batch(body, model_id=default_model_id):
-    result = svc_batch_predict(body, model_id=model_id)
-    return {"predictions": list(result[0])}
+    results = svc_batch_predict(body, model_id=model_id)
+    return {"predictions": results}
 
 
 def predict(body, model_id=default_model_id):
