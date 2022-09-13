@@ -1,12 +1,13 @@
 import traceback
 from fastapi import APIRouter, File, UploadFile
-from fastapp.services.hyperpackage import hyperpackage_upload_path, hyperpackage_upload_file, extract_hyperpackage
+from fastapp.services.hyperpackage import hyperpackage_upload_path, hyperpackage_upload_file, extract_hyperpackage, clear_uploads
 
 router = APIRouter()
 
 
 @router.post("/upload-hyperpack")
 def upload(file: UploadFile = File(...)):
+    clear_uploads()
     try:
         with open(hyperpackage_upload_file, 'wb') as f:
             while contents := file.file.read(1024 * 1024):

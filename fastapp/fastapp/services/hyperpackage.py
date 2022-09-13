@@ -1,3 +1,6 @@
+import os
+import shutil
+
 import boto3
 import json
 import zipfile
@@ -59,3 +62,12 @@ def model_path(slug: str) -> str:
 
 def get_study_info() -> dict:
     return study_info
+
+def clear_uploads():
+    for root, dirs, files in os.walk(hyperpackage_upload_path):
+        for f in files:
+            print(f)
+            if f != ".gitkeep":
+                os.unlink(os.path.join(root, f))
+        for d in dirs:
+            shutil.rmtree(os.path.join(root, d))
