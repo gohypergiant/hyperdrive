@@ -5,6 +5,7 @@ from fastapp.services.utils import check_api_key
 
 router = APIRouter()
 
+
 @router.post("/predict")
 async def default_predict(request: Request):
     fast_key_header = request.headers.get("x-api-key")

@@ -6,15 +6,21 @@ from os import listdir, path
 from fastapp.services.utils import model_slug_info
 
 path_map = {}
-hyperpackage_path = "/hyperpackage"
-hyperpackage_upload_file = "upload/hyperpack.zip"
+study_info = {}
+hyperpackage_volume_path = "/hyperpackage"
+hyperpackage_upload_path = "upload"
+hyperpackage_upload_file = hyperpackage_upload_path + "/hyperpack.zip"
 hyperpackage_s3_file = "hyperpack_s3.txt"
 hyperpackage_s3_path = "/" + hyperpackage_s3_file
 
-def extract_hyperpackage():
-    with zipfile.ZipFile(hyperpackage_upload_file, "r") as zip_file:
-      zip_file.extractall(hyperpackage_path)
 
+def extract_hyperpackage(extract_path, zip_file):
+    with zipfile.ZipFile(zip_file, "r") as zip_file:
+        zip_file.extractall(extract_path)
+    load_hyperpackage(extract_path)
+
+
+def load_hyperpackage(hyperpackage_path):
     path_map.clear()
 
     for item in listdir(hyperpackage_path):
@@ -25,6 +31,14 @@ def extract_hyperpackage():
         path_map[slug_info["name"]] = item_path
         path_map[slug_info["id"]] = item_path
         path_map[slug_info["trimmed_id"]] = item_path
+
+    study_info_path = path.join(hyperpackage_path, "_study.json")
+    study_info_file = open(study_info_path)
+    study_info.clear()
+    study_info.update(json.load(study_info_file))
+
+
+load_hyperpackage(hyperpackage_volume_path)
 
 if path.exists(hyperpackage_s3_path):
     session = boto3.Session()
@@ -38,16 +52,10 @@ if path.exists(hyperpackage_s3_path):
 
         extract_hyperpackage()
 
+
 def model_path(slug: str) -> str:
     return path_map[slug]
 
 
 def get_study_info() -> dict:
-    try:
-        study_info_path = path.join(hyperpackage_path, "_study.json")
-        study_info_file = open(study_info_path)
-        return json.load(study_info_file)
-    except Exception as e:
-        print(e)
-        return "";
-
+    return study_info
