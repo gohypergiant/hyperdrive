@@ -47,14 +47,14 @@ def batch_predict(input_data, model_id: str):
 
     trained_model_path = path.join(model_path(model_id), "trained_model")
     model = ONNXModel(trained_model_path)
-    predictions = []
 
     try:
         if ml_task == "binary_classification":
-            for input in input_data:
-                result = model.predict(input_data=np.array([input], dtype=np.float32))
-                result = int(expit(result).round())
-                predictions.append(result)
+            predictions = [
+                model.predict(input_data=np.array([input], dtype=np.float32))
+                for input in input_data
+            ]
+            results = [int(expit(pred).round()) for pred in predictions]
         elif ml_task == "multi_class_classification":
             for input in input_data:
                 result = model.predict(input_data=np.array([input], dtype=np.float32))
@@ -65,7 +65,7 @@ def batch_predict(input_data, model_id: str):
                 result = model.predict(input_data=np.array([input], dtype=np.float32))
                 result = result[0].item()
                 predictions.append(result)
-        return predictions
+        return results
     except ValueError as err:
         logging.error(err)
 
