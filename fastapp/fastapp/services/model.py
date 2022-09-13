@@ -56,15 +56,17 @@ def batch_predict(input_data, model_id: str):
             ]
             results = [int(expit(pred).round()) for pred in predictions]
         elif ml_task == "multi_class_classification":
-            for input in input_data:
-                result = model.predict(input_data=np.array([input], dtype=np.float32))
-                result = log_softmax(result).argmax().item()
-                predictions.append(result)
+            predictions = [
+                model.predict(input_data=np.array([input], dtype=np.float32))
+                for input in input_data
+            ]
+            results = [log_softmax(pred).argmax().item() for pred in predictions]
         else:
-            for input in input_data:
-                result = model.predict(input_data=np.array([input], dtype=np.float32))
-                result = result[0].item()
-                predictions.append(result)
+            predictions = [
+                model.predict(input_data=np.array([input], dtype=np.float32))
+                for input in input_data
+            ]
+            results = [pred[0].item() for pred in predictions]
         return results
     except ValueError as err:
         logging.error(err)
