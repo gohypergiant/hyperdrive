@@ -3,27 +3,34 @@
   <head>
     <script src="https://use.fontawesome.com/3a2eaf6206.js"></script>
     <script type="module" src="https://cdn.skypack.dev/twind/shim"></script>
+    <script src="app.js"></script>
   </head>
   <body class="bg-gray-100">
     <div class="flex items-center justify-center h-screen">
-      <div class="overflow-hidden rounded-lg bg-white shadow w-96">
+      <div class="overflow-hidden rounded-lg bg-white shadow max-w-7xl w-3/5">
         <div class="border-b border-gray-200 bg-white px-4 py-4 sm:px-6">
           <h3 class="text-lg font-medium leading-6 text-gray-900">
             Upload Hyperpack
           </h3>
         </div>
 
+        <p class="px-4 py-4">
+          A Hyperpack can be provided to this container either by mounting a
+          directory to /hyperpack or by uploading one here.
+        </p>
+
         <div class="px-4 py-4">
           <form
             action="/upload-hyperpack"
             enctype="multipart/form-data"
             method="post"
+            autocomplete="off"
           >
             <div class="flex justify-center">
               <div>
                 <label for="inputFile" class="cursor-pointer">
                   <div
-                    class="border rounded-lg mb-4 w-48 shadow-sm text-center"
+                    class="border rounded-lg mb-4 w-60 shadow-sm text-center pt-2"
                   >
                     Select Hyperpack
                     <div class="flex justify-center mt-4 mb-4">
@@ -50,16 +57,32 @@
                       />
                     </div>
                     <span id="filename" class="text-green-500"></span>
+                    <div class="w-full mt-4">
+                      <div
+                        id="progress-bar"
+                        class="w-0 bg-green-500 px-5 py-0"
+                      ></div>
+                    </div>
                   </div>
                 </label>
               </div>
             </div>
 
+            <div class="flex justify-center">
+              <div id="pending" class="mt-2 mb-4" hidden>Uploading..</div>
+
+              <div id="success" class="text-green-500 mt-2 mb-4" hidden>
+                Upload complete
+              </div>
+              <div id="fail" class="text-red-500 mt-2 mb-4" hidden>
+                Upload failed
+              </div>
+            </div>
+
             <div class="flex justify-end">
               <button
-                type="submit"
                 id="upload"
-                class="inline-flex items-center rounded-md border border-transparent bg-indigo-600 px-3 py-2 text-sm font-medium leading-4 text-white shadow-sm hover:bg-indigo-700 focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:ring-offset-2"
+                class="inline-flex items-center rounded-md border border-transparent bg-indigo-600 px-3 py-2 text-sm font-medium leading-4 text-white shadow-sm hover:bg-indigo-700 focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:ring-offset-2 disabled:opacity-25 disabled:cursor-not-allowed"
                 disabled
               >
                 Upload
@@ -69,6 +92,5 @@
         </div>
       </div>
     </div>
-    <script src="app.js"></script>
   </body>
 </html>

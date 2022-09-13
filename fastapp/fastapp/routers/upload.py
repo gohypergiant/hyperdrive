@@ -15,8 +15,8 @@ def upload(file: UploadFile = File(...)):
 
     except Exception as e:
         print(e)
-        return {"message": "There was an error uploading the file"}
+        return {"message": "There was an error uploading the file", "success": False}
     finally:
         file.file.close()
 
-    return {"message": f"Successfully uploaded {file.filename}"}
+    return {"message": f"Successfully uploaded {file.filename}", "success": True}
