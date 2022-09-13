@@ -80,9 +80,7 @@ func getWorkspaceSyncOptions() types.WorkspaceSyncOptions {
 	if workspaceRemoteName != "" {
 		remoteConfig := config.GetWorkspacePersistenceRemote(workspaceRemoteName)
 		workpaceSyncOptions.S3Config = remoteConfig.S3Configuration
-	}
-
-	if workspaceS3IsManuallySpecified() {
+	} else if workspaceS3IsManuallySpecified() {
 
 		workpaceSyncOptions.S3Config = types.S3WorkspacePersistenceRemoteConfiguration{
 			Secret:     workspaceS3Secret,
