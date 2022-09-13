@@ -265,7 +265,31 @@ func getOrCreateVPC(client *ec2.Client, projectName string) (string, string) {
 			panic("error adding Route to Route Table," + err.Error())
 		}
 	}
+	if routeTableID == "" {
+		routeTableID = getRouteTableId(client, vpcID)
+	}
 	return vpcID, routeTableID
+}
+func getRouteTableId(client *ec2.Client, vpcId string) string {
+	inputGetRouteTable := &ec2.DescribeRouteTablesInput{
+		Filters: []types.Filter{
+			{
+				Name:   aws.String("vpc-id"),
+				Values: []string{vpcId},
+			},
+		},
+	}
+
+	results, err := DescribeRouteTables(context.TODO(), client, inputGetRouteTable)
+	if err != nil {
+		panic("error getting route table" + err.Error())
+	}
+
+	if len(results.RouteTables) <= 0 {
+		panic("error getting route table")
+	}
+	return *results.RouteTables[0].RouteTableId
+
 }
 
 func getTagSpecification(projectName string, resourceType types.ResourceType, additionalTags ...types.Tag) []types.TagSpecification {
@@ -303,18 +327,7 @@ func setSubnetToProvisionPublicIP(subnetID string, client *ec2.Client) {
 }
 func getOrCreateSubnet(client *ec2.Client, vID string, region string, projectName string, rtID string) string {
 
-	subnetDescribeInput := &ec2.DescribeSubnetsInput{
-		Filters: []types.Filter{
-			{
-				Name:   aws.String("vpc-id"),
-				Values: []string{vID},
-			},
-		},
-	}
-	subnetDescribeResult, err := GetSubnets(context.TODO(), client, subnetDescribeInput)
-	if err != nil {
-		panic("error fetching Subnets," + err.Error())
-	}
+	subnetDescribeResult, err := describeSubnets(client, vID)
 
 	subnetID := GetSubnetID(subnetDescribeResult, projectName)
 
@@ -325,19 +338,7 @@ func getOrCreateSubnet(client *ec2.Client, vID string, region string, projectNam
 	fmt.Println("No Subnet found for VPC", vID)
 	fmt.Println("Creating Subnet")
 
-	subnetMakeInput := &ec2.CreateSubnetInput{
-		CidrBlock:         aws.String("10.0.1.0/24"),
-		VpcId:             aws.String(vID),
-		AvailabilityZone:  aws.String(region + "a"),
-		TagSpecifications: getTagSpecification(projectName, types.ResourceTypeSubnet),
-	}
-
-	subnetMakeResult, err := MakeSubnet(context.TODO(), client, subnetMakeInput)
-	if err != nil {
-		panic("error creating Subnet," + err.Error())
-	}
-
-	subnetID = *subnetMakeResult.Subnet.SubnetId
+	subnetID = makeSubnet(client, vID, region, projectName, err, subnetID)
 
 	setSubnetToProvisionPublicIP(subnetID, client)
 	inputAddRouteTable := &ec2.AssociateRouteTableInput{
@@ -351,6 +352,45 @@ func getOrCreateSubnet(client *ec2.Client, vID string, region string, projectNam
 	}
 
 	return subnetID
+}
+
+func makeSubnet(client *ec2.Client, vID string, region string, projectName string, err error, subnetID string) string {
+	//TODO: Refactor this in MLSDK-445
+	for i := 1; i <= 255; i++ {
+		cidr := fmt.Sprintf("10.0.%d.0/24", i)
+		subnetMakeInput := &ec2.CreateSubnetInput{
+			CidrBlock:         aws.String(cidr),
+			VpcId:             aws.String(vID),
+			AvailabilityZone:  aws.String(region + "a"),
+			TagSpecifications: getTagSpecification(projectName, types.ResourceTypeSubnet),
+		}
+
+		subnetMakeResult, err := MakeSubnet(context.TODO(), client, subnetMakeInput)
+		if err == nil {
+
+			subnetID = *subnetMakeResult.Subnet.SubnetId
+			return subnetID
+		} else {
+			fmt.Println(fmt.Sprintf("Could not create subnet %s, trying another", cidr))
+		}
+	}
+	panic("error creating Subnet," + err.Error())
+}
+
+func describeSubnets(client *ec2.Client, vID string) (*ec2.DescribeSubnetsOutput, error) {
+	subnetDescribeInput := &ec2.DescribeSubnetsInput{
+		Filters: []types.Filter{
+			{
+				Name:   aws.String("vpc-id"),
+				Values: []string{vID},
+			},
+		},
+	}
+	subnetDescribeResult, err := GetSubnets(context.TODO(), client, subnetDescribeInput)
+	if err != nil {
+		panic("error fetching Subnets," + err.Error())
+	}
+	return subnetDescribeResult, err
 }
 
 func getOrCreateSecurityGroup(client *ec2.Client, vID string, projectName string, httpPort int) string {
@@ -556,14 +596,42 @@ func GetInstanceForStudy(studyName string, remoteCfg hyperdriveTypes.EC2ComputeR
 func IsStructureEmpty(i types.Instance) bool {
 	return reflect.DeepEqual(i, types.Instance{})
 }
+
 func StartJupyterEC2(manifestPath string, remoteCfg hyperdriveTypes.EC2ComputeRemoteConfiguration, ec2Type string, amiID string, jupyterLaunchOptions hyperdriveTypes.JupyterLaunchOptions, syncOptions hyperdriveTypes.WorkspaceSyncOptions) {
+	if isJupyterInstanceRunning(manifestPath, remoteCfg) {
+		return
+	}
+
 	startupScript := getJupyterEc2StartScript(version, jupyterLaunchOptions, syncOptions, remoteCfg)
+
 	ip := StartServer(manifestPath, remoteCfg, ec2Type, amiID, startupScript, jupyterLaunchOptions.HostPort)
 
 	if ip != "" {
 		fmt.Println("In a few minutes, you should be able to access jupyter lab at http://" + ip + ":8888/lab")
 
 	}
+}
+
+func isJupyterInstanceRunning(manifestPath string, remoteCfg hyperdriveTypes.EC2ComputeRemoteConfiguration) bool {
+	projectName := manifest.GetProjectName(manifestPath)
+	hyperInstance, err := GetInstanceForStudy(projectName, remoteCfg)
+	if err != nil {
+		fmt.Println(err)
+		return true
+	}
+
+	if !IsStructureEmpty(hyperInstance) {
+		message := fmt.Sprintf(`Hyper instance already running.
+Instance size: %s
+You can access jupyter lab at http://%s:8888/lab
+If you want to change the instance size, stop the current running instance:
+
+	hyper jupyter stop --remote=<REMOTE_PROFILE_NAME>
+`, hyperInstance.InstanceType, *hyperInstance.PublicIpAddress)
+		fmt.Println(message)
+		return true
+	}
+	return false
 }
 func StartHyperpackageEC2(manifestPath string, remoteCfg hyperdriveTypes.EC2ComputeRemoteConfiguration, ec2Type string, amiID string, syncOptions hyperdriveTypes.WorkspaceSyncOptions, dockerOptions hyperdriveTypes.DockerOptions) {
 	startupScript := getHyperpackageEC2StartScript(version, dockerOptions, syncOptions, remoteCfg)
@@ -599,24 +667,6 @@ func StartServer(manifestPath string, remoteCfg hyperdriveTypes.EC2ComputeRemote
 	fmt.Println("Project name is:", projectName)
 	client := GetEC2Client(remoteCfg)
 
-	hyperInstance, err := GetInstanceForStudy(projectName, remoteCfg)
-	if err != nil {
-		fmt.Println(err)
-		return ""
-	}
-
-	if !IsStructureEmpty(hyperInstance) {
-		message := fmt.Sprintf(`Hyper instance already running.
-Instance size: %s
-You can access jupyter lab at http://%s:8888/lab
-If you want to change the instance size, stop the current running instance:
-
-	hyper jupyter stop --remote=<REMOTE_PROFILE_NAME>
-`, hyperInstance.InstanceType, *hyperInstance.PublicIpAddress)
-		fmt.Println(message)
-		return ""
-	}
-
 	vpcID, rtID := getOrCreateVPC(client, projectName)
 	fmt.Println("VPC ID:", vpcID)
 	fmt.Println("Route Table ID:", rtID)
@@ -632,6 +682,7 @@ If you want to change the instance size, stop the current running instance:
 
 	minMaxCount := int32(1)
 	ec2Input := &ec2.RunInstancesInput{
+
 		ImageId:           aws.String(amiID),
 		InstanceType:      types.InstanceType(*aws.String(ec2Type)),
 		MinCount:          aws.Int32(minMaxCount),
@@ -652,26 +703,30 @@ If you want to change the instance size, stop the current running instance:
 
 	ip := result.Instances[0].PublicIpAddress
 	if ip == nil {
+		time.Sleep(3 * time.Second) //Wait
 		ip, err = getInstanceIpAddress(*result.Instances[0].InstanceId, remoteCfg)
-		if err != nil {
+		if err != nil || ip == nil {
 
 			fmt.Println("Provisioned instance but cannot get publicIP")
 			os.Exit(1)
 			return ""
 		}
-
 	}
+	outputNotebookInfo(keyName, *ip)
+	return *ip
+}
+
+func outputNotebookInfo(keyName string, ip string) {
 	fmt.Println("")
 	fmt.Println("EC2 instance provisioned. You can access via ssh by running:")
 
 	if keyName == ssh.DEFAULT_KEY {
-		fmt.Println("ssh ec2-user@" + *ip)
+		fmt.Println("ssh ec2-user@" + ip)
 	} else {
-		fmt.Println("ssh -i ~/.ssh/" + keyName + " ec2-user@" + *ip)
+		fmt.Println("ssh -i ~/.ssh/" + keyName + " ec2-user@" + ip)
 	}
 	fmt.Println("")
 
-	return *ip
 }
 
 func getJupyterEc2StartScript(version string, jupyterLaunchOptions hyperdriveTypes.JupyterLaunchOptions, syncOptions hyperdriveTypes.WorkspaceSyncOptions, remoteCfg hyperdriveTypes.EC2ComputeRemoteConfiguration) string {
@@ -727,7 +782,7 @@ func getHyperpackageEC2StartScript(version string, dockerOptions hyperdriveTypes
 		hostPort = dockerOptions.HostPort
 	}
 
-	syncParameters := fmt.Sprintf("--s3AccessKey %s --s3Secret %s --s3Token %s --s3Region %s --s3BucketName %s -n %s", syncOptions.S3Config.AccessKey, syncOptions.S3Config.Secret, syncOptions.S3Config.Token, syncOptions.S3Config.Region, syncOptions.S3Config.BucketName, syncOptions.StudyName)
+	syncParameters := fmt.Sprintf("--workspaceS3AccessKey %s --sworkspaceS3Secret %s --workspaceS3Token %s --workspaceS3Region %s --workspaceS3BucketName %s -n %s", syncOptions.S3Config.AccessKey, syncOptions.S3Config.Secret, syncOptions.S3Config.Token, syncOptions.S3Config.Region, syncOptions.S3Config.BucketName, syncOptions.StudyName)
 	runParameters := fmt.Sprintf("--hyperpackagePath %s.hyperpack.zip --hostPort %d --localOnly=false %s", syncOptions.StudyName, hostPort, syncParameters)
 	startupScript := fmt.Sprintf(`
 #!/bin/bash -xe
@@ -949,7 +1004,7 @@ func StopServer(manifestPath string, remoteCfg hyperdriveTypes.EC2ComputeRemoteC
 				}
 				_, err = DisassociateRouteTable(context.TODO(), client, routeTableDisassociateInput)
 				if err != nil {
-					panic("error disassociating Route Table," + err.Error())
+					println("error disassociating Route Table," + err.Error())
 				}
 			}
 			routeTableDeleteInput := &ec2.DeleteRouteTableInput{
@@ -957,7 +1012,7 @@ func StopServer(manifestPath string, remoteCfg hyperdriveTypes.EC2ComputeRemoteC
 			}
 			_, err = DeleteRouteTable(context.TODO(), client, routeTableDeleteInput)
 			if err != nil {
-				panic("error deleting Route Table," + err.Error())
+				println("error deleting Route Table," + err.Error())
 			}
 			fmt.Println("Route Table deleted:", routeTableID)
 		}

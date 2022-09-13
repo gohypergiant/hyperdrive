@@ -3,13 +3,13 @@ module github.com/gohypergiant/hyperdrive/hyper
 go 1.18
 
 require (
-	github.com/aws/aws-sdk-go v1.44.93
+	github.com/aws/aws-sdk-go v1.44.97
 	github.com/aws/aws-sdk-go-v2 v1.16.14
 	github.com/aws/aws-sdk-go-v2/config v1.17.5
 	github.com/aws/aws-sdk-go-v2/credentials v1.12.18
 	github.com/aws/aws-sdk-go-v2/service/ec2 v1.54.4
 	github.com/bramvdbogaerde/go-scp v1.2.0
-	github.com/docker/docker v20.10.17+incompatible
+	github.com/docker/docker v20.10.18+incompatible
 	github.com/docker/go-connections v0.4.0
 	github.com/google/uuid v1.3.0
 	github.com/mitchellh/go-homedir v1.1.0
