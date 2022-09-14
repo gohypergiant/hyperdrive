@@ -1,5 +1,5 @@
 build-dev:
-	# make update-requirements
+	make update-requirements
 	docker build -f docker/fast-app.dev.Dockerfile -t mlsdk-fast-app .
 
 run-dev:
