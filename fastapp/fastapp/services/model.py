@@ -18,7 +18,10 @@ def info(model_id: str) -> dict:
 
 def get_default_model_id() -> str:
     study_info = get_study_info()
-    return model_slug_info(study_info["best_trial"])["id"]
+    if study_info:
+        return model_slug_info(study_info["best_trial"])["id"]
+    else:
+        return study_info
 
 
 def predict(input_data, model_id: str):

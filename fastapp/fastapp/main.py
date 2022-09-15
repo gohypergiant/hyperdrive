@@ -2,10 +2,12 @@ import logging
 import os
 from logging.config import dictConfig
 
-from fastapi import APIRouter, FastAPI
+from fastapi import FastAPI
+from fastapi.staticfiles import StaticFiles
 
 from fastapp.logging.config import LogConfig
 from fastapp.routers import model
+from fastapp.routers import upload
 
 dictConfig(LogConfig().dict())
 logger = logging.getLogger("hyperpack-wrapper")
@@ -17,7 +19,7 @@ logger.warning("Dummy Warning")
 
 app = FastAPI(title="mlsdk-fastapp")
 app.include_router(model.router)
-
+app.include_router(upload.router)
 
 @app.on_event("startup")
 def show_fast_app_api_key():
@@ -28,13 +30,8 @@ def show_fast_app_api_key():
     fast_key_msg = "Fast App API key is: {api_key}".format(api_key=fast_key)
     logger.info(fast_key_msg)
 
-
-api_router = APIRouter()
-
-
-@api_router.get("/status", status_code=200)
+@app.get("/status", status_code=200)
 def root() -> dict:
     return {"status": "ok"}
 
-
-app.include_router(api_router)
+app.mount("/", StaticFiles(directory="fastapp/ui", html=True), name="ui")
