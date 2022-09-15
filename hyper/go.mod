@@ -3,7 +3,7 @@ module github.com/gohypergiant/hyperdrive/hyper
 go 1.18
 
 require (
-	github.com/aws/aws-sdk-go v1.44.97
+	github.com/aws/aws-sdk-go v1.44.99
 	github.com/aws/aws-sdk-go-v2 v1.16.14
 	github.com/aws/aws-sdk-go-v2/config v1.17.5
 	github.com/aws/aws-sdk-go-v2/credentials v1.12.18
