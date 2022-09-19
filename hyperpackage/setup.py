@@ -6,8 +6,8 @@ def get_version(rel_path):
         for line in fh.readlines():
             if line.startswith("__version__"):
                 return line.split('"')[1]
-        else:
-            raise RuntimeError("Unable to find version string.")
+            else:
+                raise RuntimeError("Unable to find version string.")
 
 
 setuptools.setup(
@@ -25,7 +25,13 @@ setuptools.setup(
         "Operating System :: OS Independent",
     ],
     include_package_data=True,
-    install_requires=["numpy", "boto3"],
+    install_requires=[
+        "boto3",
+        "icecream",
+        "numpy",
+        "onnx==1.11.0",
+        "onnxruntime"
+        ],
     extras_require={"torch": ["pytorch"],},
     packages=setuptools.find_packages(),
     python_requires=">=3.9",
