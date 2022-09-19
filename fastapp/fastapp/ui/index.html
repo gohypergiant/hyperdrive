@@ -1,0 +1,97 @@
+<!DOCTYPE html>
+<html lang="en" hidden>
+  <head>
+    <script src="https://use.fontawesome.com/3a2eaf6206.js"></script>
+    <script type="module" src="https://cdn.skypack.dev/twind/shim"></script>
+    <script src="app.js"></script>
+  </head>
+  <body class="bg-gray-100">
+    <div class="flex items-center justify-center h-screen">
+      <div class="overflow-hidden rounded-lg bg-white shadow max-w-7xl w-3/5">
+        <div class="border-b border-gray-200 bg-white px-4 py-4 sm:px-6">
+          <h3 class="text-lg font-medium leading-6 text-gray-900">
+            Upload Hyperpack
+          </h3>
+        </div>
+
+        <p class="px-4 py-4">
+          A Hyperpack can be provided to this container either by mounting a
+          directory to /hyperpack or by uploading a Hyperpack zip file here.
+        </p>
+
+        <div class="px-4 py-4">
+          <form
+            action="/upload-hyperpack"
+            enctype="multipart/form-data"
+            method="post"
+            autocomplete="off"
+          >
+            <div class="flex justify-center">
+              <div>
+                <label for="inputFile" class="cursor-pointer">
+                  <div
+                    class="border rounded-lg mb-4 w-60 shadow-sm text-center pt-2"
+                  >
+                    Select Hyperpack
+                    <div class="flex justify-center mt-4 mb-4">
+                      <svg
+                        xmlns="http://www.w3.org/2000/svg"
+                        fill="none"
+                        viewBox="0 0 24 24"
+                        stroke-width="1.5"
+                        stroke="currentColor"
+                        class="w-12 h-12"
+                      >
+                        <path
+                          stroke-linecap="round"
+                          stroke-linejoin="round"
+                          d="M7.5 7.5h-.75A2.25 2.25 0 004.5 9.75v7.5a2.25 2.25 0 002.25 2.25h7.5a2.25 2.25 0 002.25-2.25v-7.5a2.25 2.25 0 00-2.25-2.25h-.75m0-3l-3-3m0 0l-3 3m3-3v11.25m6-2.25h.75a2.25 2.25 0 012.25 2.25v7.5a2.25 2.25 0 01-2.25 2.25h-7.5a2.25 2.25 0 01-2.25-2.25v-.75"
+                        />
+                      </svg>
+
+                      <input
+                        id="inputFile"
+                        name="file"
+                        type="file"
+                        class="hidden"
+                        accept=".zip"
+                      />
+                    </div>
+                    <span id="filename" class="text-green-500"></span>
+                    <div class="w-full mt-4">
+                      <div
+                        id="progress-bar"
+                        class="w-0 bg-green-500 px-5 py-0"
+                      ></div>
+                    </div>
+                  </div>
+                </label>
+              </div>
+            </div>
+
+            <div class="flex justify-center">
+              <div id="pending" class="mt-2 mb-4" hidden>Uploading..</div>
+
+              <div id="success" class="text-green-500 mt-2 mb-4" hidden>
+                Upload complete
+              </div>
+              <div id="fail" class="text-red-500 mt-2 mb-4" hidden>
+                Upload failed
+              </div>
+            </div>
+
+            <div class="flex justify-end">
+              <button
+                id="upload"
+                class="inline-flex items-center rounded-md border border-transparent bg-indigo-600 px-3 py-2 text-sm font-medium leading-4 text-white shadow-sm hover:bg-indigo-700 focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:ring-offset-2 disabled:opacity-25 disabled:cursor-not-allowed"
+                disabled
+              >
+                Upload
+              </button>
+            </div>
+          </form>
+        </div>
+      </div>
+    </div>
+  </body>
+</html>
