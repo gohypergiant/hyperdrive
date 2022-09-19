@@ -161,12 +161,13 @@ class UnpackHyperpack:
         :return: None
         """
         self.hyperpack_filedir = hyperpack_filedir or './'
+        self.verbose = verbose
+
         self.hp_filepath = search_by_filename_substring(self.hyperpack_filedir, 'hyperpack.zip')
         self.hp_directory = unzip_study(self.hp_filepath)
         self.trial_names = self.get_trial_names()
         self.onnx_filepaths = self.get_onnx_files()
-
-        self.verbose = verbose
+        
         if self.verbose: 
             ic(self.hp_filepath)
             ic(self.hp_directory)
@@ -194,8 +195,8 @@ class UnpackHyperpack:
         trial_names = self.get_trial_names()
         onnx_filepaths = []
         for trial in trial_names:
-            trial_dir = f"{self.hp_directory}/{trial}"
-            for file in trial_dir:
+            trial_dir = f"{self.hp_directory}{trial}"
+            for file in os.listdir(trial_dir):
                 if '.onnx' in file or 'trained_model' in file:
                     onnx_filepaths.append(f"{trial_dir}/{file}")
         if self.verbose:
