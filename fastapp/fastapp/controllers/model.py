@@ -4,8 +4,10 @@ from fastapp.services.model import predict as svc_model_predict
 from fastapp.services.model import batch_predict as svc_batch_predict
 
 
-def batch(body, model_id=default_model_id):
-    results = svc_batch_predict(body, model_id=model_id)
+def batch(body, model_id=""):
+    results = svc_batch_predict(
+        body, model_id=model_id if model_id else get_default_model_id()
+    )
     return {"predictions": results}
 
 
