@@ -44,6 +44,37 @@ def predict(input_data, model_id: str):
         logging.error(err)
 
 
+def batch_predict(input_data, model_id: str):
+    study_info = get_study_info()
+    ml_task = study_info["ml_task"]
+
+    trained_model_path = path.join(model_path(model_id), "trained_model")
+    model = ONNXModel(trained_model_path)
+
+    try:
+        if ml_task == "binary_classification":
+            predictions = [
+                model.predict(input_data=np.array([input], dtype=np.float32))
+                for input in input_data
+            ]
+            results = [int(expit(pred).round()) for pred in predictions]
+        elif ml_task == "multi_class_classification":
+            predictions = [
+                model.predict(input_data=np.array([input], dtype=np.float32))
+                for input in input_data
+            ]
+            results = [log_softmax(pred).argmax().item() for pred in predictions]
+        else:
+            predictions = [
+                model.predict(input_data=np.array([input], dtype=np.float32))
+                for input in input_data
+            ]
+            results = [pred[0].item() for pred in predictions]
+        return results
+    except ValueError as err:
+        logging.error(err)
+
+
 class ONNXModel:
     def __init__(self, path):
 
