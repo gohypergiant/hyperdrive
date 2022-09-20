@@ -95,7 +95,7 @@ def write_hyperpack_to_s3(
 def write_json(dictionary, json_file_path):
     """Writes object to JSON format
     Args:
-        dictionary: pythson dict to be written to JSON
+        dictionary: python dict to be written to JSON
         json_file_path: save path of JSON object
     """
     with open(json_file_path, "w", encoding='utf-8') as json_file:
