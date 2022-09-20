@@ -1,10 +1,18 @@
-import boto3
+"""
+Utility functions for the following:
+- generating a hyperpack
+- unpacking a hyperpack
+- retrieving files from the unzipped/unpacked hyperpack
+"""
+
 import json
 import os
 import shutil
-import yaml
 import zipfile
 
+import boto3
+from icecream import ic
+import yaml
 
 def generate_folder_name(
     trial_id: int = 0,
@@ -80,10 +88,8 @@ def write_hyperpack_to_s3(
         raise
 
     print(
-        "*** COMPLETED: The {} hyperpack was written to the {} S3 bucket ***".format(
-            s3_object_key, s3_bucket
+        f"*** COMPLETED: The {s3_object_key} hyperpack was written to the {s3_bucket} S3 bucket ***"
         )
-    )
 
 
 def write_json(dictionary, json_file_path):
@@ -92,7 +98,7 @@ def write_json(dictionary, json_file_path):
         dictionary: python dict to be written to JSON
         json_file_path: save path of JSON object
     """
-    with open(json_file_path, "w") as json_file:
+    with open(json_file_path, "w", encoding='utf-8') as json_file:
         json_file.write(json.dumps(dictionary))
 
 
@@ -112,3 +118,87 @@ def zip_study(folder_path):
         folder_path: path to dir to be zipped
     """
     shutil.make_archive(folder_path, "zip", folder_path)
+
+
+# Unpacking functions
+def search_by_filename_substring(file_directory: str = None,
+                                filename_substring: str = '.zip',
+                                verbose: bool = False):
+    """Searches for a hyperpack.zip file in the current directory
+    :file_directory: file directory to search
+    :filename_substring: substring the filename contains
+    :verbose: True to print the filepath found; False to suppress print
+    """
+    directory = file_directory if file_directory is not None else './'
+    for root, _, files in os.walk(directory):
+        for file in files:
+            if filename_substring in file:
+                if verbose:
+                    print (f"{root}{file}")
+                return f"{root}{file}"
+            else:
+                pass
+
+
+def unzip_study(zip_filepath: str = None, unzip_to: str = './'):
+    """Unzips the zipped hyperpack to specified directory
+    :param unzip_to: file directory to write the unzipped files to
+    :return: unzip_to
+    """
+    with zipfile.ZipFile(zip_filepath, 'r') as zip_ref:
+        zip_ref.extractall(unzip_to)
+    return unzip_to
+
+
+class UnpackHyperpack:
+    """Unpack Hyperpack files & retrieve its contents
+    """
+
+    def __init__(self, hyperpack_filedir: str = None, verbose: bool = False):
+        """
+        :hyperpack_filedir: file directory where hyperpack is located
+        :verbose: print if True, else suppress printing
+        :return: None
+        """
+        self.hyperpack_filedir = hyperpack_filedir or './'
+        self.verbose = verbose
+
+        self.hp_filepath = search_by_filename_substring(self.hyperpack_filedir, 'hyperpack.zip')
+        self.hp_directory = unzip_study(self.hp_filepath)
+        self.trial_names = self.get_trial_names()
+        self.onnx_filepaths = self.get_onnx_files()
+        
+        if self.verbose: 
+            ic(self.hp_filepath)
+            ic(self.hp_directory)
+            
+    def get_trial_names(self):
+        """Retrieves the trial name(s) from the unzipped hyperpack directory
+        :return: list of trial name(s) from hyperpacked optuna study
+        """
+        files = os.listdir(self.hp_directory)
+        studies = [f for f in files if '_study.json' in f]
+
+        trial_names = []
+        for study in studies:
+            with open(study, 'r', encoding='utf-8') as json_file:
+                trial_meta = json.load(json_file)
+                trial_names.append(trial_meta.get('best_trial'))
+        if self.verbose:
+            ic(trial_names)
+        return trial_names
+
+    def get_onnx_files(self):
+        """retrieve trained models from the respective trials
+        :return: list of onnx filepaths
+        """
+        trial_names = self.get_trial_names()
+        onnx_filepaths = []
+        for trial in trial_names:
+            trial_dir = f"{self.hp_directory}{trial}"
+            for file in os.listdir(trial_dir):
+                if '.onnx' in file or 'trained_model' in file:
+                    onnx_filepaths.append(f"{trial_dir}/{file}")
+        if self.verbose:
+            ic(onnx_filepaths)
+        return onnx_filepaths
