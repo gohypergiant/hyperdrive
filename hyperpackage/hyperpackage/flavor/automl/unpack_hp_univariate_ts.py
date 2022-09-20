@@ -10,7 +10,7 @@ from icecream import ic
 import onnx
 from onnx2torch import convert
 
-from utilities import UnpackHyperpack
+from hyperpackage.utilities import UnpackHyperpack
 
 
 class UnpackAutoMLHyperpack(UnpackHyperpack):
