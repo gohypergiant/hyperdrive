@@ -30,6 +30,7 @@ setuptools.setup(
         "icecream",
         "numpy",
         "onnx==1.11.0",
+        "onnx2torch",
         "onnxruntime"
         ],
     extras_require={"torch": ["pytorch"],},
