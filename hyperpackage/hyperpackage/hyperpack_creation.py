@@ -15,6 +15,7 @@ SUPPORTED_ML_TASKS = [
     "regression",
     "binary_classification",
     "multi_class_classification",
+    "univariate_timeseries",
 ]
 
 
@@ -52,7 +53,10 @@ def create_hyperpack(
     # doesn't pass in the number of training dataset columns, we
     # can get the number of training dataset columns for the user
     if model_flavor == "automl" and num_train_columns == 0:
-        num_train_columns = loaded_model.fc1.in_features
+        if ml_task == "univariate_timeseries":
+            num_train_columns = loaded_model[1].fc1.in_features
+        else:
+            num_train_columns = loaded_model.fc1.in_features
     elif num_train_columns == 0:
         raise ValueError(
             "Please pass in the number of columns in the training dataset."
@@ -81,6 +85,7 @@ def create_hyperpack(
         flavor=model_flavor,
         save_path=best_trial_path,
         num_cols=num_train_columns,
+        ml_task=ml_task,
     )
 
     print("*** Creating _study.json ***")
@@ -162,6 +167,14 @@ def load_trained_model(model):
             print("Error while attempting to load torch model.")
     elif str(type(model)) == "<class 'neural_network.network.Network'>":
         the_model = model
+    elif isinstance(model, dict):
+        try:
+            for v in model.values():
+                if str(type(v)) != "<class 'neural_network.network.Network'>":
+                    raise TypeError("The dictionary of models contain a model type that is currently not supported.")
+            the_model = model
+        except Exception:
+            print("Error while attempting to load torch model.")
     else:
         raise TypeError("The model type you have passed in is currently not supported.")
 
@@ -180,16 +193,17 @@ def make_hyperpack_path(base_dir: str, name: str) -> str:
     return path
 
 
-def save_best_model_to_onnx(model, flavor: str, save_path: str, num_cols: int):
+def save_best_model_to_onnx(model, flavor: str, save_path: str, num_cols: int, ml_task: str):
     """Saves the model to ONNX format
     Args:
         model: pretrained model object
         flavor: library/package used to build pretrained model
         save_path: path where ONNX model will be saved
         num_cols: number of training dataset columns
+        ml_task: the type of machine learning task
     """
     if flavor == "automl":
-        torch_onnx_export(model=model, trial_path=save_path, train_shape_cols=num_cols)
+        torch_onnx_export(model=model, trial_path=save_path, train_shape_cols=num_cols, ml_task=ml_task)
 
 
 def create_study_json(hyperpack_path: str, best_trial: str, ml_task: str):
