@@ -3,4 +3,5 @@ import tf2onnx
 
 
 def tensorflow_onnx_export(model, trial_path: str):
-    print("tensorflow")
+    onnx_model, _ = tf2onnx.convert.from_keras(model)
+    onnx.save(onnx_model, "trained_model.onnx")
