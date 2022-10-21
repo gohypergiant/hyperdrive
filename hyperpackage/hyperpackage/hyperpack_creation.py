@@ -47,7 +47,7 @@ def create_hyperpack(
     verify_args(model=trained_model, flavor=model_flavor, task=ml_task)
 
     print("*** Loading the trained model ***")
-    loaded_model = load_trained_model(model=trained_model)
+    loaded_model = load_trained_model(model=trained_model, flavor=model_flavor)
 
     # checking the num_train_columns arg. We did not check this arg in the
     # verify_args func because if an automl model is passed in and the user
@@ -153,7 +153,7 @@ def verify_args(model, flavor: str, task: str):
         )
 
 
-def load_trained_model(model, model_flavor: str = None):
+def load_trained_model(model, flavor: str = None):
     """Loads the pretrained model
     Args:
         model: pretrained model. Can be either a string, which is a path
@@ -162,7 +162,7 @@ def load_trained_model(model, model_flavor: str = None):
                <class 'neural_network.network.Network'>
     Returns: the loaded model
     """
-    if model_flavor == "automl":
+    if flavor == "automl":
         if isinstance(model, str):
             try:
                 the_model = torch.load(model)
@@ -182,7 +182,7 @@ def load_trained_model(model, model_flavor: str = None):
         else:
             raise TypeError(
                 "The model type you have passed in is currently not supported.")
-    elif model_flavor == "tensorflow":
+    elif flavor == "tensorflow":
         the_model = model
     return the_model
 
