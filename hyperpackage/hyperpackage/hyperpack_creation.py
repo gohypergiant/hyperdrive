@@ -182,7 +182,7 @@ def load_trained_model(model, model_flavor: str = None):
         else:
             raise TypeError(
                 "The model type you have passed in is currently not supported.")
-    if model_flavor == "tensorflow":
+    elif model_flavor == "tensorflow":
         the_model = model
     return the_model
 
