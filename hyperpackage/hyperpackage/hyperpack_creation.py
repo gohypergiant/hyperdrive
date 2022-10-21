@@ -210,7 +210,7 @@ def save_best_model_to_onnx(model, flavor: str, save_path: str, num_cols: int, m
         torch_onnx_export(model=model, trial_path=save_path,
                           train_shape_cols=num_cols, ml_task=ml_task)
     elif flavor == "tensorflow":
-        tensorflow_onnx_export()
+        tensorflow_onnx_export(model=model, trial_path=save_path)
 
 
 def create_study_json(hyperpack_path: str, best_trial: str, ml_task: str):
