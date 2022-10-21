@@ -31,7 +31,7 @@ setuptools.setup(
         "numpy",
         "onnx==1.11.0",
         "onnx2torch",
-        "onnxruntime"
+        "onnxruntime",
         "tf2onnx"
     ],
     extras_require={"torch": ["pytorch"], },
