@@ -9,7 +9,7 @@ from hyperpackage.utilities import (
     zip_study,
 )
 
-SUPPORTED_MODEL_FLAVORS = ["automl"]
+SUPPORTED_MODEL_FLAVORS = ["automl", "tensorflow"]
 
 SUPPORTED_ML_TASKS = [
     "regression",
@@ -122,7 +122,8 @@ def verify_args(model, flavor: str, task: str):
         raise TypeError("You must pass in a trained model.")
     elif isinstance(model, str):
         if not os.path.exists(model):
-            raise FileNotFoundError("No file could be found at {}.".format(model))
+            raise FileNotFoundError(
+                "No file could be found at {}.".format(model))
 
     if flavor is None:
         raise TypeError(
@@ -171,12 +172,14 @@ def load_trained_model(model):
         try:
             for v in model.values():
                 if str(type(v)) != "<class 'neural_network.network.Network'>":
-                    raise TypeError("The dictionary of models contain a model type that is currently not supported.")
+                    raise TypeError(
+                        "The dictionary of models contain a model type that is currently not supported.")
             the_model = model
         except Exception:
             print("Error while attempting to load torch model.")
     else:
-        raise TypeError("The model type you have passed in is currently not supported.")
+        raise TypeError(
+            "The model type you have passed in is currently not supported.")
 
     return the_model
 
@@ -203,7 +206,8 @@ def save_best_model_to_onnx(model, flavor: str, save_path: str, num_cols: int, m
         ml_task: the type of machine learning task
     """
     if flavor == "automl":
-        torch_onnx_export(model=model, trial_path=save_path, train_shape_cols=num_cols, ml_task=ml_task)
+        torch_onnx_export(model=model, trial_path=save_path,
+                          train_shape_cols=num_cols, ml_task=ml_task)
 
 
 def create_study_json(hyperpack_path: str, best_trial: str, ml_task: str):
