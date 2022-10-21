@@ -2,6 +2,7 @@ import os
 import torch
 from datetime import datetime
 from hyperpackage.flavor.pytorch import torch_onnx_export
+from hyperpackage.flavor.tensorflow import tensorflow_onnx_export
 from hyperpackage.utilities import (
     generate_folder_name,
     write_json,
@@ -208,6 +209,8 @@ def save_best_model_to_onnx(model, flavor: str, save_path: str, num_cols: int, m
     if flavor == "automl":
         torch_onnx_export(model=model, trial_path=save_path,
                           train_shape_cols=num_cols, ml_task=ml_task)
+    elif flavor == "tensorflow":
+        tensorflow_onnx_export()
 
 
 def create_study_json(hyperpack_path: str, best_trial: str, ml_task: str):
