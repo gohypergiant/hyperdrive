@@ -153,7 +153,7 @@ def verify_args(model, flavor: str, task: str):
         )
 
 
-def load_trained_model(model):
+def load_trained_model(model, model_flavor: str = None):
     """Loads the pretrained model
     Args:
         model: pretrained model. Can be either a string, which is a path
@@ -162,26 +162,28 @@ def load_trained_model(model):
                <class 'neural_network.network.Network'>
     Returns: the loaded model
     """
-    if isinstance(model, str):
-        try:
-            the_model = torch.load(model)
-        except Exception:
-            print("Error while attempting to load torch model.")
-    elif str(type(model)) == "<class 'neural_network.network.Network'>":
-        the_model = model
-    elif isinstance(model, dict):
-        try:
-            for v in model.values():
-                if str(type(v)) != "<class 'neural_network.network.Network'>":
-                    raise TypeError(
-                        "The dictionary of models contain a model type that is currently not supported.")
+    if model_flavor == "automl":
+        if isinstance(model, str):
+            try:
+                the_model = torch.load(model)
+            except Exception:
+                print("Error while attempting to load torch model.")
+        elif str(type(model)) == "<class 'neural_network.network.Network'>":
             the_model = model
-        except Exception:
-            print("Error while attempting to load torch model.")
-    else:
-        raise TypeError(
-            "The model type you have passed in is currently not supported.")
-
+        elif isinstance(model, dict):
+            try:
+                for v in model.values():
+                    if str(type(v)) != "<class 'neural_network.network.Network'>":
+                        raise TypeError(
+                            "The dictionary of models contain a model type that is currently not supported.")
+                the_model = model
+            except Exception:
+                print("Error while attempting to load torch model.")
+        else:
+            raise TypeError(
+                "The model type you have passed in is currently not supported.")
+    if model_flavor == "tensorflow":
+        the_model = model
     return the_model
 
 
