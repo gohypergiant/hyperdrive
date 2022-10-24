@@ -94,6 +94,7 @@ def create_hyperpack(
         hyperpack_path=hyperpack_path,
         best_trial=best_trial_folder_name,
         ml_task=ml_task,
+        flavor=model_flavor
     )
 
     print("*** Creating study.yaml ***")
@@ -215,7 +216,7 @@ def save_best_model_to_onnx(model, flavor: str, save_path: str, num_cols: int, m
         tensorflow_onnx_export(model=model, trial_path=save_path)
 
 
-def create_study_json(hyperpack_path: str, best_trial: str, ml_task: str):
+def create_study_json(hyperpack_path: str, best_trial: str, ml_task: str, flavor: str):
     """Creates the "_study.json" file
     Args:
         hyperpack_path: path to hyperpack folder
@@ -227,6 +228,7 @@ def create_study_json(hyperpack_path: str, best_trial: str, ml_task: str):
         "best_trial": best_trial,
         "created_at": created_time,
         "ml_task": ml_task,
+        "model_flavor": flavor
     }
     study_json_path = os.path.join(hyperpack_path, "_study.json")
     write_json(dictionary=study_json_dict, json_file_path=study_json_path)
