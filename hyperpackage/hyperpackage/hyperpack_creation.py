@@ -222,6 +222,8 @@ def create_study_json(hyperpack_path: str, best_trial: str, ml_task: str, flavor
         hyperpack_path: path to hyperpack folder
         best_trial: name of best trial
         ml_task: type of machine learning task
+        flavor: library/package used to build pretrained model.
+                Examples include automl, pytorch, and tensorflow
     """
     created_time = datetime.now().strftime("%Y-%m-%d %H:%M")
     study_json_dict = {
