@@ -41,8 +41,11 @@ def predict(input_data, model_id: str):
                 result = log_softmax(result).argmax().item()
             else:
                 result = result[0].item()
-        else:
-            result = int(result[0].argmax())
+        elif model_flavor == "tensorflow":
+            if ml_task == "binary_classification":
+                result = int(result[0].argmax())
+            else:
+                result = float(result[0])
         return result
     except ValueError as err:
         logging.error(err)
