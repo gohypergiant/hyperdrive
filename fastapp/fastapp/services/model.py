@@ -46,6 +46,10 @@ def predict(input_data, model_id: str):
                 result = int(result[0].argmax())
             else:
                 result = float(result[0])
+        else:
+            raise TypeError(
+                "The '{}' model_flavor is currently not supported.".format(model_flavor)
+            )
         return result
     except ValueError as err:
         logging.error(err)
