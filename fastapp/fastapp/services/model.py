@@ -48,7 +48,7 @@ def predict(input_data, model_id: str):
                 result = float(result[0])
         else:
             raise TypeError(
-                "The '{}' model_flavor is currently not supported.".format(model_flavor)
+                "The '{}' model flavor is currently not supported.".format(model_flavor)
             )
         return result
     except ValueError as err:
