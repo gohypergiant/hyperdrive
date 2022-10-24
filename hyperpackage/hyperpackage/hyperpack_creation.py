@@ -111,10 +111,7 @@ def verify_args(model, flavor: str, task: str):
     """Verifies the model and flavor args that are passed to the create_hyperpack
        function
     Args:
-        model: pretrained model. Can be either a string, which is a path
-               to a pickled model of type <class 'neural_network.network.Network'>,
-               or to an object in memory of type
-               <class 'neural_network.network.Network'>
+        model: pretrained model. Can be either a string or an object
         flavor: library/package used to build pretrained model
         task: type of machine learning task, e.g., regression, binary_classification,
               multi_class_classification
