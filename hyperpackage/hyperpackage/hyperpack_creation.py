@@ -185,7 +185,17 @@ def load_trained_model(model, flavor: str = None):
             raise TypeError(
                 "The model type you have passed in is currently not supported.")
     elif flavor == "tensorflow":
-        the_model = model
+        if isinstance(model, str):
+            try:
+                the_model = tf.keras.models.load_model(model)
+            except Exception:
+                print("Error while attempting to load tensorflow model.")
+        elif "keras.engine" in str(type(model)):
+            the_model = model
+        else:
+            raise TypeError(
+                "The model type you have passed in is currently not supported.")
+
     return the_model
 
 
