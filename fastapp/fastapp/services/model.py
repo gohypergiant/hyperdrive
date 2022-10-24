@@ -41,6 +41,8 @@ def predict(input_data, model_id: str):
                 result = log_softmax(result).argmax().item()
             else:
                 result = result[0].item()
+        else:
+            result = int(result[0].argmax())
         return result
     except ValueError as err:
         logging.error(err)
