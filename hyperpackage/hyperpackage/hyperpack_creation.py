@@ -161,6 +161,7 @@ def load_trained_model(model, flavor: str = None):
                to a pickled model of type <class 'neural_network.network.Network'>,
                or to an object in memory of type
                <class 'neural_network.network.Network'>
+        flavor: library/package used to build pretrained model
     Returns: the loaded model
     """
     if flavor == "automl":
