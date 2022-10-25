@@ -9,7 +9,7 @@ router = APIRouter()
 @router.post("/predict")
 async def default_predict(request: Request):
     fast_key_header = request.headers.get("x-api-key")
-    # check_api_key(fast_key_header)
+    check_api_key(fast_key_header)
     body = await request.json()
     return predict(body)
 
