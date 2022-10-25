@@ -27,18 +27,29 @@ def get_default_model_id() -> str:
 def predict(input_data, model_id: str):
     study_info = get_study_info()
     ml_task = study_info["ml_task"]
+    model_flavor = study_info["model_flavor"]
 
     trained_model_path = path.join(model_path(model_id), "trained_model")
     model = ONNXModel(trained_model_path)
 
     try:
         result = model.predict(input_data=np.array(input_data, dtype=np.float32))
-        if ml_task == "binary_classification":
-            result = int(expit(result).round())
-        elif ml_task == "multi_class_classification":
-            result = log_softmax(result).argmax().item()
+        if model_flavor == "automl":
+            if ml_task == "binary_classification":
+                result = int(expit(result).round())
+            elif ml_task == "multi_class_classification":
+                result = log_softmax(result).argmax().item()
+            else:
+                result = result[0].item()
+        elif model_flavor == "tensorflow":
+            if ml_task == "binary_classification":
+                result = int(result[0].argmax())
+            else:
+                result = float(result[0])
         else:
-            result = result[0].item()
+            raise TypeError(
+                "The '{}' model flavor is currently not supported.".format(model_flavor)
+            )
         return result
     except ValueError as err:
         logging.error(err)

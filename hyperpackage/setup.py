@@ -18,7 +18,7 @@ setuptools.setup(
     long_description="A package to create hyperpacks",
     long_description_content_type="text/markdown",
     url="https://github.com/gohypergiant",
-    project_urls={"Bug Tracker": "https://github.com/gohypergiant/issues",},
+    project_urls={"Bug Tracker": "https://github.com/gohypergiant/issues", },
     classifiers=[
         "Programming Language :: Python :: 3",
         "License :: OSI Approved :: MIT License",
@@ -31,9 +31,10 @@ setuptools.setup(
         "numpy",
         "onnx==1.11.0",
         "onnx2torch",
-        "onnxruntime"
-        ],
-    extras_require={"torch": ["pytorch"],},
+        "onnxruntime",
+        "tf2onnx"
+    ],
+    extras_require={"torch": ["pytorch"], },
     packages=setuptools.find_packages(),
     python_requires=">=3.9",
 )

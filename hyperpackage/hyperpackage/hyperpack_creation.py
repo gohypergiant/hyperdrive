@@ -1,7 +1,9 @@
 import os
+import tensorflow as tf
 import torch
 from datetime import datetime
 from hyperpackage.flavor.pytorch import torch_onnx_export
+from hyperpackage.flavor.tensorflow import tensorflow_onnx_export
 from hyperpackage.utilities import (
     generate_folder_name,
     write_json,
@@ -9,7 +11,7 @@ from hyperpackage.utilities import (
     zip_study,
 )
 
-SUPPORTED_MODEL_FLAVORS = ["automl"]
+SUPPORTED_MODEL_FLAVORS = ["automl", "tensorflow"]
 
 SUPPORTED_ML_TASKS = [
     "regression",
@@ -46,7 +48,7 @@ def create_hyperpack(
     verify_args(model=trained_model, flavor=model_flavor, task=ml_task)
 
     print("*** Loading the trained model ***")
-    loaded_model = load_trained_model(model=trained_model)
+    loaded_model = load_trained_model(model=trained_model, flavor=model_flavor)
 
     # checking the num_train_columns arg. We did not check this arg in the
     # verify_args func because if an automl model is passed in and the user
@@ -93,6 +95,7 @@ def create_hyperpack(
         hyperpack_path=hyperpack_path,
         best_trial=best_trial_folder_name,
         ml_task=ml_task,
+        flavor=model_flavor
     )
 
     print("*** Creating study.yaml ***")
@@ -108,10 +111,7 @@ def verify_args(model, flavor: str, task: str):
     """Verifies the model and flavor args that are passed to the create_hyperpack
        function
     Args:
-        model: pretrained model. Can be either a string, which is a path
-               to a pickled model of type <class 'neural_network.network.Network'>,
-               or to an object in memory of type
-               <class 'neural_network.network.Network'>
+        model: pretrained model. Can be either a string or an object
         flavor: library/package used to build pretrained model
         task: type of machine learning task, e.g., regression, binary_classification,
               multi_class_classification
@@ -122,7 +122,8 @@ def verify_args(model, flavor: str, task: str):
         raise TypeError("You must pass in a trained model.")
     elif isinstance(model, str):
         if not os.path.exists(model):
-            raise FileNotFoundError("No file could be found at {}.".format(model))
+            raise FileNotFoundError(
+                "No file could be found at {}.".format(model))
 
     if flavor is None:
         raise TypeError(
@@ -151,32 +152,52 @@ def verify_args(model, flavor: str, task: str):
         )
 
 
-def load_trained_model(model):
+def load_trained_model(model, flavor: str = None):
     """Loads the pretrained model
     Args:
-        model: pretrained model. Can be either a string, which is a path
-               to a pickled model of type <class 'neural_network.network.Network'>,
-               or to an object in memory of type
-               <class 'neural_network.network.Network'>
+        model: pretrained model. For automl, this can be either a string,
+               which is a path to a pickled model of type
+               <class 'neural_network.network.Network'>, or to an object in
+               memory of type <class 'neural_network.network.Network'>. For
+               tensorflow, this can be either a string, which is a path to the
+               directory for a model that has been saved in the "SavedModel"
+               format (so it'll have an "assets" folder, a "variables" folder,
+               and the model with a "saved_model.pb" file name), or to an object
+               in memory of a type that looks like <class 'keras.engine.[MORE_STUFF]'
+        flavor: library/package used to build pretrained model
     Returns: the loaded model
     """
-    if isinstance(model, str):
-        try:
-            the_model = torch.load(model)
-        except Exception:
-            print("Error while attempting to load torch model.")
-    elif str(type(model)) == "<class 'neural_network.network.Network'>":
-        the_model = model
-    elif isinstance(model, dict):
-        try:
-            for v in model.values():
-                if str(type(v)) != "<class 'neural_network.network.Network'>":
-                    raise TypeError("The dictionary of models contain a model type that is currently not supported.")
+    if flavor == "automl":
+        if isinstance(model, str):
+            try:
+                the_model = torch.load(model)
+            except Exception:
+                print("Error while attempting to load torch model.")
+        elif str(type(model)) == "<class 'neural_network.network.Network'>":
             the_model = model
-        except Exception:
-            print("Error while attempting to load torch model.")
-    else:
-        raise TypeError("The model type you have passed in is currently not supported.")
+        elif isinstance(model, dict):
+            try:
+                for v in model.values():
+                    if str(type(v)) != "<class 'neural_network.network.Network'>":
+                        raise TypeError(
+                            "The dictionary of models contain a model type that is currently not supported.")
+                the_model = model
+            except Exception:
+                print("Error while attempting to load torch model.")
+        else:
+            raise TypeError(
+                "The model type you have passed in is currently not supported.")
+    elif flavor == "tensorflow":
+        if isinstance(model, str):
+            try:
+                the_model = tf.keras.models.load_model(model)
+            except Exception:
+                print("Error while attempting to load tensorflow model.")
+        elif "keras.engine" in str(type(model)):
+            the_model = model
+        else:
+            raise TypeError(
+                "The model type you have passed in is currently not supported.")
 
     return the_model
 
@@ -203,21 +224,27 @@ def save_best_model_to_onnx(model, flavor: str, save_path: str, num_cols: int, m
         ml_task: the type of machine learning task
     """
     if flavor == "automl":
-        torch_onnx_export(model=model, trial_path=save_path, train_shape_cols=num_cols, ml_task=ml_task)
+        torch_onnx_export(model=model, trial_path=save_path,
+                          train_shape_cols=num_cols, ml_task=ml_task)
+    elif flavor == "tensorflow":
+        tensorflow_onnx_export(model=model, trial_path=save_path)
 
 
-def create_study_json(hyperpack_path: str, best_trial: str, ml_task: str):
+def create_study_json(hyperpack_path: str, best_trial: str, ml_task: str, flavor: str):
     """Creates the "_study.json" file
     Args:
         hyperpack_path: path to hyperpack folder
         best_trial: name of best trial
         ml_task: type of machine learning task
+        flavor: library/package used to build pretrained model.
+                Examples include automl, pytorch, and tensorflow
     """
     created_time = datetime.now().strftime("%Y-%m-%d %H:%M")
     study_json_dict = {
         "best_trial": best_trial,
         "created_at": created_time,
         "ml_task": ml_task,
+        "model_flavor": flavor
     }
     study_json_path = os.path.join(hyperpack_path, "_study.json")
     write_json(dictionary=study_json_dict, json_file_path=study_json_path)

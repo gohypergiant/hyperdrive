@@ -182,7 +182,7 @@ ENV FASTKEY=%s
 ENV REGION_NAME=%s
 ENV AWS_ACCESS_KEY_ID=%s
 ENV AWS_SECRET_ACCESS_KEY=%s
-ENV AWS_SESSION_TOKEN=%s	
+ENV AWS_SESSION_TOKEN=%s
 RUN echo "*** Fast App API key is: $FASTKEY ***"
 RUN echo "'%s\n\
 %s'" >> /hyperpack_s3.txt
