@@ -11,7 +11,7 @@ from hyperpackage.utilities import (
     zip_study,
 )
 
-SUPPORTED_MODEL_FLAVORS = ["automl", "tensorflow"]
+SUPPORTED_MODEL_FLAVORS = ["automl", "tensorflow", "xgboost"]
 
 SUPPORTED_ML_TASKS = [
     "regression",
