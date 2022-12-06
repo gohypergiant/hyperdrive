@@ -198,6 +198,8 @@ def load_trained_model(model, flavor: str = None):
         else:
             raise TypeError(
                 "The model type you have passed in is currently not supported.")
+    elif flavor == "xgboost":
+        the_model = model
 
     return the_model
 
