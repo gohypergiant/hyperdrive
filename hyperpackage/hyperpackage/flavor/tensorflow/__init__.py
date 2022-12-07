@@ -8,9 +8,6 @@ def tensorflow_onnx_export(model, trial_path: str):
     Args:
         model: pretrained model
         trial_path: dir path to the trial
-        train_shape_cols: the number of columns in the training dataset used to
-                          train the pretrained model
-        ml_task : the type of machine learning task
     """
     onnx_model, _ = tf2onnx.convert.from_keras(model)
     model_path = os.path.join(trial_path, "trained_model")
