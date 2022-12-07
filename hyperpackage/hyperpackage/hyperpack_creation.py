@@ -4,6 +4,7 @@ import torch
 from datetime import datetime
 from hyperpackage.flavor.pytorch import torch_onnx_export
 from hyperpackage.flavor.tensorflow import tensorflow_onnx_export
+from hyperpackage.flavor.xgboost import xgboost_onnx_save
 from hyperpackage.utilities import (
     generate_folder_name,
     write_json,
@@ -231,7 +232,8 @@ def save_best_model_to_onnx(model, flavor: str, save_path: str, num_cols: int, m
     elif flavor == "tensorflow":
         tensorflow_onnx_export(model=model, trial_path=save_path)
     elif flavor == "xgboost":
-        print("xgboost to onnx stub")
+        xgboost_onnx_save(model=model, trial_path=save_path,
+                          train_shape_cols=num_cols)
 
 
 def create_study_json(hyperpack_path: str, best_trial: str, ml_task: str, flavor: str):
