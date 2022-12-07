@@ -230,6 +230,8 @@ def save_best_model_to_onnx(model, flavor: str, save_path: str, num_cols: int, m
                           train_shape_cols=num_cols, ml_task=ml_task)
     elif flavor == "tensorflow":
         tensorflow_onnx_export(model=model, trial_path=save_path)
+    elif flavor == "xgboost":
+        print("xgboost to onnx stub")
 
 
 def create_study_json(hyperpack_path: str, best_trial: str, ml_task: str, flavor: str):
