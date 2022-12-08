@@ -184,13 +184,13 @@ def load_trained_model(model, flavor: str = None):
                 for v in model.values():
                     if str(type(v)) != "<class 'neural_network.network.Network'>":
                         raise TypeError(
-                            "The dictionary of models contain a model type that is currently not supported.")
+                            "The dictionary of models contain a model type for automl that is currently not supported.")
                 the_model = model
             except Exception:
                 print("Error while attempting to load torch model.")
         else:
             raise TypeError(
-                "The model type you have passed in is currently not supported."
+                "The model type you have passed in for automl is currently not supported."
             )
     elif flavor == "tensorflow":
         if isinstance(model, str):
@@ -202,7 +202,7 @@ def load_trained_model(model, flavor: str = None):
             the_model = model
         else:
             raise TypeError(
-                "The model type you have passed in is currently not supported."
+                "The model type you have passed in for tensorflow is currently not supported."
             )
     elif flavor == "xgboost":
         if isinstance(model, str):
@@ -215,7 +215,7 @@ def load_trained_model(model, flavor: str = None):
             the_model = model
         else:
             raise TypeError(
-                "The model type you have passed in is currently not supported."
+                "The model type you have passed in for xgboost is currently not supported."
             )
 
     return the_model
