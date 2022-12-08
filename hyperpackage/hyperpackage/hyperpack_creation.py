@@ -190,7 +190,8 @@ def load_trained_model(model, flavor: str = None):
                 print("Error while attempting to load torch model.")
         else:
             raise TypeError(
-                "The model type you have passed in is currently not supported.")
+                "The model type you have passed in is currently not supported."
+            )
     elif flavor == "tensorflow":
         if isinstance(model, str):
             try:
@@ -201,7 +202,8 @@ def load_trained_model(model, flavor: str = None):
             the_model = model
         else:
             raise TypeError(
-                "The model type you have passed in is currently not supported.")
+                "The model type you have passed in is currently not supported."
+            )
     elif flavor == "xgboost":
         if isinstance(model, str):
             try:
@@ -213,7 +215,8 @@ def load_trained_model(model, flavor: str = None):
             the_model = model
         else:
             raise TypeError(
-                "The model type you have passed in is currently not supported.")
+                "The model type you have passed in is currently not supported."
+            )
 
     return the_model
 
