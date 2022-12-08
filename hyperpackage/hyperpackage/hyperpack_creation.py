@@ -2,6 +2,7 @@ import os
 import tensorflow as tf
 import torch
 from datetime import datetime
+from xgboost import XGBClassifier
 from hyperpackage.flavor.pytorch import torch_onnx_export
 from hyperpackage.flavor.tensorflow import tensorflow_onnx_export
 from hyperpackage.flavor.xgboost import xgboost_onnx_save
