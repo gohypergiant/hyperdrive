@@ -195,7 +195,7 @@ RUN apt update -y && apt install unzip -y
 ADD {{.StudyPath}} study.hyperpackage.zip
 RUN unzip ./study.hyperpackage.zip -d /hyperpackage
 
-FROM ghcr.io/gohypergiant/gohypergiant/mlsdk-fast-app:stable
+FROM mlsdk-fast-app
 COPY --from=builder /hyperpackage /hyperpackage
 ENV FASTKEY=%s
 RUN echo "*** Fast App API key is: $FASTKEY ***"
