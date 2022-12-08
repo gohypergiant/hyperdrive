@@ -209,7 +209,11 @@ def load_trained_model(model, flavor: str = None):
                 the_model.load_model(model)
             except Exception:
                 print("Error while attempting to load xgboost model.")
-        the_model = model
+        elif "xgboost" in str(type(model)):
+            the_model = model
+        else:
+            raise TypeError(
+                "The model type you have passed in is currently not supported.")
 
     return the_model
 
