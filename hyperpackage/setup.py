@@ -34,7 +34,8 @@ setuptools.setup(
         "onnxmltools",
         "onnxruntime",
         "skl2onnx>=1.9.3",
-        "tf2onnx"
+        "tf2onnx",
+        "xgboost"
     ],
     extras_require={"torch": ["pytorch"], },
     packages=setuptools.find_packages(),
