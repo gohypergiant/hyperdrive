@@ -159,15 +159,20 @@ def verify_args(model, flavor: str, task: str):
 def load_trained_model(model, flavor: str = None):
     """Loads the pretrained model
     Args:
-        model: pretrained model. For automl, this can be either a string,
-               which is a path to a pickled model of type
-               <class 'neural_network.network.Network'>, or to an object in
-               memory of type <class 'neural_network.network.Network'>. For
-               tensorflow, this can be either a string, which is a path to the
-               directory for a model that has been saved in the "SavedModel"
-               format (so it'll have an "assets" folder, a "variables" folder,
-               and the model with a "saved_model.pb" file name), or to an object
-               in memory of a type that looks like <class 'keras.engine.[MORE_STUFF]'
+        model: pretrained model.
+            - For automl, this can be either a string, which is a path to a
+              pickled model of type <class 'neural_network.network.Network'>,
+              or to an object in memory of type
+              <class 'neural_network.network.Network'>.
+            - For tensorflow, this can be either a string, which is a path to
+              the directory for a model that has been saved in the "SavedModel"
+              format (so it'll have an "assets" folder, a "variables" folder,
+              and the model with a "saved_model.pb" file name), or to an object
+              in memory of a type that looks like
+              <class 'keras.engine.[MORE_STUFF]'.
+            - For xgboost, this can be either a string, which is a path to a
+              model of type "xgboost.sklearn.XGBClassifier", or to an object in
+              memory of type "xgboost.sklearn.XGBClassifier"
         flavor: library/package used to build pretrained model
     Returns: the loaded model
     """
