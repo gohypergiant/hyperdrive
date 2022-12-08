@@ -171,8 +171,8 @@ def load_trained_model(model, flavor: str = None):
               in memory of a type that looks like
               <class 'keras.engine.[MORE_STUFF]'.
             - For xgboost, this can be either a string, which is a path to a
-              model of type "xgboost.sklearn.XGBClassifier", or to an object in
-              memory of type "xgboost.sklearn.XGBClassifier"
+              model of type <class 'xgboost.sklearn.XGBClassifier'>, or to an
+              object in memory of type <class 'xgboost.sklearn.XGBClassifier'>
         flavor: library/package used to build pretrained model
     Returns: the loaded model
     """
