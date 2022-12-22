@@ -1,9 +1,13 @@
 import os
 import tensorflow as tf
 import torch
+
 from datetime import datetime
+from xgboost import XGBClassifier
+
 from hyperpackage.flavor.pytorch import torch_onnx_export
 from hyperpackage.flavor.tensorflow import tensorflow_onnx_export
+from hyperpackage.flavor.xgboost import xgboost_onnx_save
 from hyperpackage.utilities import (
     generate_folder_name,
     write_json,
@@ -11,7 +15,7 @@ from hyperpackage.utilities import (
     zip_study,
 )
 
-SUPPORTED_MODEL_FLAVORS = ["automl", "tensorflow"]
+SUPPORTED_MODEL_FLAVORS = ["automl", "tensorflow", "xgboost"]
 
 SUPPORTED_ML_TASKS = [
     "regression",
@@ -155,15 +159,20 @@ def verify_args(model, flavor: str, task: str):
 def load_trained_model(model, flavor: str = None):
     """Loads the pretrained model
     Args:
-        model: pretrained model. For automl, this can be either a string,
-               which is a path to a pickled model of type
-               <class 'neural_network.network.Network'>, or to an object in
-               memory of type <class 'neural_network.network.Network'>. For
-               tensorflow, this can be either a string, which is a path to the
-               directory for a model that has been saved in the "SavedModel"
-               format (so it'll have an "assets" folder, a "variables" folder,
-               and the model with a "saved_model.pb" file name), or to an object
-               in memory of a type that looks like <class 'keras.engine.[MORE_STUFF]'
+        model: pretrained model.
+            - For automl, this can be either a string, which is a path to a
+              pickled model of type <class 'neural_network.network.Network'>,
+              or to an object in memory of type
+              <class 'neural_network.network.Network'>.
+            - For tensorflow, this can be either a string, which is a path to
+              the directory for a model that has been saved in the "SavedModel"
+              format (so it'll have an "assets" folder, a "variables" folder,
+              and the model with a "saved_model.pb" file name), or to an object
+              in memory of a type that looks like
+              <class 'keras.engine.[MORE_STUFF]'.
+            - For xgboost, this can be either a string, which is a path to a
+              model of type <class 'xgboost.sklearn.XGBClassifier'>, or to an
+              object in memory of type <class 'xgboost.sklearn.XGBClassifier'>
         flavor: library/package used to build pretrained model
     Returns: the loaded model
     """
@@ -180,13 +189,14 @@ def load_trained_model(model, flavor: str = None):
                 for v in model.values():
                     if str(type(v)) != "<class 'neural_network.network.Network'>":
                         raise TypeError(
-                            "The dictionary of models contain a model type that is currently not supported.")
+                            "The dictionary of models contain a model type for automl that is currently not supported.")
                 the_model = model
             except Exception:
                 print("Error while attempting to load torch model.")
         else:
             raise TypeError(
-                "The model type you have passed in is currently not supported.")
+                "The model type you have passed in for automl is currently not supported."
+            )
     elif flavor == "tensorflow":
         if isinstance(model, str):
             try:
@@ -197,7 +207,21 @@ def load_trained_model(model, flavor: str = None):
             the_model = model
         else:
             raise TypeError(
-                "The model type you have passed in is currently not supported.")
+                "The model type you have passed in for tensorflow is currently not supported."
+            )
+    elif flavor == "xgboost":
+        if isinstance(model, str):
+            try:
+                the_model = XGBClassifier()
+                the_model.load_model(model)
+            except Exception:
+                print("Error while attempting to load xgboost model.")
+        elif "xgboost" in str(type(model)):
+            the_model = model
+        else:
+            raise TypeError(
+                "The model type you have passed in for xgboost is currently not supported."
+            )
 
     return the_model
 
@@ -228,6 +252,9 @@ def save_best_model_to_onnx(model, flavor: str, save_path: str, num_cols: int, m
                           train_shape_cols=num_cols, ml_task=ml_task)
     elif flavor == "tensorflow":
         tensorflow_onnx_export(model=model, trial_path=save_path)
+    elif flavor == "xgboost":
+        xgboost_onnx_save(model=model, trial_path=save_path,
+                          train_shape_cols=num_cols)
 
 
 def create_study_json(hyperpack_path: str, best_trial: str, ml_task: str, flavor: str):
@@ -237,7 +264,7 @@ def create_study_json(hyperpack_path: str, best_trial: str, ml_task: str, flavor
         best_trial: name of best trial
         ml_task: type of machine learning task
         flavor: library/package used to build pretrained model.
-                Examples include automl, pytorch, and tensorflow
+                Examples include automl, pytorch, tensorflow, and xgboost
     """
     created_time = datetime.now().strftime("%Y-%m-%d %H:%M")
     study_json_dict = {
