@@ -29,7 +29,7 @@ setuptools.setup(
         "boto3",
         "icecream",
         "numpy",
-        "onnx==1.11.0",
+        "onnx==1.13.0",
         "onnx2torch",
         "onnxmltools",
         "onnxruntime",
