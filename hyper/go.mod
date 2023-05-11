@@ -72,7 +72,7 @@ require (
 
 require (
 	github.com/containerd/containerd v1.6.18 // indirect
-	github.com/docker/distribution v2.8.1+incompatible
+	github.com/docker/distribution v2.8.2+incompatible
 	github.com/manifoldco/promptui v0.9.0
 	github.com/moby/sys/mount v0.3.1 // indirect
 	github.com/opencontainers/image-spec v1.0.3-0.20211202183452-c5a74bcca799 // indirect
