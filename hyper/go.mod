@@ -3,7 +3,7 @@ module github.com/gohypergiant/hyperdrive/hyper
 go 1.18
 
 require (
-	github.com/aws/aws-sdk-go v1.44.114
+	github.com/aws/aws-sdk-go v1.44.258
 	github.com/aws/aws-sdk-go-v2 v1.17.5
 	github.com/aws/aws-sdk-go-v2/config v1.17.8
 	github.com/aws/aws-sdk-go-v2/credentials v1.12.21
@@ -16,7 +16,7 @@ require (
 	github.com/moby/term v0.0.0-20210619224110-3f7ff695adc6
 	github.com/pkg/browser v0.0.0-20210911075715-681adbf594b8
 	github.com/rogpeppe/go-internal v1.9.0
-	github.com/seqsense/s3sync v1.8.2
+	github.com/seqsense/s3sync v1.9.0
 	github.com/sethvargo/go-password v0.2.0
 	github.com/spf13/cobra v1.6.1
 	github.com/spf13/viper v1.16.0
@@ -41,7 +41,7 @@ require (
 	github.com/containerd/cgroups v1.0.4 // indirect
 	github.com/docker/go-units v0.4.0 // indirect
 	github.com/fsnotify/fsnotify v1.6.0 // indirect
-	github.com/gabriel-vasile/mimetype v1.4.0 // indirect
+	github.com/gabriel-vasile/mimetype v1.4.2 // indirect
 	github.com/gogo/protobuf v1.3.2 // indirect
 	github.com/golang/groupcache v0.0.0-20210331224755-41bb18bfe9da // indirect
 	github.com/hashicorp/hcl v1.0.0 // indirect
